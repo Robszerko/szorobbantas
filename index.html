@@ -2,8 +2,11 @@
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SZÓROBBANTÁS v10 - Küldetés-alapú körök</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#05080d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>SZÓROBBANTÁS v11 - Mobil optimalizált</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -13,14 +16,18 @@
 --gold:#f59e0b;--gold-glow:#fbbf24;--emerald:#10b981;--cyan:#06b6d4;--ruby:#ef4444;--purple:#a855f7;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;overflow-x:hidden}
+html,body{margin:0;padding:0;overflow-x:hidden;-webkit-text-size-adjust:100%;
+overscroll-behavior-y:contain;overscroll-behavior-x:contain}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg-deep);
 background-image:radial-gradient(circle at 50% 0%,rgba(139,92,246,.18),transparent 65%),
 radial-gradient(circle at 80% 100%,rgba(6,182,212,.12),transparent 60%),
 radial-gradient(#1e293b 1px,transparent 1px);
 background-size:100% 100%,100% 100%,28px 28px;
 color:#f1f5f9;min-height:100vh;display:flex;flex-direction:column;align-items:center;
-touch-action:manipulation;user-select:none;padding:8px 6px 24px}
+touch-action:manipulation;user-select:none;-webkit-user-select:none;
+padding:8px 6px calc(24px + env(safe-area-inset-bottom, 0px));
+padding-left:calc(6px + env(safe-area-inset-left, 0px));
+padding-right:calc(6px + env(safe-area-inset-right, 0px))}
 #fx-canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:99999}
 .app{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;position:relative;z-index:10}
 .app.shake{animation:shakeAnim .38s cubic-bezier(.36,.07,.19,.97) both}
@@ -45,12 +52,12 @@ background:linear-gradient(135deg,#f59e0b,#ef4444,#a855f7);-webkit-background-cl
 border:1px solid var(--gold);border-radius:12px;padding:8px 12px;margin-bottom:8px;
 display:flex;justify-content:space-between;align-items:center;gap:8px;
 box-shadow:0 4px 20px rgba(245,158,11,.25)}
-.weekly-banner .info{display:flex;flex-direction:column;gap:1px}
+.weekly-banner .info{display:flex;flex-direction:column;gap:1px;min-width:0}
 .weekly-banner .info .title{font-size:9px;font-weight:900;letter-spacing:1.5px;color:#fde68a;text-transform:uppercase}
 .weekly-banner .info .value{font-size:15px;font-weight:900;color:#fff}
 .weekly-banner .info .sub{font-size:9px;font-weight:700;color:#cbd5e1}
 .weekly-banner .rank{background:rgba(0,0,0,.4);border:1px solid var(--gold);border-radius:8px;
-padding:4px 10px;font-size:11px;font-weight:900;color:var(--gold-glow);text-align:center;min-width:60px}
+padding:4px 10px;font-size:11px;font-weight:900;color:var(--gold-glow);text-align:center;min-width:60px;flex-shrink:0}
 .weekly-banner .rank small{display:block;font-size:8px;color:#94a3b8;font-weight:800;margin-top:1px}
 
 .hud-row{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
@@ -70,22 +77,20 @@ box-shadow:0 4px 20px rgba(139,92,246,.25);position:relative;overflow:hidden}
 .mission-panel.complete{border-color:var(--emerald);background:linear-gradient(145deg,#064e3b,#065f46);
 box-shadow:0 4px 20px rgba(16,185,129,.4)}
 .mission-title{font-size:10px;font-weight:900;letter-spacing:2px;color:#c4b5fd;text-transform:uppercase}
-.mission-main{font-size:14px;font-weight:900;color:#fff;margin-top:2px;display:flex;justify-content:space-between;align-items:center}
-.mission-main .pct{font-size:13px;color:var(--gold-glow);font-weight:900}
-
+.mission-main{font-size:14px;font-weight:900;color:#fff;margin-top:2px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mission-main .pct{font-size:13px;color:var(--gold-glow);font-weight:900;flex-shrink:0}
 .mission-bar{width:100%;height:6px;background:#0f172a;border-radius:3px;overflow:hidden;margin-top:6px}
 .mission-bar-fill{height:100%;background:linear-gradient(90deg,#10b981,#f59e0b,#ef4444);width:0%;transition:width .35s ease;box-shadow:0 0 10px rgba(245,158,11,.6)}
 
-/* BÓNUSZ KÜLDETÉS - KÖTELEZŐ */
 .bonus-row{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(196,181,253,.25);
 display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:700;color:#fde68a}
-.bonus-row .bonus-header{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.bonus-row .bonus-header .icon{font-size:16px}
-.bonus-row .bonus-header .text{flex:1;font-weight:800}
-.bonus-row .bonus-header .status{font-size:10px;font-weight:900;padding:2px 8px;border-radius:10px}
+.bonus-row .bonus-header{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.bonus-row .bonus-header .icon{font-size:16px;flex-shrink:0}
+.bonus-row .bonus-header .text{flex:1;font-weight:800;font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.bonus-row .bonus-header .status{font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:10px;flex-shrink:0;letter-spacing:.3px}
 .bonus-row .bonus-header .status.pending{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid var(--ruby);animation:pulse 1s infinite alternate}
 .bonus-row .bonus-header .status.done{background:rgba(16,185,129,.25);color:#a7f3d0;border:1px solid var(--emerald)}
-.bonus-row .bonus-progress{font-size:10px;color:#cbd5e1;font-weight:700;padding-left:24px}
+.bonus-row .bonus-progress{font-size:10px;color:#cbd5e1;font-weight:700;padding-left:22px}
 .bonus-row.done{color:#86efac}
 .bonus-row.done .bonus-header .text{text-decoration:line-through;opacity:.7}
 
@@ -105,7 +110,8 @@ touch-action:none}
 background-image:radial-gradient(rgba(148,163,184,.06) 1px,transparent 1px);
 background-size:14px 14px;opacity:.6;z-index:1}
 
-.tile{position:absolute;top:0;left:0;cursor:pointer;z-index:2;will-change:transform;transition:none}
+.tile{position:absolute;top:0;left:0;cursor:pointer;z-index:2;will-change:transform;transition:none;
+touch-action:manipulation}
 .tile .gem{position:absolute;inset:3px;border-radius:12px;
 display:flex;align-items:center;justify-content:center;
 box-shadow:inset 0 2px 0 rgba(255,255,255,.5),inset 0 -3px 6px rgba(0,0,0,.35),0 3px 6px rgba(0,0,0,.5);
@@ -142,9 +148,9 @@ box-shadow:0 0 0 3px #fff,0 0 30px rgba(255,255,255,.95),0 0 60px rgba(255,255,2
 
 .pool-wrap{width:100%;background:linear-gradient(145deg,#18232e,#0d131a);
 border:1px solid var(--panel-border);border-radius:12px;padding:10px;margin-bottom:8px}
-.pool-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pool-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
 .pool-header .label{font-size:10px;font-weight:900;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase}
-.pool-header .count{font-size:11px;font-weight:800;color:var(--gold)}
+.pool-header .count{font-size:11px;font-weight:800;color:var(--gold);flex-shrink:0}
 .pool-header .count.warn{color:var(--ruby);animation:pulse .8s infinite alternate}
 
 .pool-rows{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
@@ -158,20 +164,34 @@ min-width:24px;text-align:center;text-transform:uppercase;flex-shrink:0}
 .pool-row .row-letters{display:flex;flex-wrap:wrap;gap:4px;flex:1;align-items:center;min-height:38px}
 .pool-row .row-empty{font-size:10px;color:#475569;font-weight:700;font-style:italic;padding-left:4px}
 
-.pool-letter{width:30px;height:34px;background:linear-gradient(135deg,#fef3c7,#fcd34d);
-color:#3b1f06;border-radius:6px;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;
+/* NAGYOBB TAP-TARGET MOBILON */
+.pool-letter{width:36px;height:40px;background:linear-gradient(135deg,#fef3c7,#fcd34d);
+color:#3b1f06;border-radius:6px;font-weight:900;font-size:17px;display:flex;align-items:center;justify-content:center;
 cursor:pointer;box-shadow:0 2px 0 #92400e,0 2px 4px rgba(0,0,0,.4);border:1px solid #b45309;
-transition:transform .12s,opacity .2s;flex-shrink:0;animation:poolIn .3s cubic-bezier(.34,1.56,.64,1);
-position:relative}
+transition:transform .12s,opacity .2s,box-shadow .15s;flex-shrink:0;
+animation:poolIn .3s cubic-bezier(.34,1.56,.64,1);position:relative;
+touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @keyframes poolIn{0%{transform:scale(0) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
 .pool-letter:active{transform:translateY(2px);box-shadow:0 0 0 #92400e}
+.pool-letter.selected{
+  background:linear-gradient(135deg,#fbbf24,#f59e0b);
+  box-shadow:0 0 0 3px #fff,0 0 20px rgba(251,191,36,.9),0 2px 0 #92400e;
+  transform:scale(1.15);
+  animation:selectedPulse .8s infinite alternate;
+  color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8)
+}
+@keyframes selectedPulse{
+  0%{box-shadow:0 0 0 3px #fff,0 0 20px rgba(251,191,36,.9),0 2px 0 #92400e}
+  100%{box-shadow:0 0 0 3px #fef3c7,0 0 30px rgba(251,191,36,1),0 2px 0 #92400e}
+}
 .pool-letter.used{animation:poolUse .3s ease forwards;pointer-events:none}
 @keyframes poolUse{0%{transform:scale(1);opacity:1}100%{transform:scale(0) translateY(-20px);opacity:0}}
 .pool-empty{color:#475569;font-size:11px;font-weight:700;padding:6px}
 
-.clear-pool-btn{width:100%;margin-top:6px;padding:9px;font-family:inherit;font-weight:900;font-size:12px;
+.clear-pool-btn{width:100%;margin-top:6px;padding:12px;font-family:inherit;font-weight:900;font-size:12.5px;
 border:none;border-radius:8px;color:#fff;cursor:pointer;
-background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 3px 0 #7f1d1d;transition:transform .12s,box-shadow .12s}
+background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 3px 0 #7f1d1d;
+transition:transform .12s,box-shadow .12s;touch-action:manipulation}
 .clear-pool-btn:active{transform:translateY(2px);box-shadow:none}
 .clear-pool-btn:disabled{opacity:.4;cursor:not-allowed;background:linear-gradient(135deg,#475569,#334155);box-shadow:0 3px 0 #1e293b}
 .clear-pool-btn .cost{color:#fde68a;font-weight:900}
@@ -183,30 +203,66 @@ transform .75s cubic-bezier(.5,.05,.2,1),opacity .75s ease-in;will-change:left,t
 
 .helps-row{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
 .help-btn{background:linear-gradient(145deg,#1e293b,#0f172a);border:1px solid #334155;color:#f1f5f9;
-border-radius:10px;padding:8px 4px;cursor:pointer;font-family:inherit;
-display:flex;flex-direction:column;align-items:center;gap:1px;position:relative;
-transition:transform .12s,border-color .15s,box-shadow .15s}
+border-radius:10px;padding:10px 4px;cursor:pointer;font-family:inherit;
+display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;
+transition:transform .12s,border-color .15s,box-shadow .15s;
+touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:62px}
 .help-btn:active{transform:translateY(2px)}
 .help-btn:hover:not(:disabled){border-color:var(--gold);box-shadow:0 0 12px rgba(245,158,11,.35)}
 .help-btn:disabled{opacity:.35;cursor:not-allowed}
-.help-btn .help-icon{font-size:17px;line-height:1}
-.help-btn .help-label{font-size:8.5px;font-weight:800;letter-spacing:.3px;color:#cbd5e1}
+.help-btn .help-icon{font-size:18px;line-height:1}
+.help-btn .help-label{font-size:9px;font-weight:800;letter-spacing:.3px;color:#cbd5e1}
 .help-btn .help-cost{font-size:9.5px;font-weight:900;color:var(--gold);
 background:rgba(245,158,11,.12);padding:1px 5px;border-radius:8px;border:1px solid rgba(245,158,11,.3);margin-top:1px}
 .help-btn.active{background:linear-gradient(145deg,#10b981,#059669);border-color:#34d399;color:#fff;animation:pulse 1s infinite alternate}
 .help-btn.active .help-cost{background:rgba(0,0,0,.3);color:#fde68a}
 
-.word-row{width:100%;display:flex;gap:6px;margin-bottom:8px}
-.word-row input{flex:1;padding:11px 14px;font-size:15px;font-weight:900;text-transform:uppercase;
-background:#0c1219;border:2px solid #334155;color:#fff;border-radius:10px;text-align:center;
-font-family:inherit;letter-spacing:3px;transition:border-color .2s,box-shadow .2s;min-width:0}
-.word-row input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 14px rgba(245,158,11,.4)}
-.word-row input.err{border-color:var(--ruby);box-shadow:0 0 14px rgba(239,68,68,.6);animation:shakeAnim .32s}
-.word-row input.ok{border-color:var(--emerald);box-shadow:0 0 14px rgba(16,185,129,.6)}
-.word-row button{padding:0 18px;font-weight:900;font-size:13px;border:none;color:#fff;border-radius:10px;
+/* SZÓ RAKÓ PANEL - NEM UGRÓ BILLENTYŰZET */
+.word-builder{width:100%;background:linear-gradient(145deg,#18232e,#0d131a);
+border:1px solid var(--panel-border);border-radius:12px;padding:8px 10px;margin-bottom:8px;
+display:flex;flex-direction:column;gap:6px}
+.word-builder .wb-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.word-builder .wb-label{font-size:9.5px;font-weight:900;letter-spacing:1.5px;color:#94a3b8;text-transform:uppercase}
+.word-builder .wb-actions{display:flex;gap:4px}
+.word-builder .wb-mini{font-size:10px;font-weight:800;background:rgba(148,163,184,.1);
+border:1px solid rgba(148,163,184,.25);color:#cbd5e1;padding:3px 8px;border-radius:6px;cursor:pointer;
+touch-action:manipulation;font-family:inherit}
+.word-builder .wb-mini:active{transform:scale(.95)}
+.word-builder .wb-mini.danger{border-color:rgba(239,68,68,.4);color:#fca5a5}
+.word-builder .wb-mini:disabled{opacity:.35;cursor:not-allowed}
+
+.wb-display{width:100%;min-height:52px;background:#0c1219;border:2px solid #334155;border-radius:10px;
+padding:6px 10px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;justify-content:center;
+position:relative;transition:border-color .2s,box-shadow .2s}
+.wb-display.active{border-color:var(--gold);box-shadow:0 0 14px rgba(245,158,11,.4)}
+.wb-display.ok{border-color:var(--emerald);box-shadow:0 0 14px rgba(16,185,129,.6)}
+.wb-display.err{border-color:var(--ruby);box-shadow:0 0 14px rgba(239,68,68,.6);animation:shakeAnim .32s}
+.wb-display .wb-placeholder{color:#475569;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.wb-letter{width:34px;height:38px;background:linear-gradient(135deg,#fef3c7,#fcd34d);
+color:#3b1f06;border-radius:6px;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;
+box-shadow:0 2px 0 #92400e,0 2px 4px rgba(0,0,0,.4);border:1px solid #b45309;
+animation:poolIn .25s cubic-bezier(.34,1.56,.64,1);position:relative;cursor:pointer;touch-action:manipulation}
+.wb-letter:active{transform:translateY(2px)}
+.wb-letter::after{content:'×';position:absolute;top:-4px;right:-4px;width:14px;height:14px;
+background:var(--ruby);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;
+font-weight:900;opacity:0;transition:opacity .15s}
+.wb-letter:hover::after{opacity:1}
+
+.wb-controls{display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:stretch}
+.wb-keyboard-toggle{background:linear-gradient(145deg,#334155,#1e293b);border:1px solid #475569;
+color:#cbd5e1;border-radius:10px;padding:10px 12px;font-size:11px;font-weight:900;font-family:inherit;
+cursor:pointer;touch-action:manipulation;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wb-keyboard-toggle:active{transform:scale(.97)}
+.wb-keyboard-toggle.on{background:linear-gradient(145deg,#0891b2,#0369a1);border-color:#06b6d4;color:#fff}
+.wb-submit{padding:0 18px;font-weight:900;font-size:13px;border:none;color:#fff;border-radius:10px;
 background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 3px 0 #047857;cursor:pointer;font-family:inherit;
-transition:transform .12s,box-shadow .12s;letter-spacing:.5px}
-.word-row button:active{transform:translateY(2px);box-shadow:none}
+transition:transform .12s,box-shadow .12s;letter-spacing:.5px;min-height:44px;touch-action:manipulation}
+.wb-submit:active{transform:translateY(2px);box-shadow:none}
+.wb-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* REJTETT INPUT - csak akkor aktív, ha a játékos bekapcsolja */
+.hidden-input{position:absolute;opacity:0;pointer-events:none;left:-9999px;top:-9999px;
+width:1px;height:1px;font-size:16px}
 
 .hint-overlay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);
 background:linear-gradient(145deg,#1e1b4b,#0f172a);border:3px solid var(--gold);
@@ -234,15 +290,17 @@ box-shadow:0 2px 4px rgba(16,185,129,.35)}
 @keyframes popIn{0%{transform:scale(.4);opacity:0}80%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
 
 .controls{width:100%;display:flex;gap:6px;margin-bottom:8px}
-.controls button{flex:1;padding:10px 6px;font-size:11.5px;font-weight:900;border:none;color:#fff;
-border-radius:9px;cursor:pointer;font-family:inherit;letter-spacing:.4px;transition:transform .12s,box-shadow .12s}
+.controls button{flex:1;padding:12px 6px;font-size:11.5px;font-weight:900;border:none;color:#fff;
+border-radius:9px;cursor:pointer;font-family:inherit;letter-spacing:.4px;
+transition:transform .12s,box-shadow .12s;touch-action:manipulation;min-height:44px}
 .controls button:active{transform:translateY(2px);box-shadow:none!important}
 .ctrl-shuffle{background:linear-gradient(135deg,#06b6d4,#0891b2);box-shadow:0 3px 0 #155e75}
 .ctrl-leaderboard{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 3px 0 #b45309}
 .ctrl-restart{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 3px 0 #991b1b}
 
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.87);backdrop-filter:blur(8px);
-display:none;align-items:center;justify-content:center;z-index:10000;padding:14px}
+display:none;align-items:center;justify-content:center;z-index:10000;padding:14px;
+padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px))}
 .modal-backdrop.show{display:flex;animation:fadeIn .25s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal-box{background:linear-gradient(145deg,#18232f,#0d131a);border:2px solid var(--gold);border-radius:16px;
@@ -255,30 +313,29 @@ animation:modalIn .35s cubic-bezier(.34,1.56,.64,1);max-height:88vh;overflow-y:a
 .modal-box .stat-grid div{background:rgba(255,255,255,.05);border-radius:8px;padding:10px}
 .modal-box .stat-grid span{display:block;font-size:10px;color:#94a3b8;font-weight:800;letter-spacing:1px;text-transform:uppercase}
 .modal-box .stat-grid strong{display:block;font-size:18px;font-weight:900;color:var(--gold);margin-top:3px}
-.modal-btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:900;font-size:14px;
-cursor:pointer;font-family:inherit;letter-spacing:.5px;margin-top:8px}
+.modal-btn{width:100%;padding:14px;border:none;border-radius:10px;font-weight:900;font-size:14px;
+cursor:pointer;font-family:inherit;letter-spacing:.5px;margin-top:8px;min-height:48px;touch-action:manipulation}
 .modal-btn.primary{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 0 #047857}
 .modal-btn.gold{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;box-shadow:0 4px 0 #b45309}
 .modal-btn:active{transform:translateY(2px);box-shadow:none}
-.modal-input{width:100%;padding:12px;font-size:16px;font-weight:900;text-transform:uppercase;
+.modal-input{width:100%;padding:14px;font-size:16px;font-weight:900;text-transform:uppercase;
 background:#0c1219;border:2px solid var(--gold);color:#fff;border-radius:10px;text-align:center;
-font-family:inherit;letter-spacing:2px;margin:8px 0}
+font-family:inherit;letter-spacing:2px;margin:8px 0;-webkit-appearance:none;appearance:none}
 .modal-input:focus{outline:none;box-shadow:0 0 20px rgba(245,158,11,.5)}
 
 .lb-list{max-height:50vh;overflow-y:auto;margin:12px 0;text-align:left}
 .lb-row{display:flex;justify-content:space-between;align-items:center;background:#16202c;
-padding:8px 12px;border-radius:8px;border:1px solid #334155;margin-bottom:5px;font-size:12.5px;
+padding:10px 12px;border-radius:8px;border:1px solid #334155;margin-bottom:5px;font-size:12.5px;
 transition:transform .15s}
-.lb-row:hover{transform:translateX(3px)}
 .lb-row.me{border-color:var(--gold);background:linear-gradient(135deg,#1e293b,#3b1d05);
 box-shadow:0 0 12px rgba(245,158,11,.35)}
 .lb-row .rank-badge{font-size:14px;font-weight:900;min-width:32px}
 .lb-row .name{flex:1;margin-left:6px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lb-row .score{color:var(--emerald);font-weight:900}
-.lb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.lb-row .score{color:var(--emerald);font-weight:900;flex-shrink:0}
+.lb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
 .lb-header h3{margin:0;color:var(--gold);font-size:16px;font-weight:900}
 .lb-week-badge{font-size:10px;color:#94a3b8;font-weight:800;background:rgba(148,163,184,.1);
-padding:3px 8px;border-radius:8px;border:1px solid rgba(148,163,184,.25)}
+padding:3px 8px;border-radius:8px;border:1px solid rgba(148,163,184,.25);flex-shrink:0}
 .lb-empty{text-align:center;color:#94a3b8;padding:20px;font-size:12px;font-weight:700}
 
 .loading-overlay{position:fixed;inset:0;background:rgba(5,8,13,.97);display:flex;flex-direction:column;
@@ -297,11 +354,24 @@ box-shadow:0 10px 30px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:a
 .toast.err{border-color:var(--ruby);color:#fecaca}
 .toast.ok{border-color:var(--emerald);color:#a7f3d0}
 
-@media(max-width:380px){
+/* MOBIL SPECIFIKUS */
+@media(max-width:420px){
 .tile .letter-glyph{font-size:calc(var(--ts,36px) * 0.55)}
-.pool-letter{width:26px;height:30px;font-size:13px}
+.pool-letter{width:32px;height:36px;font-size:15px}
+.pool-row{min-height:42px;padding:4px 6px}
+.wb-letter{width:30px;height:34px;font-size:15px}
+.help-btn{padding:8px 2px;min-height:56px}
 .help-btn .help-label{font-size:8px}
-.hint-overlay .hint-word{font-size:24px;letter-spacing:4px}
+.help-btn .help-icon{font-size:16px}
+.hint-overlay .hint-word{font-size:26px;letter-spacing:4px}
+.modal-box{padding:18px}
+.modal-box h2{font-size:22px}
+.mission-main{font-size:13px}
+.bonus-row .bonus-header .text{font-size:10.5px}
+}
+@media(max-width:340px){
+.pool-letter{width:28px;height:32px;font-size:13px}
+.wb-letter{width:26px;height:30px;font-size:13px}
 }
 </style>
 </head>
@@ -367,7 +437,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:a
 
 <div class="pool-wrap">
 <div class="pool-header">
-<span class="label">🔓 Kiszabadított betűk (4 sor · min. 10 betű/sor)</span>
+<span class="label">🔓 Kiszabadított betűk</span>
 <span class="count" id="pool-count">0 betű</span>
 </div>
 <div class="pool-rows" id="pool-rows"></div>
@@ -391,9 +461,25 @@ box-shadow:0 10px 30px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:a
 </button>
 </div>
 
-<div class="word-row">
-<input type="text" id="word-input" placeholder="ÍRJ BE SZÓT..." maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false">
-<button id="btn-submit">Beküld</button>
+<!-- ÚJ: SZÓ RAKÓ PANEL — nem ugrik fel a billentyűzet -->
+<div class="word-builder">
+<div class="wb-header">
+<span class="wb-label">📝 Szó összeállítása</span>
+<div class="wb-actions">
+<button class="wb-mini" id="btn-wb-backspace" title="Utolsó betű törlése">⌫ Törlés</button>
+<button class="wb-mini danger" id="btn-wb-clear" title="Összes vissza a medencébe">↺ Mind</button>
+</div>
+</div>
+<div class="wb-display" id="wb-display">
+<span class="wb-placeholder">KOPPINTS A BETŰKRE</span>
+</div>
+<div class="wb-controls">
+<button class="wb-keyboard-toggle" id="btn-keyboard-toggle" title="Billentyűzet be/ki">
+⌨️ <span>Billentyűzet</span>
+</button>
+<button class="wb-submit" id="btn-wb-submit">Beküld ✔</button>
+</div>
+<input type="text" class="hidden-input" id="hidden-input" maxlength="20" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" inputmode="text">
 </div>
 
 <div class="found-words">
@@ -419,7 +505,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:a
 <div class="modal-box">
 <h2 style="color:var(--gold)">👤 ADD MEG A NEVED</h2>
 <p style="font-size:12.5px">A heti bajnokságban ezzel a névvel fogsz szerepelni.</p>
-<input type="text" class="modal-input" id="name-input" placeholder="JÁTÉKOSNÉV..." maxlength="16">
+<input type="text" class="modal-input" id="name-input" placeholder="JÁTÉKOSNÉV..." maxlength="16" autocomplete="off" autocorrect="off">
 <button class="modal-btn primary" id="btn-save-name">💾 MENTÉS</button>
 </div>
 </div>
@@ -427,7 +513,7 @@ box-shadow:0 10px 30px rgba(0,0,0,.7);pointer-events:none;opacity:0;transition:a
 <div class="modal-backdrop" id="modal-intro">
 <div class="modal-box">
 <h2 style="color:var(--gold)">💥 SZÓROBBANTÁS</h2>
-<p><b style="color:#fbbf24">Kattints</b> egy színes csempére – az <b style="color:#fff">összefüggő, érintkező</b> azonos színű csoport felrobban!</p>
+<p><b style="color:#fbbf24">Koppints</b> egy színes csempére – az <b style="color:#fff">összefüggő, érintkező</b> azonos színű csoport felrobban!</p>
 <p style="font-size:12.5px;color:#94a3b8">A 💛 <b>arany keretes</b> csempéken betűk vannak. Amikor felrobbannak, a betűk <b style="color:#fbbf24">leesnek a tábla alján</b> és a gyűjtőmedencébe kerülnek.</p>
 <p style="font-size:12px;color:#fca5a5"><b>⚔️ A kör CSAK AKKOR fejeződik be, ha a FŐ KÜLDETÉST és a KÖTELEZŐ BÓNUSZ KÜLDETÉST is teljesíted!</b></p>
 <p style="font-size:12px;color:#c4b5fd">⚡ <b>4 sor</b> áll rendelkezésre, soronként akár <b>10+ betű</b>. Ha tele van, a 🧹 gombbal törölheted – de egyre drágább!</p>
@@ -594,7 +680,8 @@ async function loadPlayerName(){
     }catch(e){ console.warn('Name load failed', e); }
   }
   document.getElementById('modal-name').classList.add('show');
-  document.getElementById('name-input').focus();
+  const nameInput = document.getElementById('name-input');
+  if(nameInput) nameInput.focus();
 }
 function updateNameUI(){
   const el = document.getElementById('top-player');
@@ -719,10 +806,7 @@ async function updateLeaderboardRank(){
       .get();
     let rank = '—';
     let idx = 1;
-    snap.forEach(doc => {
-      if(doc.id === currentUser) rank = idx;
-      idx++;
-    });
+    snap.forEach(doc => { if(doc.id === currentUser) rank = idx; idx++; });
     const rankEl = document.getElementById('weekly-rank');
     if(rankEl) rankEl.textContent = rank === '—' ? '—' : '#' + rank;
   }catch(e){
@@ -777,9 +861,7 @@ async function showLeaderboard(){
       const users = [];
       allSnap.forEach(doc => {
         const d = doc.data();
-        if(d.weekKey === weekKey && (d.weeklyScore || 0) > 0){
-          users.push({ id: doc.id, ...d });
-        }
+        if(d.weekKey === weekKey && (d.weeklyScore || 0) > 0) users.push({ id: doc.id, ...d });
       });
       users.sort((a,b) => (b.weeklyScore||0) - (a.weeklyScore||0));
       if(users.length === 0){
@@ -879,6 +961,7 @@ const state = {
   doubleCharges: 0,
   weeklyScore: 0,
   clearCount: 0,
+  keyboardOn: false,
   stats: { lettersFreed: 0, freedLetters: [], words: [], pointsThisLevel: 0,
     longestWord: 0, biggestMatch: 0, perfectStreak: 0, invalidAttempts: 0, maxCascade: 0,
     bigMatches: [], longWordBonus: 0, hintsUsed: 0, level: 1, bombs: 0, clears: 0 }
@@ -935,6 +1018,7 @@ function sfxLand(){ tone(180, .06, 'triangle', .1); }
 function sfxHint(){ tone(1320, .12, 'sine', .18); setTimeout(()=>tone(1760, .12, 'sine', .14), 100); }
 function sfxClear(){ tone(440, .15, 'triangle', .2); setTimeout(()=>tone(660, .15, 'triangle', .2), 80); setTimeout(()=>tone(880, .2, 'triangle', .2), 160); }
 function sfxBonusComplete(){ [660, 880, 1100, 1320].forEach((f,i)=> setTimeout(()=>tone(f, .25, 'triangle', .22), i*80)); }
+function sfxSelect(){ tone(1100, .05, 'triangle', .12); }
 
 // =====================================================================
 // PARTIKLÉK
@@ -1016,364 +1100,216 @@ function promiseWithTimeout(promise, ms, label){
 }
 
 // =====================================================================
-// BÓNUSZ KÜLDETÉSEK — progress számítással
+// 170 BÓNUSZ KÜLDETÉS (120 meglévő + 50 új)
 // =====================================================================
-// Minden küldetéshez tartozik egy "progress" függvény, ami visszaadja {current, target} értéket
+// Segéd: progress generátor
+function mkProg(checkFn, progFn){
+  return { check: checkFn, progress: progFn };
+}
 const BONUS_MISSIONS = [
-  // EREDETI 70
-  { id:'letters10', text:'Szabadíts fel 10 betűt', icon:'🔓', check: s => s.lettersFreed >= 10,
-    progress: s => ({ current: Math.min(s.lettersFreed, 10), target: 10 }) },
-  { id:'letters18', text:'Szabadíts fel 18 betűt', icon:'🔓', check: s => s.lettersFreed >= 18,
-    progress: s => ({ current: Math.min(s.lettersFreed, 18), target: 18 }) },
-  { id:'letters25', text:'Szabadíts fel 25 betűt', icon:'🔓', check: s => s.lettersFreed >= 25,
-    progress: s => ({ current: Math.min(s.lettersFreed, 25), target: 25 }) },
-  { id:'word5', text:'Készíts egy 5 betűs szót', icon:'📝', check: s => s.longestWord >= 5,
-    progress: s => ({ current: Math.min(s.longestWord, 5), target: 5 }) },
-  { id:'word6', text:'Készíts egy 6 betűs szót', icon:'📝', check: s => s.longestWord >= 6,
-    progress: s => ({ current: Math.min(s.longestWord, 6), target: 6 }) },
-  { id:'word7', text:'Készíts egy 7 betűs szót', icon:'📝', check: s => s.longestWord >= 7,
-    progress: s => ({ current: Math.min(s.longestWord, 7), target: 7 }) },
-  { id:'startA', text:'Készíts "A"-val kezdődő szót', icon:'🅰️', check: s => (s.words||[]).some(w => w[0] === 'A'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'A') ? 1 : 0, target: 1 }) },
-  { id:'containE', text:'Készíts "E"-t tartalmazó szót', icon:'🇪', check: s => (s.words||[]).some(w => w.includes('E')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('E')) ? 1 : 0, target: 1 }) },
-  { id:'containK', text:'Készíts "K"-t tartalmazó szót', icon:'🅺', check: s => (s.words||[]).some(w => w.includes('K')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('K')) ? 1 : 0, target: 1 }) },
-  { id:'score800', text:'Szerezz 800 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 800,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 800), target: 800 }) },
-  { id:'score1500', text:'Szerezz 1500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 1500,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 1500), target: 1500 }) },
-  { id:'bigMatch5', text:'Robbants fel 5+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 5,
-    progress: s => ({ current: Math.min(s.biggestMatch, 5), target: 5 }) },
-  { id:'bigMatch7', text:'Robbants fel 7+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 7,
-    progress: s => ({ current: Math.min(s.biggestMatch, 7), target: 7 }) },
-  { id:'bigMatch10', text:'Robbants fel 10+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 10,
-    progress: s => ({ current: Math.min(s.biggestMatch, 10), target: 10 }) },
-  { id:'perfect3', text:'Készíts 3 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 3,
-    progress: s => ({ current: Math.min(s.perfectStreak, 3), target: 3 }) },
-  { id:'perfect5', text:'Készíts 5 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 5,
-    progress: s => ({ current: Math.min(s.perfectStreak, 5), target: 5 }) },
-  { id:'long3', text:'Készíts 3 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 3,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length >= 4).length, 3), target: 3 }) },
-  { id:'lettersSame', text:'Szabadíts fel 3 ugyanolyan betűt', icon:'🔤', check: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      return Object.values(cnt).some(v => v >= 3);
-    },
-    progress: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      const max = Math.max(0, ...Object.values(cnt));
-      return { current: Math.min(max, 3), target: 3 };
-    }},
-  { id:'noFail', text:'Fejezd be a kört hiba nélkül', icon:'🏆', check: s => (s.invalidAttempts||0) === 0 && (s.words||[]).length >= 3,
-    progress: s => {
-      const ok = (s.invalidAttempts||0) === 0 && (s.words||[]).length >= 3;
-      return { current: ok ? 1 : 0, target: 1 };
-    }},
-  { id:'doubleHit', text:'Robbants fel 6+ csempét 2x', icon:'⚡', check: s => (s.bigMatches||[]).filter(m => m >= 6).length >= 2,
-    progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m => m >= 6).length, 2), target: 2 }) },
-  { id:'word8', text:'Készíts egy 8 betűs szót', icon:'📝', check: s => s.longestWord >= 8,
-    progress: s => ({ current: Math.min(s.longestWord, 8), target: 8 }) },
-  { id:'containO', text:'Készíts "O"-t tartalmazó szót', icon:'🅾️', check: s => (s.words||[]).some(w => w.includes('O')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('O')) ? 1 : 0, target: 1 }) },
-  { id:'containT', text:'Készíts "T"-t tartalmazó szót', icon:'🆃', check: s => (s.words||[]).some(w => w.includes('T')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('T')) ? 1 : 0, target: 1 }) },
-  { id:'containR', text:'Készíts "R"-t tartalmazó szót', icon:'🆁', check: s => (s.words||[]).some(w => w.includes('R')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('R')) ? 1 : 0, target: 1 }) },
-  { id:'containS', text:'Készíts "S"-t tartalmazó szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('S')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('S')) ? 1 : 0, target: 1 }) },
-  { id:'containL', text:'Készíts "L"-t tartalmazó szót', icon:'🅻', check: s => (s.words||[]).some(w => w.includes('L')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('L')) ? 1 : 0, target: 1 }) },
-  { id:'containM', text:'Készíts "M"-t tartalmazó szót', icon:'🅼', check: s => (s.words||[]).some(w => w.includes('M')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('M')) ? 1 : 0, target: 1 }) },
-  { id:'containN', text:'Készíts "N"-t tartalmazó szót', icon:'🅽', check: s => (s.words||[]).some(w => w.includes('N')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('N')) ? 1 : 0, target: 1 }) },
-  { id:'containV', text:'Készíts "V"-t tartalmazó szót', icon:'🆅', check: s => (s.words||[]).some(w => w.includes('V')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('V')) ? 1 : 0, target: 1 }) },
-  { id:'containZ', text:'Készíts "Z"-t tartalmazó szót', icon:'🆉', check: s => (s.words||[]).some(w => w.includes('Z')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('Z')) ? 1 : 0, target: 1 }) },
-  { id:'containÁ', text:'Készíts "Á"-t tartalmazó szót', icon:'🇦', check: s => (s.words||[]).some(w => w.includes('Á')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('Á')) ? 1 : 0, target: 1 }) },
-  { id:'containÉ', text:'Készíts "É"-t tartalmazó szót', icon:'🇪', check: s => (s.words||[]).some(w => w.includes('É')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('É')) ? 1 : 0, target: 1 }) },
-  { id:'containÍ', text:'Készíts "Í"-t tartalmazó szót', icon:'🇮', check: s => (s.words||[]).some(w => w.includes('Í')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('Í')) ? 1 : 0, target: 1 }) },
-  { id:'containÓ', text:'Készíts "Ó"-t tartalmazó szót', icon:'🇴', check: s => (s.words||[]).some(w => w.includes('Ó')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('Ó')) ? 1 : 0, target: 1 }) },
-  { id:'containÚ', text:'Készíts "Ú"-t tartalmazó szót', icon:'🇺', check: s => (s.words||[]).some(w => w.includes('Ú')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('Ú')) ? 1 : 0, target: 1 }) },
-  { id:'endsA', text:'Készíts "A"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('A')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('A')) ? 1 : 0, target: 1 }) },
-  { id:'endsE', text:'Készíts "E"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('E')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('E')) ? 1 : 0, target: 1 }) },
-  { id:'endsK', text:'Készíts "K"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('K')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('K')) ? 1 : 0, target: 1 }) },
-  { id:'endsT', text:'Készíts "T"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('T')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('T')) ? 1 : 0, target: 1 }) },
-  { id:'endsR', text:'Készíts "R"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('R')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('R')) ? 1 : 0, target: 1 }) },
-  { id:'endsN', text:'Készíts "N"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('N')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('N')) ? 1 : 0, target: 1 }) },
-  { id:'endsM', text:'Készíts "M"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('M')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('M')) ? 1 : 0, target: 1 }) },
-  { id:'endsS', text:'Készíts "S"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('S')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('S')) ? 1 : 0, target: 1 }) },
-  { id:'startK', text:'Készíts "K"-val kezdődő szót', icon:'🅺', check: s => (s.words||[]).some(w => w[0] === 'K'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'K') ? 1 : 0, target: 1 }) },
-  { id:'startM', text:'Készíts "M"-mel kezdődő szót', icon:'🅼', check: s => (s.words||[]).some(w => w[0] === 'M'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'M') ? 1 : 0, target: 1 }) },
-  { id:'startT', text:'Készíts "T"-vel kezdődő szót', icon:'🆃', check: s => (s.words||[]).some(w => w[0] === 'T'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'T') ? 1 : 0, target: 1 }) },
-  { id:'startS', text:'Készíts "S"-sel kezdődő szót', icon:'🆂', check: s => (s.words||[]).some(w => w[0] === 'S'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'S') ? 1 : 0, target: 1 }) },
-  { id:'startV', text:'Készíts "V"-vel kezdődő szót', icon:'🆅', check: s => (s.words||[]).some(w => w[0] === 'V'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'V') ? 1 : 0, target: 1 }) },
-  { id:'startB', text:'Készíts "B"-vel kezdődő szót', icon:'🅱️', check: s => (s.words||[]).some(w => w[0] === 'B'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'B') ? 1 : 0, target: 1 }) },
-  { id:'startP', text:'Készíts "P"-vel kezdődő szót', icon:'🅿️', check: s => (s.words||[]).some(w => w[0] === 'P'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'P') ? 1 : 0, target: 1 }) },
-  { id:'startF', text:'Készíts "F"-fel kezdődő szót', icon:'🅵', check: s => (s.words||[]).some(w => w[0] === 'F'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'F') ? 1 : 0, target: 1 }) },
-  { id:'word4x3', text:'Készíts 3 db 4 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 4).length >= 3,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length === 4).length, 3), target: 3 }) },
-  { id:'word5x2', text:'Készíts 2 db 5 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 5).length >= 2,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length === 5).length, 2), target: 2 }) },
-  { id:'word6x2', text:'Készíts 2 db 6 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 6).length >= 2,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length === 6).length, 2), target: 2 }) },
-  { id:'word7x2', text:'Készíts 2 db 7 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 7).length >= 2,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length === 7).length, 2), target: 2 }) },
-  { id:'word9', text:'Készíts egy 9 betűs szót', icon:'📝', check: s => s.longestWord >= 9,
-    progress: s => ({ current: Math.min(s.longestWord, 9), target: 9 }) },
-  { id:'word10', text:'Készíts egy 10 betűs szót', icon:'📝', check: s => s.longestWord >= 10,
-    progress: s => ({ current: Math.min(s.longestWord, 10), target: 10 }) },
-  { id:'score500', text:'Szerezz 500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 500,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 500), target: 500 }) },
-  { id:'score2500', text:'Szerezz 2500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 2500,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 2500), target: 2500 }) },
-  { id:'score4000', text:'Szerezz 4000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 4000,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 4000), target: 4000 }) },
-  { id:'score6000', text:'Szerezz 6000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 6000,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 6000), target: 6000 }) },
-  { id:'bigMatch4', text:'Robbants fel 4+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 4,
-    progress: s => ({ current: Math.min(s.biggestMatch, 4), target: 4 }) },
-  { id:'bigMatch6', text:'Robbants fel 6+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 6,
-    progress: s => ({ current: Math.min(s.biggestMatch, 6), target: 6 }) },
-  { id:'bigMatch8', text:'Robbants fel 8+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 8,
-    progress: s => ({ current: Math.min(s.biggestMatch, 8), target: 8 }) },
-  { id:'bigMatch12', text:'Robbants fel 12+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 12,
-    progress: s => ({ current: Math.min(s.biggestMatch, 12), target: 12 }) },
-  { id:'bigMatch3x', text:'Robbants fel 3x 5+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 5).length >= 3,
-    progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m => m >= 5).length, 3), target: 3 }) },
-  { id:'bigMatch5x', text:'Robbants fel 5x 4+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 4).length >= 5,
-    progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m => m >= 4).length, 5), target: 5 }) },
-  { id:'letters15', text:'Szabadíts fel 15 betűt', icon:'🔓', check: s => s.lettersFreed >= 15,
-    progress: s => ({ current: Math.min(s.lettersFreed, 15), target: 15 }) },
-  { id:'letters20', text:'Szabadíts fel 20 betűt', icon:'🔓', check: s => s.lettersFreed >= 20,
-    progress: s => ({ current: Math.min(s.lettersFreed, 20), target: 20 }) },
-  { id:'letters30', text:'Szabadíts fel 30 betűt', icon:'🔓', check: s => s.lettersFreed >= 30,
-    progress: s => ({ current: Math.min(s.lettersFreed, 30), target: 30 }) },
-  { id:'letters35', text:'Szabadíts fel 35 betűt', icon:'🔓', check: s => s.lettersFreed >= 35,
-    progress: s => ({ current: Math.min(s.lettersFreed, 35), target: 35 }) },
-  { id:'letters4same', text:'Szabadíts fel 4 ugyanolyan betűt', icon:'🔤', check: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      return Object.values(cnt).some(v => v >= 4);
-    },
-    progress: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      const max = Math.max(0, ...Object.values(cnt));
-      return { current: Math.min(max, 4), target: 4 };
-    }},
-  { id:'letters5same', text:'Szabadíts fel 5 ugyanolyan betűt', icon:'🔤', check: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      return Object.values(cnt).some(v => v >= 5);
-    },
-    progress: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      const max = Math.max(0, ...Object.values(cnt));
-      return { current: Math.min(max, 5), target: 5 };
-    }},
-  // 50 ÚJ
-  { id:'startÖ', text:'Készíts "Ö"-vel kezdődő szót', icon:'🅾️', check: s => (s.words||[]).some(w => w[0] === 'Ö'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'Ö') ? 1 : 0, target: 1 }) },
-  { id:'startÜ', text:'Készíts "Ü"-vel kezdődő szót', icon:'🇺', check: s => (s.words||[]).some(w => w[0] === 'Ü'),
-    progress: s => ({ current: (s.words||[]).some(w => w[0] === 'Ü') ? 1 : 0, target: 1 }) },
-  { id:'startGY', text:'Készíts "GY"-vel kezdődő szót', icon:'🅶', check: s => (s.words||[]).some(w => w.startsWith('GY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.startsWith('GY')) ? 1 : 0, target: 1 }) },
-  { id:'startSZ', text:'Készíts "SZ"-zel kezdődő szót', icon:'🆂', check: s => (s.words||[]).some(w => w.startsWith('SZ')),
-    progress: s => ({ current: (s.words||[]).some(w => w.startsWith('SZ')) ? 1 : 0, target: 1 }) },
-  { id:'startCS', text:'Készíts "CS"-vel kezdődő szót', icon:'🅲', check: s => (s.words||[]).some(w => w.startsWith('CS')),
-    progress: s => ({ current: (s.words||[]).some(w => w.startsWith('CS')) ? 1 : 0, target: 1 }) },
-  { id:'containGY', text:'Készíts "GY"-t tartalmazó szót', icon:'🅶', check: s => (s.words||[]).some(w => w.includes('GY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('GY')) ? 1 : 0, target: 1 }) },
-  { id:'containSZ', text:'Készíts "SZ"-t tartalmazó szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('SZ')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('SZ')) ? 1 : 0, target: 1 }) },
-  { id:'containCS', text:'Készíts "CS"-t tartalmazó szót', icon:'🅲', check: s => (s.words||[]).some(w => w.includes('CS')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('CS')) ? 1 : 0, target: 1 }) },
-  { id:'containNY', text:'Készíts "NY"-t tartalmazó szót', icon:'🅽', check: s => (s.words||[]).some(w => w.includes('NY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('NY')) ? 1 : 0, target: 1 }) },
-  { id:'containLY', text:'Készíts "LY"-t tartalmazó szót', icon:'🅻', check: s => (s.words||[]).some(w => w.includes('LY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('LY')) ? 1 : 0, target: 1 }) },
-  { id:'containZS', text:'Készíts "ZS"-t tartalmazó szót', icon:'🆉', check: s => (s.words||[]).some(w => w.includes('ZS')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('ZS')) ? 1 : 0, target: 1 }) },
-  { id:'endsGY', text:'Készíts "GY"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('GY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('GY')) ? 1 : 0, target: 1 }) },
-  { id:'endsSZ', text:'Készíts "SZ"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('SZ')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('SZ')) ? 1 : 0, target: 1 }) },
-  { id:'endsNY', text:'Készíts "NY"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('NY')),
-    progress: s => ({ current: (s.words||[]).some(w => w.endsWith('NY')) ? 1 : 0, target: 1 }) },
-  { id:'doubleLetter', text:'Készíts dupla betűs szót (pl. LL)', icon:'🔁', check: s => (s.words||[]).some(w => /(.)\1/.test(w)),
-    progress: s => ({ current: (s.words||[]).some(w => /(.)\1/.test(w)) ? 1 : 0, target: 1 }) },
-  { id:'doubleAA', text:'Készíts "AA"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('AA')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('AA')) ? 1 : 0, target: 1 }) },
-  { id:'doubleEE', text:'Készíts "EE"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('EE')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('EE')) ? 1 : 0, target: 1 }) },
-  { id:'doubleLL', text:'Készíts "LL"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('LL')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('LL')) ? 1 : 0, target: 1 }) },
-  { id:'doubleTT', text:'Készíts "TT"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('TT')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('TT')) ? 1 : 0, target: 1 }) },
-  { id:'doubleSS', text:'Készíts "SS"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('SS')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('SS')) ? 1 : 0, target: 1 }) },
-  { id:'vowels3', text:'Készíts szót 3 magánhangzóval', icon:'🅰️', check: s => {
-      return (s.words||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 3);
-    },
-    progress: s => {
-      const max = Math.max(0, ...(s.words||[]).map(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length));
-      return { current: Math.min(max, 3), target: 3 };
-    }},
-  { id:'vowels4', text:'Készíts szót 4 magánhangzóval', icon:'🅰️', check: s => {
-      return (s.words||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 4);
-    },
-    progress: s => {
-      const max = Math.max(0, ...(s.words||[]).map(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length));
-      return { current: Math.min(max, 4), target: 4 };
-    }},
-  { id:'onlyVowels', text:'Készíts 3 magánhangzós szót', icon:'🅴', check: s => {
-      return (s.words||[]).some(w => w.length === 3 && /^[AÁEÉIÍOÓÖŐUÚÜŰ]+$/.test(w));
-    },
-    progress: s => ({ current: (s.words||[]).some(w => w.length === 3 && /^[AÁEÉIÍOÓÖŐUÚÜŰ]+$/.test(w)) ? 1 : 0, target: 1 }) },
-  { id:'consonants4', text:'Készíts szót 4 mássalhangzóval', icon:'🅲', check: s => {
-      return (s.words||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 4);
-    },
-    progress: s => {
-      const max = Math.max(0, ...(s.words||[]).map(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length));
-      return { current: Math.min(max, 4), target: 4 };
-    }},
-  { id:'consonants5', text:'Készíts szót 5 mássalhangzóval', icon:'🅲', check: s => {
-      return (s.words||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 5);
-    },
-    progress: s => {
-      const max = Math.max(0, ...(s.words||[]).map(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length));
-      return { current: Math.min(max, 5), target: 5 };
-    }},
-  { id:'wordKM', text:'Készíts "K"-val és "M"-mel szót', icon:'🅺', check: s => (s.words||[]).some(w => w.includes('K') && w.includes('M')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('K') && w.includes('M')) ? 1 : 0, target: 1 }) },
-  { id:'wordTR', text:'Készíts "T"-vel és "R"-rel szót', icon:'🆃', check: s => (s.words||[]).some(w => w.includes('T') && w.includes('R')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('T') && w.includes('R')) ? 1 : 0, target: 1 }) },
-  { id:'wordSL', text:'Készíts "S"-sel és "L"-lel szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('S') && w.includes('L')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('S') && w.includes('L')) ? 1 : 0, target: 1 }) },
-  { id:'wordVN', text:'Készíts "V"-vel és "N"-nel szót', icon:'🆅', check: s => (s.words||[]).some(w => w.includes('V') && w.includes('N')),
-    progress: s => ({ current: (s.words||[]).some(w => w.includes('V') && w.includes('N')) ? 1 : 0, target: 1 }) },
+  // === EREDETI 120 ===
+  { id:'letters10', text:'Szabadíts fel 10 betűt', icon:'🔓', check: s => s.lettersFreed >= 10, progress: s => ({ current: Math.min(s.lettersFreed, 10), target: 10 }) },
+  { id:'letters18', text:'Szabadíts fel 18 betűt', icon:'🔓', check: s => s.lettersFreed >= 18, progress: s => ({ current: Math.min(s.lettersFreed, 18), target: 18 }) },
+  { id:'letters25', text:'Szabadíts fel 25 betűt', icon:'🔓', check: s => s.lettersFreed >= 25, progress: s => ({ current: Math.min(s.lettersFreed, 25), target: 25 }) },
+  { id:'word5', text:'Készíts egy 5 betűs szót', icon:'📝', check: s => s.longestWord >= 5, progress: s => ({ current: Math.min(s.longestWord, 5), target: 5 }) },
+  { id:'word6', text:'Készíts egy 6 betűs szót', icon:'📝', check: s => s.longestWord >= 6, progress: s => ({ current: Math.min(s.longestWord, 6), target: 6 }) },
+  { id:'word7', text:'Készíts egy 7 betűs szót', icon:'📝', check: s => s.longestWord >= 7, progress: s => ({ current: Math.min(s.longestWord, 7), target: 7 }) },
+  { id:'startA', text:'Készíts "A"-val kezdődő szót', icon:'🅰️', check: s => (s.words||[]).some(w => w[0] === 'A'), progress: s => ({ current: (s.words||[]).some(w => w[0] === 'A') ? 1 : 0, target: 1 }) },
+  { id:'containE', text:'Készíts "E"-t tartalmazó szót', icon:'🇪', check: s => (s.words||[]).some(w => w.includes('E')), progress: s => ({ current: (s.words||[]).some(w => w.includes('E')) ? 1 : 0, target: 1 }) },
+  { id:'containK', text:'Készíts "K"-t tartalmazó szót', icon:'🅺', check: s => (s.words||[]).some(w => w.includes('K')), progress: s => ({ current: (s.words||[]).some(w => w.includes('K')) ? 1 : 0, target: 1 }) },
+  { id:'score800', text:'Szerezz 800 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 800, progress: s => ({ current: Math.min(s.pointsThisLevel, 800), target: 800 }) },
+  { id:'score1500', text:'Szerezz 1500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 1500, progress: s => ({ current: Math.min(s.pointsThisLevel, 1500), target: 1500 }) },
+  { id:'bigMatch5', text:'Robbants fel 5+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 5, progress: s => ({ current: Math.min(s.biggestMatch, 5), target: 5 }) },
+  { id:'bigMatch7', text:'Robbants fel 7+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 7, progress: s => ({ current: Math.min(s.biggestMatch, 7), target: 7 }) },
+  { id:'bigMatch10', text:'Robbants fel 10+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 10, progress: s => ({ current: Math.min(s.biggestMatch, 10), target: 10 }) },
+  { id:'perfect3', text:'Készíts 3 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 3, progress: s => ({ current: Math.min(s.perfectStreak, 3), target: 3 }) },
+  { id:'perfect5', text:'Készíts 5 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 5, progress: s => ({ current: Math.min(s.perfectStreak, 5), target: 5 }) },
+  { id:'long3', text:'Készíts 3 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 3, progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length >= 4).length, 3), target: 3 }) },
+  { id:'lettersSame', text:'Szabadíts fel 3 ugyanolyan betűt', icon:'🔤', check: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return Object.values(c).some(v=>v>=3); }, progress: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return { current: Math.min(Math.max(0,...Object.values(c)), 3), target: 3 }; } },
+  { id:'noFail', text:'Fejezd be a kört hiba nélkül', icon:'🏆', check: s => (s.invalidAttempts||0) === 0 && (s.words||[]).length >= 3, progress: s => ({ current: ((s.invalidAttempts||0)===0 && (s.words||[]).length>=3)?1:0, target: 1 }) },
+  { id:'doubleHit', text:'Robbants fel 6+ csempét 2x', icon:'⚡', check: s => (s.bigMatches||[]).filter(m => m >= 6).length >= 2, progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m=>m>=6).length, 2), target: 2 }) },
+  { id:'word8', text:'Készíts egy 8 betűs szót', icon:'📝', check: s => s.longestWord >= 8, progress: s => ({ current: Math.min(s.longestWord, 8), target: 8 }) },
+  { id:'containO', text:'Készíts "O"-t tartalmazó szót', icon:'🅾️', check: s => (s.words||[]).some(w => w.includes('O')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('O'))?1:0, target: 1 }) },
+  { id:'containT', text:'Készíts "T"-t tartalmazó szót', icon:'🆃', check: s => (s.words||[]).some(w => w.includes('T')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('T'))?1:0, target: 1 }) },
+  { id:'containR', text:'Készíts "R"-t tartalmazó szót', icon:'🆁', check: s => (s.words||[]).some(w => w.includes('R')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('R'))?1:0, target: 1 }) },
+  { id:'containS', text:'Készíts "S"-t tartalmazó szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('S')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('S'))?1:0, target: 1 }) },
+  { id:'containL', text:'Készíts "L"-t tartalmazó szót', icon:'🅻', check: s => (s.words||[]).some(w => w.includes('L')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('L'))?1:0, target: 1 }) },
+  { id:'containM', text:'Készíts "M"-t tartalmazó szót', icon:'🅼', check: s => (s.words||[]).some(w => w.includes('M')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('M'))?1:0, target: 1 }) },
+  { id:'containN', text:'Készíts "N"-t tartalmazó szót', icon:'🅽', check: s => (s.words||[]).some(w => w.includes('N')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('N'))?1:0, target: 1 }) },
+  { id:'containV', text:'Készíts "V"-t tartalmazó szót', icon:'🆅', check: s => (s.words||[]).some(w => w.includes('V')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('V'))?1:0, target: 1 }) },
+  { id:'containZ', text:'Készíts "Z"-t tartalmazó szót', icon:'🆉', check: s => (s.words||[]).some(w => w.includes('Z')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Z'))?1:0, target: 1 }) },
+  { id:'containÁ', text:'Készíts "Á"-t tartalmazó szót', icon:'🇦', check: s => (s.words||[]).some(w => w.includes('Á')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Á'))?1:0, target: 1 }) },
+  { id:'containÉ', text:'Készíts "É"-t tartalmazó szót', icon:'🇪', check: s => (s.words||[]).some(w => w.includes('É')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('É'))?1:0, target: 1 }) },
+  { id:'containÍ', text:'Készíts "Í"-t tartalmazó szót', icon:'🇮', check: s => (s.words||[]).some(w => w.includes('Í')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Í'))?1:0, target: 1 }) },
+  { id:'containÓ', text:'Készíts "Ó"-t tartalmazó szót', icon:'🇴', check: s => (s.words||[]).some(w => w.includes('Ó')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ó'))?1:0, target: 1 }) },
+  { id:'containÚ', text:'Készíts "Ú"-t tartalmazó szót', icon:'🇺', check: s => (s.words||[]).some(w => w.includes('Ú')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ú'))?1:0, target: 1 }) },
+  { id:'endsA', text:'Készíts "A"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('A')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('A'))?1:0, target: 1 }) },
+  { id:'endsE', text:'Készíts "E"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('E')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('E'))?1:0, target: 1 }) },
+  { id:'endsK', text:'Készíts "K"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('K')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('K'))?1:0, target: 1 }) },
+  { id:'endsT', text:'Készíts "T"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('T')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('T'))?1:0, target: 1 }) },
+  { id:'endsR', text:'Készíts "R"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('R')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('R'))?1:0, target: 1 }) },
+  { id:'endsN', text:'Készíts "N"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('N')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('N'))?1:0, target: 1 }) },
+  { id:'endsM', text:'Készíts "M"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('M')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('M'))?1:0, target: 1 }) },
+  { id:'endsS', text:'Készíts "S"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('S')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('S'))?1:0, target: 1 }) },
+  { id:'startK', text:'Készíts "K"-val kezdődő szót', icon:'🅺', check: s => (s.words||[]).some(w => w[0] === 'K'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='K')?1:0, target: 1 }) },
+  { id:'startM', text:'Készíts "M"-mel kezdődő szót', icon:'🅼', check: s => (s.words||[]).some(w => w[0] === 'M'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='M')?1:0, target: 1 }) },
+  { id:'startT', text:'Készíts "T"-vel kezdődő szót', icon:'🆃', check: s => (s.words||[]).some(w => w[0] === 'T'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='T')?1:0, target: 1 }) },
+  { id:'startS', text:'Készíts "S"-sel kezdődő szót', icon:'🆂', check: s => (s.words||[]).some(w => w[0] === 'S'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='S')?1:0, target: 1 }) },
+  { id:'startV', text:'Készíts "V"-vel kezdődő szót', icon:'🆅', check: s => (s.words||[]).some(w => w[0] === 'V'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='V')?1:0, target: 1 }) },
+  { id:'startB', text:'Készíts "B"-vel kezdődő szót', icon:'🅱️', check: s => (s.words||[]).some(w => w[0] === 'B'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='B')?1:0, target: 1 }) },
+  { id:'startP', text:'Készíts "P"-vel kezdődő szót', icon:'🅿️', check: s => (s.words||[]).some(w => w[0] === 'P'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='P')?1:0, target: 1 }) },
+  { id:'startF', text:'Készíts "F"-fel kezdődő szót', icon:'🅵', check: s => (s.words||[]).some(w => w[0] === 'F'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='F')?1:0, target: 1 }) },
+  { id:'word4x3', text:'Készíts 3 db 4 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 4).length >= 3, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length===4).length, 3), target: 3 }) },
+  { id:'word5x2', text:'Készíts 2 db 5 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 5).length >= 2, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length===5).length, 2), target: 2 }) },
+  { id:'word6x2', text:'Készíts 2 db 6 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 6).length >= 2, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length===6).length, 2), target: 2 }) },
+  { id:'word7x2', text:'Készíts 2 db 7 betűs szót', icon:'📏', check: s => (s.words||[]).filter(w => w.length === 7).length >= 2, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length===7).length, 2), target: 2 }) },
+  { id:'word9', text:'Készíts egy 9 betűs szót', icon:'📝', check: s => s.longestWord >= 9, progress: s => ({ current: Math.min(s.longestWord, 9), target: 9 }) },
+  { id:'word10', text:'Készíts egy 10 betűs szót', icon:'📝', check: s => s.longestWord >= 10, progress: s => ({ current: Math.min(s.longestWord, 10), target: 10 }) },
+  { id:'score500', text:'Szerezz 500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 500, progress: s => ({ current: Math.min(s.pointsThisLevel, 500), target: 500 }) },
+  { id:'score2500', text:'Szerezz 2500 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 2500, progress: s => ({ current: Math.min(s.pointsThisLevel, 2500), target: 2500 }) },
+  { id:'score4000', text:'Szerezz 4000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 4000, progress: s => ({ current: Math.min(s.pointsThisLevel, 4000), target: 4000 }) },
+  { id:'score6000', text:'Szerezz 6000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 6000, progress: s => ({ current: Math.min(s.pointsThisLevel, 6000), target: 6000 }) },
+  { id:'bigMatch4', text:'Robbants fel 4+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 4, progress: s => ({ current: Math.min(s.biggestMatch, 4), target: 4 }) },
+  { id:'bigMatch6', text:'Robbants fel 6+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 6, progress: s => ({ current: Math.min(s.biggestMatch, 6), target: 6 }) },
+  { id:'bigMatch8', text:'Robbants fel 8+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 8, progress: s => ({ current: Math.min(s.biggestMatch, 8), target: 8 }) },
+  { id:'bigMatch12', text:'Robbants fel 12+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 12, progress: s => ({ current: Math.min(s.biggestMatch, 12), target: 12 }) },
+  { id:'bigMatch3x', text:'Robbants fel 3x 5+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 5).length >= 3, progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m=>m>=5).length, 3), target: 3 }) },
+  { id:'bigMatch5x', text:'Robbants fel 5x 4+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 4).length >= 5, progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m=>m>=4).length, 5), target: 5 }) },
+  { id:'letters15', text:'Szabadíts fel 15 betűt', icon:'🔓', check: s => s.lettersFreed >= 15, progress: s => ({ current: Math.min(s.lettersFreed, 15), target: 15 }) },
+  { id:'letters20', text:'Szabadíts fel 20 betűt', icon:'🔓', check: s => s.lettersFreed >= 20, progress: s => ({ current: Math.min(s.lettersFreed, 20), target: 20 }) },
+  { id:'letters30', text:'Szabadíts fel 30 betűt', icon:'🔓', check: s => s.lettersFreed >= 30, progress: s => ({ current: Math.min(s.lettersFreed, 30), target: 30 }) },
+  { id:'letters35', text:'Szabadíts fel 35 betűt', icon:'🔓', check: s => s.lettersFreed >= 35, progress: s => ({ current: Math.min(s.lettersFreed, 35), target: 35 }) },
+  { id:'letters4same', text:'Szabadíts fel 4 ugyanolyan betűt', icon:'🔤', check: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return Object.values(c).some(v=>v>=4); }, progress: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return { current: Math.min(Math.max(0,...Object.values(c)), 4), target: 4 }; } },
+  { id:'letters5same', text:'Szabadíts fel 5 ugyanolyan betűt', icon:'🔤', check: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return Object.values(c).some(v=>v>=5); }, progress: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return { current: Math.min(Math.max(0,...Object.values(c)), 5), target: 5 }; } },
+  { id:'startÖ', text:'Készíts "Ö"-vel kezdődő szót', icon:'🅾️', check: s => (s.words||[]).some(w => w[0] === 'Ö'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ö')?1:0, target: 1 }) },
+  { id:'startÜ', text:'Készíts "Ü"-vel kezdődő szót', icon:'🇺', check: s => (s.words||[]).some(w => w[0] === 'Ü'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ü')?1:0, target: 1 }) },
+  { id:'startGY', text:'Készíts "GY"-vel kezdődő szót', icon:'🅶', check: s => (s.words||[]).some(w => w.startsWith('GY')), progress: s => ({ current: (s.words||[]).some(w=>w.startsWith('GY'))?1:0, target: 1 }) },
+  { id:'startSZ', text:'Készíts "SZ"-zel kezdődő szót', icon:'🆂', check: s => (s.words||[]).some(w => w.startsWith('SZ')), progress: s => ({ current: (s.words||[]).some(w=>w.startsWith('SZ'))?1:0, target: 1 }) },
+  { id:'startCS', text:'Készíts "CS"-vel kezdődő szót', icon:'🅲', check: s => (s.words||[]).some(w => w.startsWith('CS')), progress: s => ({ current: (s.words||[]).some(w=>w.startsWith('CS'))?1:0, target: 1 }) },
+  { id:'containGY', text:'Készíts "GY"-t tartalmazó szót', icon:'🅶', check: s => (s.words||[]).some(w => w.includes('GY')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('GY'))?1:0, target: 1 }) },
+  { id:'containSZ', text:'Készíts "SZ"-t tartalmazó szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('SZ')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('SZ'))?1:0, target: 1 }) },
+  { id:'containCS', text:'Készíts "CS"-t tartalmazó szót', icon:'🅲', check: s => (s.words||[]).some(w => w.includes('CS')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('CS'))?1:0, target: 1 }) },
+  { id:'containNY', text:'Készíts "NY"-t tartalmazó szót', icon:'🅽', check: s => (s.words||[]).some(w => w.includes('NY')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('NY'))?1:0, target: 1 }) },
+  { id:'containLY', text:'Készíts "LY"-t tartalmazó szót', icon:'🅻', check: s => (s.words||[]).some(w => w.includes('LY')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('LY'))?1:0, target: 1 }) },
+  { id:'containZS', text:'Készíts "ZS"-t tartalmazó szót', icon:'🆉', check: s => (s.words||[]).some(w => w.includes('ZS')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('ZS'))?1:0, target: 1 }) },
+  { id:'endsGY', text:'Készíts "GY"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('GY')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('GY'))?1:0, target: 1 }) },
+  { id:'endsSZ', text:'Készíts "SZ"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('SZ')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('SZ'))?1:0, target: 1 }) },
+  { id:'endsNY', text:'Készíts "NY"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('NY')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('NY'))?1:0, target: 1 }) },
+  { id:'doubleLetter', text:'Készíts dupla betűs szót (pl. LL)', icon:'🔁', check: s => (s.words||[]).some(w => /(.)\1/.test(w)), progress: s => ({ current: (s.words||[]).some(w=>/(.)\1/.test(w))?1:0, target: 1 }) },
+  { id:'doubleAA', text:'Készíts "AA"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('AA')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('AA'))?1:0, target: 1 }) },
+  { id:'doubleEE', text:'Készíts "EE"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('EE')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('EE'))?1:0, target: 1 }) },
+  { id:'doubleLL', text:'Készíts "LL"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('LL')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('LL'))?1:0, target: 1 }) },
+  { id:'doubleTT', text:'Készíts "TT"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('TT')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('TT'))?1:0, target: 1 }) },
+  { id:'doubleSS', text:'Készíts "SS"-t tartalmazó szót', icon:'🔁', check: s => (s.words||[]).some(w => w.includes('SS')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('SS'))?1:0, target: 1 }) },
+  { id:'vowels3', text:'Készíts szót 3 magánhangzóval', icon:'🅰️', check: s => (s.words||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 3), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>(w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length)), 3), target: 3 }) },
+  { id:'vowels4', text:'Készíts szót 4 magánhangzóval', icon:'🅰️', check: s => (s.words||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 4), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>(w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length)), 4), target: 4 }) },
+  { id:'onlyVowels', text:'Készíts 3 magánhangzós szót', icon:'🅴', check: s => (s.words||[]).some(w => w.length === 3 && /^[AÁEÉIÍOÓÖŐUÚÜŰ]+$/.test(w)), progress: s => ({ current: (s.words||[]).some(w=>w.length===3 && /^[AÁEÉIÍOÓÖŐUÚÜŰ]+$/.test(w))?1:0, target: 1 }) },
+  { id:'consonants4', text:'Készíts szót 4 mássalhangzóval', icon:'🅲', check: s => (s.words||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 4), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>(w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length)), 4), target: 4 }) },
+  { id:'consonants5', text:'Készíts szót 5 mássalhangzóval', icon:'🅲', check: s => (s.words||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 5), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>(w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length)), 5), target: 5 }) },
+  { id:'wordKM', text:'Készíts "K"-val és "M"-mel szót', icon:'🅺', check: s => (s.words||[]).some(w => w.includes('K') && w.includes('M')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('K') && w.includes('M'))?1:0, target: 1 }) },
+  { id:'wordTR', text:'Készíts "T"-vel és "R"-rel szót', icon:'🆃', check: s => (s.words||[]).some(w => w.includes('T') && w.includes('R')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('T') && w.includes('R'))?1:0, target: 1 }) },
+  { id:'wordSL', text:'Készíts "S"-sel és "L"-lel szót', icon:'🆂', check: s => (s.words||[]).some(w => w.includes('S') && w.includes('L')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('S') && w.includes('L'))?1:0, target: 1 }) },
+  { id:'wordVN', text:'Készíts "V"-vel és "N"-nel szót', icon:'🆅', check: s => (s.words||[]).some(w => w.includes('V') && w.includes('N')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('V') && w.includes('N'))?1:0, target: 1 }) },
   { id:'word3vowels2cons', text:'Készíts 3 magánhangzós, 2 mássalhangzós szót', icon:'🔤',
-    check: s => (s.words||[]).some(w => {
-      const v = (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length;
-      const c = (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length;
-      return v >= 3 && c >= 2;
-    }),
-    progress: s => ({ current: (s.words||[]).some(w => {
-      const v = (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length;
-      const c = (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length;
-      return v >= 3 && c >= 2;
-    }) ? 1 : 0, target: 1 }) },
-  { id:'score300', text:'Szerezz 300 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 300,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 300), target: 300 }) },
-  { id:'score8000', text:'Szerezz 8000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 8000,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 8000), target: 8000 }) },
-  { id:'score10000', text:'Szerezz 10000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 10000,
-    progress: s => ({ current: Math.min(s.pointsThisLevel, 10000), target: 10000 }) },
-  { id:'avgWord5', text:'Az átlagos szavaid 5+ betűsek', icon:'📏', check: s => {
-      if((s.words||[]).length < 3) return false;
-      const avg = s.words.reduce((a,w)=>a+w.length,0)/s.words.length;
-      return avg >= 5;
-    },
-    progress: s => {
-      if((s.words||[]).length < 3) return { current: 0, target: 1 };
-      const avg = s.words.reduce((a,w)=>a+w.length,0)/s.words.length;
-      return { current: avg >= 5 ? 1 : 0, target: 1 };
-    }},
-  { id:'letters40', text:'Szabadíts fel 40 betűt', icon:'🔓', check: s => s.lettersFreed >= 40,
-    progress: s => ({ current: Math.min(s.lettersFreed, 40), target: 40 }) },
-  { id:'letters6same', text:'Szabadíts fel 6 ugyanolyan betűt', icon:'🔤', check: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      return Object.values(cnt).some(v => v >= 6);
-    },
-    progress: s => {
-      const cnt = {}; (s.freedLetters||[]).forEach(l => cnt[l] = (cnt[l]||0)+1);
-      const max = Math.max(0, ...Object.values(cnt));
-      return { current: Math.min(max, 6), target: 6 };
-    }},
-  { id:'vowelHeavy', text:'Szabadíts fel 8 magánhangzót', icon:'🅰️', check: s => {
-      return (s.freedLetters||[]).filter(l => 'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length >= 8;
-    },
-    progress: s => ({ current: Math.min((s.freedLetters||[]).filter(l => 'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length, 8), target: 8 }) },
-  { id:'consonantHeavy', text:'Szabadíts fel 12 mássalhangzót', icon:'🅲', check: s => {
-      return (s.freedLetters||[]).filter(l => !'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length >= 12;
-    },
-    progress: s => ({ current: Math.min((s.freedLetters||[]).filter(l => !'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length, 12), target: 12 }) },
-  { id:'bigMatch15', text:'Robbants fel 15+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 15,
-    progress: s => ({ current: Math.min(s.biggestMatch, 15), target: 15 }) },
-  { id:'bigMatch20', text:'Robbants fel 20+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 20,
-    progress: s => ({ current: Math.min(s.biggestMatch, 20), target: 20 }) },
-  { id:'bigMatch2x12', text:'Robbants fel 2x 12+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 12).length >= 2,
-    progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m => m >= 12).length, 2), target: 2 }) },
-  { id:'bigMatch8x3', text:'Robbants fel 8x 3+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 3).length >= 8,
-    progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m => m >= 3).length, 8), target: 8 }) },
-  { id:'mixWord', text:'Készíts 4 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 4,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length >= 4).length, 4), target: 4 }) },
-  { id:'mixWord5', text:'Készíts 5 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 5,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length >= 4).length, 5), target: 5 }) },
-  { id:'mixWord6', text:'Készíts 6 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 6,
-    progress: s => ({ current: Math.min((s.words||[]).filter(w => w.length >= 4).length, 6), target: 6 }) },
-  { id:'wordCount10', text:'Készíts összesen 10 szót', icon:'📚', check: s => (s.words||[]).length >= 10,
-    progress: s => ({ current: Math.min((s.words||[]).length, 10), target: 10 }) },
-  { id:'wordCount12', text:'Készíts összesen 12 szót', icon:'📚', check: s => (s.words||[]).length >= 12,
-    progress: s => ({ current: Math.min((s.words||[]).length, 12), target: 12 }) },
-  { id:'wordCount15', text:'Készíts összesen 15 szót', icon:'📚', check: s => (s.words||[]).length >= 15,
-    progress: s => ({ current: Math.min((s.words||[]).length, 15), target: 15 }) },
-  { id:'uniqueStarts', text:'Készíts 5 különböző kezdőbetűs szót', icon:'🎯', check: s => {
-      const starts = new Set((s.words||[]).map(w => w[0]));
-      return starts.size >= 5;
-    },
-    progress: s => {
-      const starts = new Set((s.words||[]).map(w => w[0]));
-      return { current: Math.min(starts.size, 5), target: 5 };
-    }},
-  { id:'uniqueEnds', text:'Készíts 5 különböző végződésű szót', icon:'🎯', check: s => {
-      const ends = new Set((s.words||[]).map(w => w[w.length-1]));
-      return ends.size >= 5;
-    },
-    progress: s => {
-      const ends = new Set((s.words||[]).map(w => w[w.length-1]));
-      return { current: Math.min(ends.size, 5), target: 5 };
-    }},
-  { id:'word12', text:'Készíts egy 12 betűs szót', icon:'📝', check: s => s.longestWord >= 12,
-    progress: s => ({ current: Math.min(s.longestWord, 12), target: 12 }) },
-  { id:'allVowels', text:'Készíts szót minden magánhangzóval', icon:'🌟', check: s => {
-      return (s.words||[]).some(w => ['A','E','I','O','U'].every(v => w.includes(v)));
-    },
-    progress: s => ({ current: (s.words||[]).some(w => ['A','E','I','O','U'].every(v => w.includes(v))) ? 1 : 0, target: 1 }) },
-  { id:'startEndSame', text:'Készíts szót azonos kezdő és záró betűvel', icon:'🔁', check: s => {
-      return (s.words||[]).some(w => w.length >= 3 && w[0] === w[w.length-1]);
-    },
-    progress: s => ({ current: (s.words||[]).some(w => w.length >= 3 && w[0] === w[w.length-1]) ? 1 : 0, target: 1 }) },
-  { id:'palindrome', text:'Készíts palindrom szót', icon:'🌟', check: s => {
-      return (s.words||[]).some(w => w.length >= 3 && w === w.split('').reverse().join(''));
-    },
-    progress: s => ({ current: (s.words||[]).some(w => w.length >= 3 && w === w.split('').reverse().join('')) ? 1 : 0, target: 1 }) },
-  { id:'clearPool', text:'Töröld a betűmedencét egyszer', icon:'🧹', check: s => (s.clears||0) >= 1,
-    progress: s => ({ current: Math.min(s.clears||0, 1), target: 1 }) },
-  { id:'clearPool2', text:'Töröld a betűmedencét kétszer', icon:'🧹', check: s => (s.clears||0) >= 2,
-    progress: s => ({ current: Math.min(s.clears||0, 2), target: 2 }) },
-  { id:'level5', text:'Teljesíts 5 szintet egymás után', icon:'🏆', check: s => (s.level||0) >= 5,
-    progress: s => ({ current: Math.min(s.level||0, 5), target: 5 }) },
+    check: s => (s.words||[]).some(w => { const v=(w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length; const c=(w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length; return v>=3 && c>=2; }),
+    progress: s => ({ current: (s.words||[]).some(w => { const v=(w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length; const c=(w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length; return v>=3 && c>=2; })?1:0, target: 1 }) },
+  { id:'score300', text:'Szerezz 300 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 300, progress: s => ({ current: Math.min(s.pointsThisLevel, 300), target: 300 }) },
+  { id:'score8000', text:'Szerezz 8000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 8000, progress: s => ({ current: Math.min(s.pointsThisLevel, 8000), target: 8000 }) },
+  { id:'score10000', text:'Szerezz 10000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 10000, progress: s => ({ current: Math.min(s.pointsThisLevel, 10000), target: 10000 }) },
+  { id:'avgWord5', text:'Az átlagos szavaid 5+ betűsek', icon:'📏', check: s => { if((s.words||[]).length < 3) return false; const a = s.words.reduce((a,w)=>a+w.length,0)/s.words.length; return a>=5; }, progress: s => ({ current: ((s.words||[]).length>=3 && s.words.reduce((a,w)=>a+w.length,0)/s.words.length>=5)?1:0, target: 1 }) },
+  { id:'letters40', text:'Szabadíts fel 40 betűt', icon:'🔓', check: s => s.lettersFreed >= 40, progress: s => ({ current: Math.min(s.lettersFreed, 40), target: 40 }) },
+  { id:'letters6same', text:'Szabadíts fel 6 ugyanolyan betűt', icon:'🔤', check: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return Object.values(c).some(v=>v>=6); }, progress: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return { current: Math.min(Math.max(0,...Object.values(c)), 6), target: 6 }; } },
+  { id:'vowelHeavy', text:'Szabadíts fel 8 magánhangzót', icon:'🅰️', check: s => (s.freedLetters||[]).filter(l => 'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length >= 8, progress: s => ({ current: Math.min((s.freedLetters||[]).filter(l=>'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length, 8), target: 8 }) },
+  { id:'consonantHeavy', text:'Szabadíts fel 12 mássalhangzót', icon:'🅲', check: s => (s.freedLetters||[]).filter(l => !'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length >= 12, progress: s => ({ current: Math.min((s.freedLetters||[]).filter(l=>!'AÁEÉIÍOÓÖŐUÚÜŰ'.includes(l)).length, 12), target: 12 }) },
+  { id:'bigMatch15', text:'Robbants fel 15+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 15, progress: s => ({ current: Math.min(s.biggestMatch, 15), target: 15 }) },
+  { id:'bigMatch20', text:'Robbants fel 20+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 20, progress: s => ({ current: Math.min(s.biggestMatch, 20), target: 20 }) },
+  { id:'bigMatch2x12', text:'Robbants fel 2x 12+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 12).length >= 2, progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m=>m>=12).length, 2), target: 2 }) },
+  { id:'bigMatch8x3', text:'Robbants fel 8x 3+ csempét', icon:'💥', check: s => (s.bigMatches||[]).filter(m => m >= 3).length >= 8, progress: s => ({ current: Math.min((s.bigMatches||[]).filter(m=>m>=3).length, 8), target: 8 }) },
+  { id:'mixWord', text:'Készíts 4 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 4, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length>=4).length, 4), target: 4 }) },
+  { id:'mixWord5', text:'Készíts 5 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 5, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length>=4).length, 5), target: 5 }) },
+  { id:'mixWord6', text:'Készíts 6 szót, mindegyik 4+ betűs', icon:'📚', check: s => (s.words||[]).filter(w => w.length >= 4).length >= 6, progress: s => ({ current: Math.min((s.words||[]).filter(w=>w.length>=4).length, 6), target: 6 }) },
+  { id:'wordCount10', text:'Készíts összesen 10 szót', icon:'📚', check: s => (s.words||[]).length >= 10, progress: s => ({ current: Math.min((s.words||[]).length, 10), target: 10 }) },
+  { id:'wordCount12', text:'Készíts összesen 12 szót', icon:'📚', check: s => (s.words||[]).length >= 12, progress: s => ({ current: Math.min((s.words||[]).length, 12), target: 12 }) },
+  { id:'wordCount15', text:'Készíts összesen 15 szót', icon:'📚', check: s => (s.words||[]).length >= 15, progress: s => ({ current: Math.min((s.words||[]).length, 15), target: 15 }) },
+  { id:'uniqueStarts', text:'Készíts 5 különböző kezdőbetűs szót', icon:'🎯', check: s => { const st=new Set((s.words||[]).map(w=>w[0])); return st.size>=5; }, progress: s => { const st=new Set((s.words||[]).map(w=>w[0])); return { current: Math.min(st.size, 5), target: 5 }; } },
+  { id:'uniqueEnds', text:'Készíts 5 különböző végződésű szót', icon:'🎯', check: s => { const e=new Set((s.words||[]).map(w=>w[w.length-1])); return e.size>=5; }, progress: s => { const e=new Set((s.words||[]).map(w=>w[w.length-1])); return { current: Math.min(e.size, 5), target: 5 }; } },
+  { id:'word12', text:'Készíts egy 12 betűs szót', icon:'📝', check: s => s.longestWord >= 12, progress: s => ({ current: Math.min(s.longestWord, 12), target: 12 }) },
+  { id:'allVowels', text:'Készíts szót minden magánhangzóval', icon:'🌟', check: s => (s.words||[]).some(w => ['A','E','I','O','U'].every(v => w.includes(v))), progress: s => ({ current: (s.words||[]).some(w=>['A','E','I','O','U'].every(v=>w.includes(v)))?1:0, target: 1 }) },
+  { id:'startEndSame', text:'Készíts szót azonos kezdő és záró betűvel', icon:'🔁', check: s => (s.words||[]).some(w => w.length >= 3 && w[0] === w[w.length-1]), progress: s => ({ current: (s.words||[]).some(w=>w.length>=3 && w[0]===w[w.length-1])?1:0, target: 1 }) },
+  { id:'palindrome', text:'Készíts palindrom szót', icon:'🌟', check: s => (s.words||[]).some(w => w.length >= 3 && w === w.split('').reverse().join('')), progress: s => ({ current: (s.words||[]).some(w=>w.length>=3 && w===w.split('').reverse().join(''))?1:0, target: 1 }) },
+  { id:'clearPool', text:'Töröld a betűmedencét egyszer', icon:'🧹', check: s => (s.clears||0) >= 1, progress: s => ({ current: Math.min(s.clears||0, 1), target: 1 }) },
+  { id:'clearPool2', text:'Töröld a betűmedencét kétszer', icon:'🧹', check: s => (s.clears||0) >= 2, progress: s => ({ current: Math.min(s.clears||0, 2), target: 2 }) },
+  { id:'level5', text:'Teljesíts 5 szintet egymás után', icon:'🏆', check: s => (s.level||0) >= 5, progress: s => ({ current: Math.min(s.level||0, 5), target: 5 }) },
+  { id:'startD', text:'Készíts "D"-vel kezdődő szót', icon:'🅳', check: s => (s.words||[]).some(w => w[0] === 'D'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='D')?1:0, target: 1 }) },
+  { id:'startG', text:'Készíts "G"-vel kezdődő szót', icon:'🅶', check: s => (s.words||[]).some(w => w[0] === 'G'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='G')?1:0, target: 1 }) },
+  { id:'startH', text:'Készíts "H"-val kezdődő szót', icon:'🅷', check: s => (s.words||[]).some(w => w[0] === 'H'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='H')?1:0, target: 1 }) },
+  { id:'startJ', text:'Készíts "J"-vel kezdődő szót', icon:'🅹', check: s => (s.words||[]).some(w => w[0] === 'J'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='J')?1:0, target: 1 }) },
+  { id:'startL', text:'Készíts "L"-lel kezdődő szót', icon:'🅻', check: s => (s.words||[]).some(w => w[0] === 'L'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='L')?1:0, target: 1 }) },
+  { id:'startN', text:'Készíts "N"-nel kezdődő szót', icon:'🅽', check: s => (s.words||[]).some(w => w[0] === 'N'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='N')?1:0, target: 1 }) },
+  { id:'startO', text:'Készíts "O"-val kezdődő szót', icon:'🅾️', check: s => (s.words||[]).some(w => w[0] === 'O'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='O')?1:0, target: 1 }) },
+  { id:'startR', text:'Készíts "R"-rel kezdődő szót', icon:'🆁', check: s => (s.words||[]).some(w => w[0] === 'R'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='R')?1:0, target: 1 }) },
+  { id:'startZ', text:'Készíts "Z"-vel kezdődő szót', icon:'🆉', check: s => (s.words||[]).some(w => w[0] === 'Z'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Z')?1:0, target: 1 }) },
+  { id:'startÁ', text:'Készíts "Á"-val kezdődő szót', icon:'🅰️', check: s => (s.words||[]).some(w => w[0] === 'Á'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Á')?1:0, target: 1 }) },
+  { id:'startÉ', text:'Készíts "É"-vel kezdődő szót', icon:'🇪', check: s => (s.words||[]).some(w => w[0] === 'É'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='É')?1:0, target: 1 }) },
+  { id:'startÓ', text:'Készíts "Ó"-val kezdődő szót', icon:'🇴', check: s => (s.words||[]).some(w => w[0] === 'Ó'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ó')?1:0, target: 1 }) },
+
+  // === 50 ÚJ KÜLDETÉS v11 ===
+  { id:'startÍ', text:'Készíts "Í"-vel kezdődő szót', icon:'🇮', check: s => (s.words||[]).some(w => w[0] === 'Í'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Í')?1:0, target: 1 }) },
+  { id:'startÚ', text:'Készíts "Ú"-val kezdődő szót', icon:'🇺', check: s => (s.words||[]).some(w => w[0] === 'Ú'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ú')?1:0, target: 1 }) },
+  { id:'startŐ', text:'Készíts "Ő"-vel kezdődő szót', icon:'🅾️', check: s => (s.words||[]).some(w => w[0] === 'Ő'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ő')?1:0, target: 1 }) },
+  { id:'startŰ', text:'Készíts "Ű"-vel kezdődő szót', icon:'🇺', check: s => (s.words||[]).some(w => w[0] === 'Ű'), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='Ű')?1:0, target: 1 }) },
+  { id:'containD', text:'Készíts "D"-t tartalmazó szót', icon:'🅳', check: s => (s.words||[]).some(w => w.includes('D')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('D'))?1:0, target: 1 }) },
+  { id:'containG', text:'Készíts "G"-t tartalmazó szót', icon:'🅶', check: s => (s.words||[]).some(w => w.includes('G')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('G'))?1:0, target: 1 }) },
+  { id:'containH', text:'Készíts "H"-t tartalmazó szót', icon:'🅷', check: s => (s.words||[]).some(w => w.includes('H')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('H'))?1:0, target: 1 }) },
+  { id:'containJ', text:'Készíts "J"-t tartalmazó szót', icon:'🅹', check: s => (s.words||[]).some(w => w.includes('J')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('J'))?1:0, target: 1 }) },
+  { id:'containP', text:'Készíts "P"-t tartalmazó szót', icon:'🅿️', check: s => (s.words||[]).some(w => w.includes('P')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('P'))?1:0, target: 1 }) },
+  { id:'containB', text:'Készíts "B"-t tartalmazó szót', icon:'🅱️', check: s => (s.words||[]).some(w => w.includes('B')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('B'))?1:0, target: 1 }) },
+  { id:'containF', text:'Készíts "F"-et tartalmazó szót', icon:'🅵', check: s => (s.words||[]).some(w => w.includes('F')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('F'))?1:0, target: 1 }) },
+  { id:'containC', text:'Készíts "C"-t tartalmazó szót', icon:'🅲', check: s => (s.words||[]).some(w => w.includes('C')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('C'))?1:0, target: 1 }) },
+  { id:'containÖ', text:'Készíts "Ö"-t tartalmazó szót', icon:'🅾️', check: s => (s.words||[]).some(w => w.includes('Ö')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ö'))?1:0, target: 1 }) },
+  { id:'containÜ', text:'Készíts "Ü"-t tartalmazó szót', icon:'🇺', check: s => (s.words||[]).some(w => w.includes('Ü')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ü'))?1:0, target: 1 }) },
+  { id:'containŐ', text:'Készíts "Ő"-t tartalmazó szót', icon:'🅾️', check: s => (s.words||[]).some(w => w.includes('Ő')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ő'))?1:0, target: 1 }) },
+  { id:'containŰ', text:'Készíts "Ű"-t tartalmazó szót', icon:'🇺', check: s => (s.words||[]).some(w => w.includes('Ű')), progress: s => ({ current: (s.words||[]).some(w=>w.includes('Ű'))?1:0, target: 1 }) },
+  { id:'endsÁ', text:'Készíts "Á"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('Á')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('Á'))?1:0, target: 1 }) },
+  { id:'endsÉ', text:'Készíts "É"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('É')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('É'))?1:0, target: 1 }) },
+  { id:'endsÓ', text:'Készíts "Ó"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('Ó')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('Ó'))?1:0, target: 1 }) },
+  { id:'endsÍ', text:'Készíts "Í"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('Í')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('Í'))?1:0, target: 1 }) },
+  { id:'endsÚ', text:'Készíts "Ú"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('Ú')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('Ú'))?1:0, target: 1 }) },
+  { id:'firstLetterA', text:'Készíts szót, ami "A" betűvel kezdődik és 5+ betűs', icon:'🅰️', check: s => (s.words||[]).some(w => w[0]==='A' && w.length>=5), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='A' && w.length>=5)?1:0, target: 1 }) },
+  { id:'firstLetterK', text:'Készíts szót, ami "K" betűvel kezdődik és 6+ betűs', icon:'🅺', check: s => (s.words||[]).some(w => w[0]==='K' && w.length>=6), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='K' && w.length>=6)?1:0, target: 1 }) },
+  { id:'firstLetterM', text:'Készíts szót, ami "M" betűvel kezdődik és 5+ betűs', icon:'🅼', check: s => (s.words||[]).some(w => w[0]==='M' && w.length>=5), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='M' && w.length>=5)?1:0, target: 1 }) },
+  { id:'firstLetterS', text:'Készíts szót, ami "S" betűvel kezdődik és 6+ betűs', icon:'🆂', check: s => (s.words||[]).some(w => w[0]==='S' && w.length>=6), progress: s => ({ current: (s.words||[]).some(w=>w[0]==='S' && w.length>=6)?1:0, target: 1 }) },
+  { id:'endsAk', text:'Készíts "AK"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('AK')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('AK'))?1:0, target: 1 }) },
+  { id:'endsEk', text:'Készíts "EK"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('EK')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('EK'))?1:0, target: 1 }) },
+  { id:'endsOs', text:'Készíts "OS"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('OS')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('OS'))?1:0, target: 1 }) },
+  { id:'endsEs', text:'Készíts "ES"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('ES')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('ES'))?1:0, target: 1 }) },
+  { id:'endsI', text:'Készíts "I"-re végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('I')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('I'))?1:0, target: 1 }) },
+  { id:'endsU', text:'Készíts "U"-ra végződő szót', icon:'🔚', check: s => (s.words||[]).some(w => w.endsWith('U')), progress: s => ({ current: (s.words||[]).some(w=>w.endsWith('U'))?1:0, target: 1 }) },
+  { id:'fiveDiffVowels', text:'Készíts szót 5 különböző magánhangzóval', icon:'🌟', check: s => (s.words||[]).some(w => new Set((w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[])).size >= 5), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>new Set((w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[])).size)), 5), target: 5 }) },
+  { id:'fourDiffVowels', text:'Készíts szót 4 különböző magánhangzóval', icon:'🌟', check: s => (s.words||[]).some(w => new Set((w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[])).size >= 4), progress: s => ({ current: Math.min(Math.max(0,...(s.words||[]).map(w=>new Set((w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[])).size)), 4), target: 4 }) },
+  { id:'noVowels', text:'Készíts szót magánhangzó nélkül (rövidítés)', icon:'🚫', check: s => (s.words||[]).some(w => w.length >= 2 && !/[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)), progress: s => ({ current: (s.words||[]).some(w=>w.length>=2 && !/[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w))?1:0, target: 1 }) },
+  { id:'threeSameLetter', text:'Készíts szót 3 azonos betűvel', icon:'🔁', check: s => (s.words||[]).some(w => { const c={}; for(const ch of w) c[ch]=(c[ch]||0)+1; return Object.values(c).some(v=>v>=3); }), progress: s => ({ current: (s.words||[]).some(w=>{ const c={}; for(const ch of w) c[ch]=(c[ch]||0)+1; return Object.values(c).some(v=>v>=3); })?1:0, target: 1 }) },
+  { id:'fourSameLetter', text:'Készíts szót 4 azonos betűvel', icon:'🔁', check: s => (s.words||[]).some(w => { const c={}; for(const ch of w) c[ch]=(c[ch]||0)+1; return Object.values(c).some(v=>v>=4); }), progress: s => ({ current: (s.words||[]).some(w=>{ const c={}; for(const ch of w) c[ch]=(c[ch]||0)+1; return Object.values(c).some(v=>v>=4); })?1:0, target: 1 }) },
+  { id:'startAndEndK', text:'Készíts "K"-val kezdődő és "K"-ra végződő szót', icon:'🅺', check: s => (s.words||[]).some(w => w.length>=3 && w[0]==='K' && w[w.length-1]==='K'), progress: s => ({ current: (s.words||[]).some(w=>w.length>=3 && w[0]==='K' && w[w.length-1]==='K')?1:0, target: 1 }) },
+  { id:'startAndEndA', text:'Készíts "A"-val kezdődő és "A"-ra végződő szót', icon:'🅰️', check: s => (s.words||[]).some(w => w.length>=3 && w[0]==='A' && w[w.length-1]==='A'), progress: s => ({ current: (s.words||[]).some(w=>w.length>=3 && w[0]==='A' && w[w.length-1]==='A')?1:0, target: 1 }) },
+  { id:'allDiffLetters', text:'Készíts 6 betűs szót minden betű különbözik', icon:'🎯', check: s => (s.words||[]).some(w => w.length===6 && new Set(w).size===6), progress: s => ({ current: (s.words||[]).some(w=>w.length===6 && new Set(w).size===6)?1:0, target: 1 }) },
+  { id:'twoConsecutiveVowels', text:'Készíts szót 2 egymást követő magánhangzóval', icon:'🅰️', check: s => (s.words||[]).some(w => /[AÁEÉIÍOÓÖŐUÚÜŰ][AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)), progress: s => ({ current: (s.words||[]).some(w=>/[AÁEÉIÍOÓÖŐUÚÜŰ][AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w))?1:0, target: 1 }) },
+  { id:'threeConsecutiveConsonants', text:'Készíts szót 3 egymást követő mássalhangzóval', icon:'🅲', check: s => (s.words||[]).some(w => /[BCDFGHJKLMNPQRSTVWXYZ]{3}/.test(w)), progress: s => ({ current: (s.words||[]).some(w=>/[BCDFGHJKLMNPQRSTVWXYZ]{3}/.test(w))?1:0, target: 1 }) },
+  { id:'twoConsecutiveSame', text:'Készíts szót 2 egymást követő azonos betűvel', icon:'🔁', check: s => (s.words||[]).some(w => /(.)\1/.test(w) && w.length>=4), progress: s => ({ current: (s.words||[]).some(w=>/(.)\1/.test(w) && w.length>=4)?1:0, target: 1 }) },
+  { id:'wordWithXy', text:'Készíts 5 betűs szót középső "A"-val', icon:'🎯', check: s => (s.words||[]).some(w => w.length===5 && w[2]==='A'), progress: s => ({ current: (s.words||[]).some(w=>w.length===5 && w[2]==='A')?1:0, target: 1 }) },
+  { id:'uniqueLetters7', text:'Készíts 7 betűs szót min. 5 különböző betűvel', icon:'🎯', check: s => (s.words||[]).some(w => w.length===7 && new Set(w).size>=5), progress: s => ({ current: (s.words||[]).some(w=>w.length===7 && new Set(w).size>=5)?1:0, target: 1 }) },
+  { id:'score15000', text:'Szerezz 15000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 15000, progress: s => ({ current: Math.min(s.pointsThisLevel, 15000), target: 15000 }) },
+  { id:'score20000', text:'Szerezz 20000 pontot a körben', icon:'💰', check: s => s.pointsThisLevel >= 20000, progress: s => ({ current: Math.min(s.pointsThisLevel, 20000), target: 20000 }) },
+  { id:'letters50', text:'Szabadíts fel 50 betűt', icon:'🔓', check: s => s.lettersFreed >= 50, progress: s => ({ current: Math.min(s.lettersFreed, 50), target: 50 }) },
+  { id:'letters60', text:'Szabadíts fel 60 betűt', icon:'🔓', check: s => s.lettersFreed >= 60, progress: s => ({ current: Math.min(s.lettersFreed, 60), target: 60 }) },
+  { id:'letters7same', text:'Szabadíts fel 7 ugyanolyan betűt', icon:'🔤', check: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return Object.values(c).some(v=>v>=7); }, progress: s => { const c={}; (s.freedLetters||[]).forEach(l=>c[l]=(c[l]||0)+1); return { current: Math.min(Math.max(0,...Object.values(c)), 7), target: 7 }; } },
+  { id:'wordCount20', text:'Készíts összesen 20 szót', icon:'📚', check: s => (s.words||[]).length >= 20, progress: s => ({ current: Math.min((s.words||[]).length, 20), target: 20 }) },
+  { id:'bigMatch25', text:'Robbants fel 25+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 25, progress: s => ({ current: Math.min(s.biggestMatch, 25), target: 25 }) },
+  { id:'bigMatch30', text:'Robbants fel 30+ csempét egyszerre', icon:'💥', check: s => s.biggestMatch >= 30, progress: s => ({ current: Math.min(s.biggestMatch, 30), target: 30 }) },
+  { id:'perfect7', text:'Készíts 7 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 7, progress: s => ({ current: Math.min(s.perfectStreak, 7), target: 7 }) },
+  { id:'perfect10', text:'Készíts 10 szót egymás után hiba nélkül', icon:'✨', check: s => s.perfectStreak >= 10, progress: s => ({ current: Math.min(s.perfectStreak, 10), target: 10 }) },
+  { id:'clearPool3', text:'Töröld a betűmedencét 3x', icon:'🧹', check: s => (s.clears||0) >= 3, progress: s => ({ current: Math.min(s.clears||0, 3), target: 3 }) },
+  { id:'level10', text:'Teljesíts 10 szintet egymás után', icon:'🏆', check: s => (s.level||0) >= 10, progress: s => ({ current: Math.min(s.level||0, 10), target: 10 }) },
 ];
 
 function pickBonusMission(){
@@ -1610,7 +1546,6 @@ async function explodeCluster(cluster){
   }
 
   const damped = await addWeeklyScore(rawPts);
-
   await sleep(280);
   await dropAndRefill();
   updateHud();
@@ -1700,11 +1635,7 @@ async function dropAndRefill(){
             const anim = tile.el.animate([
               { transform: `translate3d(${c * state.tileSize}px, ${startY}px, 0)`, offset: 0 },
               { transform: `translate3d(${c * state.tileSize}px, ${targetY}px, 0)`, offset: 1 }
-            ], {
-              duration: duration,
-              easing: 'cubic-bezier(.55,.05,.85,.5)',
-              fill: 'forwards'
-            });
+            ], { duration, easing: 'cubic-bezier(.55,.05,.85,.5)', fill: 'forwards' });
             anim.onfinish = () => {
               clearTimeout(timeoutId);
               if(distance > 20){
@@ -1737,9 +1668,7 @@ async function dropAndRefill(){
   }
   try{
     await promiseWithTimeout(Promise.all(animationPromises), 2500, 'dropAndRefill');
-  }catch(e){
-    console.warn('dropAndRefill timeout');
-  }
+  }catch(e){ console.warn('dropAndRefill timeout'); }
   for(let c=0;c<GRID_SIZE;c++){
     for(const entry of columns[c]){
       state.board[entry.targetRow][c] = entry.tile;
@@ -1794,23 +1723,17 @@ function renderLetterPool(){
   updateClearPoolButton();
 }
 
+// Betű kiválasztása → NEM kerül az inputba azonnal, csak a pendingLetters-be
 function usePoolLetter(letterId){
   const idx = state.lettersPool.findIndex(l => l.id === letterId);
   if(idx === -1) return;
+  // Ne lehessen 20-nál többet kijelölni
+  if(state.pendingLetters.length >= 20) return;
   const [item] = state.lettersPool.splice(idx, 1);
   state.pendingLetters.push(item);
-  const node = document.querySelector(`.pool-letter[data-lid="${letterId}"]`);
-  if(node){
-    node.classList.add('used');
-    setTimeout(()=> node.remove(), 300);
-  }
-  const input = document.getElementById('word-input');
-  if(input.value.length < 20){
-    input.value += item.letter;
-    input.focus();
-  }
-  sfxUseLetter();
+  sfxSelect();
   renderLetterPool();
+  renderWordBuilder();
   updateHud();
   queueCloudSave();
 }
@@ -1822,6 +1745,96 @@ function restorePendingLetters(){
   }
   state.pendingLetters = [];
   renderLetterPool();
+  renderWordBuilder();
+}
+
+// Egy betű visszavétele a pending-ből a pool-ba
+function removePendingLetter(letterId){
+  const idx = state.pendingLetters.findIndex(l => l.id === letterId);
+  if(idx === -1) return;
+  const [item] = state.pendingLetters.splice(idx, 1);
+  state.lettersPool.push(item);
+  tone(400, .06, 'triangle', .1);
+  renderLetterPool();
+  renderWordBuilder();
+}
+
+// =====================================================================
+// WORD BUILDER (SZÓ RAKÓ PANEL)
+// =====================================================================
+function renderWordBuilder(){
+  const display = document.getElementById('wb-display');
+  display.innerHTML = '';
+  if(state.pendingLetters.length === 0){
+    const ph = document.createElement('span');
+    ph.className = 'wb-placeholder';
+    ph.textContent = state.keyboardOn
+      ? 'ÍRD BE A SZÓT A BILLENTYŰZETTEL'
+      : 'KOPPINTS A BETŰKRE';
+    display.appendChild(ph);
+  } else {
+    state.pendingLetters.forEach(letterObj => {
+      const el = document.createElement('div');
+      el.className = 'wb-letter';
+      el.textContent = letterObj.letter;
+      el.title = 'Kattints a visszavételhez';
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removePendingLetter(letterObj.id);
+      });
+      display.appendChild(el);
+    });
+  }
+  display.classList.toggle('active', state.pendingLetters.length > 0);
+}
+
+// Visszapötyögés: utolsó betű vissza a poolba
+function backspacePending(){
+  if(state.pendingLetters.length === 0) return;
+  const item = state.pendingLetters.pop();
+  state.lettersPool.push(item);
+  tone(400, .05, 'triangle', .1);
+  renderLetterPool();
+  renderWordBuilder();
+}
+function clearPending(){
+  if(state.pendingLetters.length === 0) return;
+  for(const item of state.pendingLetters) state.lettersPool.push(item);
+  state.pendingLetters = [];
+  tone(300, .1, 'triangle', .12);
+  renderLetterPool();
+  renderWordBuilder();
+}
+
+// A jelenlegi szó összeállítása a pendingLetters-ből
+function getCurrentWord(){
+  // Ha a billentyűzet be van kapcsolva és van szöveg az inputban, azt használjuk
+  if(state.keyboardOn){
+    const input = document.getElementById('hidden-input');
+    if(input.value.trim()) return input.value.trim().toUpperCase();
+  }
+  return state.pendingLetters.map(l => l.letter).join('');
+}
+
+// =====================================================================
+// BILLENTYŰZET BE/KI
+// =====================================================================
+function toggleKeyboard(){
+  state.keyboardOn = !state.keyboardOn;
+  const btn = document.getElementById('btn-keyboard-toggle');
+  const input = document.getElementById('hidden-input');
+  if(state.keyboardOn){
+    btn.classList.add('on');
+    input.style.opacity = '1';
+    input.style.pointerEvents = 'auto';
+    // Ne ugorjon fel automatikusan, csak ha a játékos rákattint
+  } else {
+    btn.classList.remove('on');
+    input.style.opacity = '0';
+    input.style.pointerEvents = 'none';
+    input.blur();
+  }
+  renderWordBuilder();
 }
 
 // =====================================================================
@@ -1850,6 +1863,7 @@ async function clearPool(){
   state.lettersPool = [];
   state.pendingLetters = [];
   renderLetterPool();
+  renderWordBuilder();
   sfxClear();
   shake(5);
   toast(`🧹 Medence törölve! (-${cost} heti pont)`, 'ok');
@@ -1863,59 +1877,75 @@ async function clearPool(){
 // =====================================================================
 async function submitWord(){
   if(state.isAnimating) return;
-  const input = document.getElementById('word-input');
-  const word = input.value.trim().toUpperCase();
-  if(!word) return;
+  const word = getCurrentWord();
+  if(!word){
+    toast('Nincs szó összeállítva!', 'err');
+    sfxError();
+    return;
+  }
+
+  const display = document.getElementById('wb-display');
 
   if(word.length < state.minWordLength){
-    input.classList.add('err'); setTimeout(()=>input.classList.remove('err'), 400);
+    display.classList.add('err'); setTimeout(()=>display.classList.remove('err'), 400);
     sfxError(); toast(`Legalább ${state.minWordLength} betűs szó kell!`, 'err');
     state.stats.invalidAttempts++; state.stats.perfectStreak = 0;
-    restorePendingLetters();
     return;
   }
   if(!/^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(word)){
-    input.classList.add('err'); setTimeout(()=>input.classList.remove('err'), 400);
+    display.classList.add('err'); setTimeout(()=>display.classList.remove('err'), 400);
     sfxError(); toast('Csak magyar betűk engedélyezettek!', 'err');
     state.stats.invalidAttempts++; state.stats.perfectStreak = 0;
-    restorePendingLetters();
     return;
   }
   if(!dictionary.has(word)){
-    input.classList.add('err'); setTimeout(()=>input.classList.remove('err'), 400);
+    display.classList.add('err'); setTimeout(()=>display.classList.remove('err'), 400);
     sfxError(); toast(`"${word}" nincs az érvényes szótárban!`, 'err');
     state.stats.invalidAttempts++; state.stats.perfectStreak = 0;
-    restorePendingLetters();
     return;
   }
-  const need = {}; for(const ch of word) need[ch] = (need[ch]||0)+1;
-  const have = {};
-  state.pendingLetters.forEach(l => have[l.letter] = (have[l.letter]||0)+1);
-  state.lettersPool.forEach(l => have[l.letter] = (have[l.letter]||0)+1);
-  for(const ch in need){
-    if((have[ch]||0) < need[ch]){
-      input.classList.add('err'); setTimeout(()=>input.classList.remove('err'), 400);
-      sfxError(); toast(`Nincs elég "${ch}" betűd a medencében!`, 'err');
-      state.stats.perfectStreak = 0;
-      restorePendingLetters();
-      return;
+  // Ha billentyűzetes mód, ellenőrizzük hogy a beírt betűk megvannak-e
+  if(state.keyboardOn){
+    const need = {}; for(const ch of word) need[ch] = (need[ch]||0)+1;
+    const have = {};
+    state.pendingLetters.forEach(l => have[l.letter] = (have[l.letter]||0)+1);
+    state.lettersPool.forEach(l => have[l.letter] = (have[l.letter]||0)+1);
+    for(const ch in need){
+      if((have[ch]||0) < need[ch]){
+        display.classList.add('err'); setTimeout(()=>display.classList.remove('err'), 400);
+        sfxError(); toast(`Nincs elég "${ch}" betűd a medencében!`, 'err');
+        state.stats.perfectStreak = 0;
+        return;
+      }
     }
   }
 
-  const toConsume = {...need};
-  const newPending = [];
-  for(const l of state.pendingLetters){
-    if(toConsume[l.letter] > 0){ toConsume[l.letter]--; }
-    else newPending.push(l);
+  // Ha billentyűzetes módban írt be szót, most kivesszük a szükséges betűket a poolból
+  // (a pendingLetters-ben csak azok vannak, amiket kézzel kiválasztott)
+  if(state.keyboardOn){
+    const needed = {};
+    for(const ch of word) needed[ch] = (needed[ch]||0)+1;
+    // Először a pendingLetters-ből
+    const newPending = [];
+    for(const l of state.pendingLetters){
+      if(needed[l.letter] > 0){ needed[l.letter]--; }
+      else newPending.push(l);
+    }
+    // Aztán a pool-ból
+    const newPool = [];
+    for(const l of state.lettersPool){
+      if(needed[l.letter] > 0){ needed[l.letter]--; }
+      else newPool.push(l);
+    }
+    state.pendingLetters = newPending;
+    state.lettersPool = newPool;
+  } else {
+    // Pool mód: minden pendingLetters felhasználódik
+    state.pendingLetters = [];
   }
-  const newPool = [];
-  for(const l of state.lettersPool){
-    if(toConsume[l.letter] > 0){ toConsume[l.letter]--; }
-    else newPool.push(l);
-  }
-  state.pendingLetters = newPending;
-  state.lettersPool = newPool;
+  document.getElementById('hidden-input').value = '';
   renderLetterPool();
+  renderWordBuilder();
 
   const basePts = Math.round(Math.pow(word.length, 1.8) * 8);
   const levelMul = 1 + state.level * 0.03;
@@ -1940,7 +1970,7 @@ async function submitWord(){
   renderFoundWords();
   updateHud();
 
-  input.classList.add('ok'); setTimeout(()=>input.classList.remove('ok'), 400);
+  display.classList.add('ok'); setTimeout(()=>display.classList.remove('ok'), 400);
   sfxFanfare();
   shake(Math.min(10, 3 + word.length));
   const boardRect = boardEl.getBoundingClientRect();
@@ -1955,8 +1985,6 @@ async function submitWord(){
   const dampMsg = damped < rawPts ? ` (heti: +${damped})` : '';
   toast(`+${rawPts} pont · ${word}${comboMsg}${dblMsg}${dampMsg}`, 'ok');
 
-  input.value = '';
-  input.focus();
   checkBonusMission();
   checkGameState();
   queueCloudSave();
@@ -1978,7 +2006,7 @@ function renderFoundWords(){
 }
 
 // =====================================================================
-// BÓNUSZ KÜLDETÉS — MOST MÁR KÖTELEZŐ!
+// BÓNUSZ KÜLDETÉS — KÖTELEZŐ
 // =====================================================================
 async function checkBonusMission(){
   if(state.bonusDone || !state.bonusMission) return;
@@ -1988,8 +2016,6 @@ async function checkBonusMission(){
     state.score += bonus; state.levelScore += bonus;
     await addWeeklyScore(bonus);
     updateHud();
-
-    // UI frissítés: a bónusz "kész" állapotba kerül
     const row = document.getElementById('bonus-row');
     row.classList.add('done');
     row.querySelector('.icon').textContent = '✅';
@@ -1997,15 +2023,11 @@ async function checkBonusMission(){
     status.className = 'status done';
     status.textContent = 'TELJESÍTVE';
     document.getElementById('bonus-progress').textContent = `+${bonus} bónuszpont megszerezve!`;
-
     sfxBonusComplete();
     shake(6);
     toast(`⭐ Bónusz teljesítve! +${bonus}`, 'ok');
-
-    // Ha a fő küldetés is kész → azonnal zárjuk a kört
     checkGameState();
   } else {
-    // Progress frissítés
     updateBonusProgressUI();
   }
 }
@@ -2015,13 +2037,15 @@ function updateBonusProgressUI(){
   if(!mission || state.bonusDone) return;
   const progressEl = document.getElementById('bonus-progress');
   if(mission.progress){
-    const { current, target } = mission.progress(state.stats);
-    progressEl.textContent = `Haladás: ${current} / ${target}`;
+    try{
+      const { current, target } = mission.progress(state.stats);
+      progressEl.textContent = `Haladás: ${current} / ${target}`;
+    }catch(e){}
   }
 }
 
 // =====================================================================
-// HUD FRISSÍTÉS — kör állapot jelzése
+// HUD FRISSÍTÉS
 // =====================================================================
 function updateHud(){
   document.getElementById('hud-level').textContent = state.level;
@@ -2047,10 +2071,8 @@ function updateMissionStatus(){
   const badge = document.getElementById('mission-status-badge');
   panel.classList.remove('locked','complete');
   badge.classList.remove('locked','complete');
-
   const mainDone = (state.wordsMade||0) >= state.targetWords;
   const bonusDone = state.bonusDone;
-
   if(mainDone && bonusDone){
     panel.classList.add('complete');
     badge.classList.add('complete');
@@ -2073,40 +2095,27 @@ function updateHelpButtons(){
 }
 
 // =====================================================================
-// JÁTÉK ÁLLAPOT — CSAK AKKOR NYERÜNK, HA MINDKÉT KÜLDETÉS KÉSZ
+// JÁTÉK ÁLLAPOT
 // =====================================================================
 function checkGameState(){
-  // Frissítjük a bónusz állapotot
   if(!state.bonusDone && state.bonusMission){
     if(state.bonusMission.check(state.stats)){
-      checkBonusMission();  // Ez beállítja a bonusDone-t és értesít
-      return; // várunk, míg a bonusDone true lesz
+      checkBonusMission();
+      return;
     }
   }
-
   const mainDone = (state.wordsMade||0) >= state.targetWords;
   const bonusDone = state.bonusDone;
-
-  if(mainDone && bonusDone){
-    winLevel();
-    return;
-  }
-
-  // Ha a fő küldetés kész, de a bónusz még nem, figyelmeztetjük a játékost
+  if(mainDone && bonusDone){ winLevel(); return; }
   if(mainDone && !bonusDone){
-    // Toast csak egyszer, amikor elérte a fő célt
     if(!state._mainDoneToastShown){
       state._mainDoneToastShown = true;
       const mission = state.bonusMission;
       toast(`🔒 Fő küldetés kész, DE a kötelező bónusz még hiányzik: <b>${mission.text}</b>`, 'err');
     }
-    return; // NEM zárjuk le a kört
+    return;
   }
-
-  // Ha a lépések elfogytak → veszítünk (akkor is, ha a bónusz kész, de a fő nem)
-  if(state.moves <= 0){
-    loseLevel();
-  }
+  if(state.moves <= 0){ loseLevel(); }
 }
 
 // =====================================================================
@@ -2136,9 +2145,9 @@ function startLevel(level){
   computeTileSize();
   generateBoard(cfg.colorCount, cfg.initialLetters);
   renderLetterPool();
+  renderWordBuilder();
   renderFoundWords();
 
-  // Bónusz küldetés UI frissítés
   const row = document.getElementById('bonus-row');
   row.classList.remove('done');
   row.querySelector('.icon').textContent = state.bonusMission.icon;
@@ -2150,8 +2159,8 @@ function startLevel(level){
 
   updateHud();
   updateMissionStatus();
-  document.getElementById('word-input').value = '';
-  document.getElementById('word-input').focus();
+  const input = document.getElementById('hidden-input');
+  if(input) input.value = '';
   queueCloudSave();
 }
 
@@ -2218,17 +2227,12 @@ function findBestFormableWord(){
 }
 
 let hintOverlayTimer = null;
-function showHintOverlay(word, longerWord){
+function showHintOverlay(word){
   const overlay = document.getElementById('hint-overlay');
   const wordEl = document.getElementById('hint-word-display');
   const longerEl = document.getElementById('hint-longer');
   wordEl.textContent = word;
-  if(longerWord && longerWord.length > word.length){
-    longerEl.textContent = `💡 Van ennél hosszabb szó is: ${longerWord.length} betűs!`;
-    longerEl.style.display = 'inline-block';
-  } else {
-    longerEl.style.display = 'none';
-  }
+  longerEl.style.display = 'none';
   overlay.classList.add('show');
   sfxHint();
   if(hintOverlayTimer) clearTimeout(hintOverlayTimer);
@@ -2265,8 +2269,19 @@ async function useHelp(type){
     if(!ok){ toast('Tranzakció sikertelen!', 'err'); return; }
     updateHud();
     tone(880, .15, 'sine', .2);
-    const input = document.getElementById('word-input');
-    input.value = word;
+    // Az auto-szó betűit bepakoljuk a pendingLetters-be, majd elküldjük
+    const need = {};
+    for(const ch of word) need[ch] = (need[ch]||0)+1;
+    // Töröljük a pending-et és újratöltjük
+    state.pendingLetters = [];
+    const newPool = [];
+    for(const l of state.lettersPool){
+      if(need[l.letter] > 0){ need[l.letter]--; state.pendingLetters.push(l); }
+      else newPool.push(l);
+    }
+    state.lettersPool = newPool;
+    renderLetterPool();
+    renderWordBuilder();
     submitWord();
   } else if(type === 'reroll'){
     const total = state.lettersPool.length;
@@ -2347,6 +2362,7 @@ function serializeState(){
     usedBonusMissions: Array.from(state.usedBonusMissions),
     clearCount: state.clearCount,
     _mainDoneToastShown: state._mainDoneToastShown || false,
+    keyboardOn: state.keyboardOn,
     savedAt: Date.now()
   };
 }
@@ -2409,6 +2425,7 @@ function restoreSession(snap){
   state.nextLetterId = snap.nextLetterId || 1;
   state.clearCount = snap.clearCount || 0;
   state._mainDoneToastShown = snap._mainDoneToastShown || false;
+  state.keyboardOn = snap.keyboardOn || false;
   state.stats = snap.stats || { lettersFreed:0, freedLetters:[], words:[], pointsThisLevel:0,
     longestWord:0, biggestMatch:0, perfectStreak:0, invalidAttempts:0, maxCascade:0, bigMatches:[] };
   const bm = BONUS_MISSIONS.find(m => m.id === snap.bonusMissionId) || pickBonusMission();
@@ -2432,9 +2449,13 @@ function restoreSession(snap){
   state.pendingLetters = (snap.pendingLetters||[]).map(l => ({ id: l.id, letter: l.letter }));
 
   renderLetterPool();
+  renderWordBuilder();
   renderFoundWords();
 
-  // Bónusz UI
+  if(state.keyboardOn){
+    document.getElementById('btn-keyboard-toggle').classList.add('on');
+  }
+
   const row = document.getElementById('bonus-row');
   row.classList.toggle('done', state.bonusDone);
   row.querySelector('.icon').textContent = state.bonusDone ? '✅' : bm.icon;
@@ -2451,7 +2472,6 @@ function restoreSession(snap){
 
   updateHud();
   updateMissionStatus();
-  document.getElementById('word-input').value = '';
 }
 
 // =====================================================================
@@ -2463,6 +2483,7 @@ document.getElementById('btn-save-name').addEventListener('click', async () => {
   if(ok){
     document.getElementById('modal-name').classList.remove('show');
     toast('👤 Név mentve!', 'ok');
+    input.blur();
   } else {
     input.classList.add('err');
     setTimeout(()=>input.classList.remove('err'), 400);
@@ -2498,15 +2519,26 @@ document.getElementById('btn-retry').addEventListener('click', () => {
   state.isAnimating = false;
   startLevel(state.level);
 });
-document.getElementById('btn-submit').addEventListener('click', submitWord);
-document.getElementById('word-input').addEventListener('keydown', e => {
+document.getElementById('btn-wb-submit').addEventListener('click', submitWord);
+document.getElementById('btn-wb-backspace').addEventListener('click', backspacePending);
+document.getElementById('btn-wb-clear').addEventListener('click', clearPending);
+document.getElementById('btn-keyboard-toggle').addEventListener('click', toggleKeyboard);
+
+// Rejtett input kezelése - ha a játékos bekapcsolta a billentyűzetet
+const hiddenInput = document.getElementById('hidden-input');
+hiddenInput.addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); submitWord(); }
-});
-document.getElementById('word-input').addEventListener('input', e => {
-  if(e.target.value === '' && state.pendingLetters.length > 0){
-    restorePendingLetters();
+  // Hossz limit
+  if(hiddenInput.value.length > 20){
+    hiddenInput.value = hiddenInput.value.substring(0, 20);
   }
 });
+hiddenInput.addEventListener('input', () => {
+  // Csak magyar betűk
+  const v = hiddenInput.value.toUpperCase().replace(/[^A-ZÁÉÍÓÖŐÚÜŰ]/g, '');
+  if(v !== hiddenInput.value) hiddenInput.value = v;
+});
+
 document.getElementById('btn-shuffle').addEventListener('click', shuffleBoard);
 document.getElementById('btn-leaderboard').addEventListener('click', showLeaderboard);
 document.getElementById('btn-close-lb').addEventListener('click', () => {
@@ -2518,6 +2550,24 @@ document.getElementById('btn-restart').addEventListener('click', () => {
 document.getElementById('btn-clear-pool').addEventListener('click', clearPool);
 document.querySelectorAll('.help-btn').forEach(btn => {
   btn.addEventListener('click', () => useHelp(btn.dataset.help));
+});
+
+// Globális billentyűzet - csak akkor, ha a játékos bekapcsolta
+document.addEventListener('keydown', (e) => {
+  // Ne zavarjuk, ha modal van nyitva
+  const anyModal = document.querySelector('.modal-backdrop.show');
+  if(anyModal) return;
+  if(!state.keyboardOn){
+    // Billentyűzet nélkül: csak a backspace és enter működik
+    if(e.key === 'Backspace' && document.activeElement.tagName !== 'INPUT'){
+      e.preventDefault();
+      backspacePending();
+    } else if(e.key === 'Enter' && document.activeElement.tagName !== 'INPUT'){
+      e.preventDefault();
+      submitWord();
+    }
+    return;
+  }
 });
 
 // =====================================================================
