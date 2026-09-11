@@ -584,11 +584,28 @@ html, body {
   max-width: 500px; width: 96%; border-color: var(--cyan);
 }
 .spectator-board {
-  position: relative; border-radius: 12px; overflow: hidden;
+  --tile-size: 34px !important;
+  width: calc(var(--tile-size) * 8) !important;
+  height: calc(var(--tile-size) * 8) !important;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
   background: radial-gradient(circle at 50% 50%, #111827, #030712);
   box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
-  border: 2px solid rgba(255,255,255,0.1);
-  margin: 6px auto; pointer-events: none;
+  border: 2px solid rgba(255,255,255,0.15);
+  margin: 6px auto;
+  pointer-events: none;
+}
+.spectator-board .tile {
+  width: var(--tile-size) !important;
+  height: var(--tile-size) !important;
+}
+.spectator-board .tile .tile-letter {
+  font-size: 16px !important;
+}
+.spectator-board .layer-badge {
+  font-size: 8px !important;
+  padding: 1px 2px !important;
 }
 .spectator-chat-box {
   display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.4);
@@ -857,7 +874,16 @@ html, body {
       <div class="spectator-board" id="stream-board"></div>
     </div>
 
-    <div style="font-size:10px; font-weight:800; color:#94a3b8;">Játékos tálcája: <span id="stream-tray-display" style="color:#fef08a; font-weight:900; letter-spacing:1.5px;">—</span></div>
+    <div style="display:flex; flex-direction:column; gap:4px; margin:4px 0; text-align:left;">
+      <div style="font-size:10px; font-weight:800; color:#c4b5fd;">✍️ ÉPP KIRAKÁS ALATT LÉVŐ SZÓ (TÁLCA):</div>
+      <div id="stream-tray-container" style="min-height:36px; background:rgba(0,0,0,0.5); border:1px dashed rgba(255,255,255,0.2); border-radius:6px; display:flex; align-items:center; justify-content:center; gap:4px; padding:4px;"></div>
+
+      <div style="font-size:10px; font-weight:800; color:#94a3b8; margin-top:2px;">🔓 KISZABADÍTOTT BETŰI A RAKTÁRBAN:</div>
+      <div id="stream-pool-container" style="max-height:55px; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius:6px; display:flex; flex-wrap:wrap; gap:3px; padding:4px;"></div>
+
+      <div style="font-size:10px; font-weight:800; color:#6ee7b7; margin-top:2px;">✅ SZINTEN MÁR KIRAKOTT SZAVAI:</div>
+      <div id="stream-words-container" style="display:flex; flex-wrap:wrap; gap:4px; max-height:36px; overflow-y:auto;"></div>
+    </div>
 
     <!-- KÖRÖNKÉNT TISZTULÓ SEGÍTŐ CHAT SÁV -->
     <div class="spectator-chat-box">
@@ -920,8 +946,8 @@ html, body {
   <div class="modal-box">
     <div class="modal-title" style="color:var(--gold);">👤 FELHŐ PROFIL</div>
     <p class="modal-desc">Add meg a neved és 4 jegyű PIN kódodat! A rendszer a saját felhős profilodat és készleteidet tölti be.</p>
-    <input type="text" class="input-pin" id="auth-name" placeholder="JÁTÉKOSNÉV" maxlength="12" autocomplete="off">
-    <input type="password" class="input-pin" id="auth-pin" placeholder="PIN (4 SZÁM)" maxlength="4" inputmode="numeric">
+    <input type="text" class="input-pin" id="auth-name" placeholder="JÁTÉKOSNÉV" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <input type="text" class="input-pin" id="auth-pin" placeholder="PIN (4 SZÁM)" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-lpignore="true" style="-webkit-text-security: disc;">
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-auth-confirm">BELÉPÉS / MENTÉS BETÖLTÉSE</button>
     </div>
@@ -2128,6 +2154,7 @@ function renderTray() {
         sfxSnap();
         renderTray();
         renderPool();
+        syncCloudState();
       });
       trayEl.appendChild(el);
     });
@@ -2155,6 +2182,7 @@ function renderPool() {
       sfxSnap();
       renderTray();
       renderPool();
+      syncCloudState();
     });
     poolEl.appendChild(el);
   });
@@ -3268,12 +3296,52 @@ function renderSpectatorBoard(d) {
   document.getElementById('stream-level').textContent = d.level || 1;
   document.getElementById('stream-moves').textContent = d.moves || 0;
   document.getElementById('stream-score').textContent = (d.weeklyScore || 0).toLocaleString('hu-HU');
-  document.getElementById('stream-tray-display').textContent = (d.tray && d.tray.length > 0) ? d.tray.map(i => i.char).join(' ') : '—';
 
+  // 1. Tálca kirajzolása valós időben (amit épp rak ki)
+  const trayBox = document.getElementById('stream-tray-container');
+  trayBox.innerHTML = '';
+  if (d.tray && d.tray.length > 0) {
+    d.tray.forEach(item => {
+      const sp = document.createElement('div');
+      sp.style.cssText = "width:24px; height:28px; background:linear-gradient(135deg,#fef3c7,#fbbf24); color:#451a03; font-weight:900; font-size:13px; border-radius:5px; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 3px rgba(0,0,0,0.4);";
+      sp.textContent = item.char;
+      trayBox.appendChild(sp);
+    });
+  } else {
+    trayBox.innerHTML = '<span style="font-size:10px; color:#64748b;">(Üres a tálca)</span>';
+  }
+
+  // 2. Kiszabadított raktár kirajzolása valós időben
+  const poolBox = document.getElementById('stream-pool-container');
+  poolBox.innerHTML = '';
+  if (d.pool && d.pool.length > 0) {
+    d.pool.forEach(item => {
+      const pTile = document.createElement('span');
+      pTile.style.cssText = "background:#334155; color:#f8fafc; font-size:11px; font-weight:900; padding:2px 5px; border-radius:4px; border:1px solid #475569;";
+      pTile.textContent = item.char;
+      poolBox.appendChild(pTile);
+    });
+  } else {
+    poolBox.innerHTML = '<span style="font-size:9px; color:#64748b;">(Nincs szabad betű a raktárban)</span>';
+  }
+
+  // 3. Már kirakott szavak kirajzolása
+  const wordsBox = document.getElementById('stream-words-container');
+  wordsBox.innerHTML = '';
+  if (d.levelWords && d.levelWords.length > 0) {
+    d.levelWords.forEach(w => {
+      const wTag = document.createElement('span');
+      wTag.className = 'word-tag';
+      wTag.textContent = w;
+      wordsBox.appendChild(wTag);
+    });
+  } else {
+    wordsBox.innerHTML = '<span style="font-size:9px; color:#64748b;">(Még nem küldött be szót)</span>';
+  }
+
+  // 4. Játéktábla precíz, szétcsúszásmentes kirajzolása
   const sBoard = document.getElementById('stream-board');
-  const size = 32;
-  sBoard.style.width = (size * GRID_SIZE) + 'px';
-  sBoard.style.height = (size * GRID_SIZE) + 'px';
+  const size = 34;
   sBoard.innerHTML = '';
 
   let tiles = [];
@@ -3284,16 +3352,30 @@ function renderSpectatorBoard(d) {
     el.className = `tile color-${cell.color}`;
     if(cell.letter) el.classList.add('has-letter');
     if(cell.isGold) el.classList.add('is-gold');
-    el.style.width = size + 'px';
-    el.style.height = size + 'px';
+    if(cell.ice > 0) el.classList.add(`ice-${cell.ice}`);
+    if(cell.wood > 0) el.classList.add(`wood-${cell.wood}`);
+    if(cell.bomb) el.classList.add('bomb');
+
     el.style.transform = `translate3d(${cell.c * size}px, ${cell.r * size}px, 0)`;
 
     const inner = document.createElement('div');
     inner.className = 'tile-inner';
+
+    if(cell.ice > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'layer-badge';
+      badge.textContent = `❄️${cell.ice > 1 ? '×2' : ''}`;
+      inner.appendChild(badge);
+    } else if(cell.wood > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'layer-badge';
+      badge.textContent = `🪵${cell.wood > 1 ? '×2' : ''}`;
+      inner.appendChild(badge);
+    }
+
     if(cell.letter) {
       const l = document.createElement('span');
       l.className = 'tile-letter';
-      l.style.fontSize = '15px';
       l.textContent = cell.letter;
       inner.appendChild(l);
     }
@@ -3301,7 +3383,6 @@ function renderSpectatorBoard(d) {
     sBoard.appendChild(el);
   });
 }
-
 document.getElementById('btn-send-chat-tip').addEventListener('click', () => {
   const inp = document.getElementById('stream-chat-input');
   const txt = inp.value.trim();
