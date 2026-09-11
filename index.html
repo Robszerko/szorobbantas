@@ -76,14 +76,21 @@ html, body {
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 .dict-status { font-size: 8.5px; font-weight: 700; color: #94a3b8; }
-.nav-actions { display: flex; align-items: center; gap: 5px; }
+.nav-actions { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .btn-nav-action {
   background: #1e293b; border: 1px solid #334155; color: #cbd5e1;
-  font-size: 11px; font-weight: 800; padding: 5px 8px; border-radius: 8px;
-  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 800; padding: 5px 7px; border-radius: 7px;
+  cursor: pointer; display: flex; align-items: center; gap: 3px;
   position: relative; transition: all 0.2s; font-family: inherit;
 }
 .btn-nav-action:active { transform: scale(0.96); }
+.btn-nav-action.restart-btn {
+  border-color: rgba(239,68,68,0.5); color: #fca5a5; background: rgba(239,68,68,0.12);
+}
+.btn-nav-action.unlocked-pulse {
+  border-color: var(--gold); background: rgba(245, 158, 11, 0.2);
+  animation: pulse 1s infinite alternate; color: #fde68a;
+}
 .badge-dot {
   position: absolute; top: -3px; right: -3px; width: 8px; height: 8px;
   background: var(--ruby); border-radius: 50%; border: 1.5px solid #0f172a;
@@ -114,6 +121,19 @@ html, body {
 .stat-box.moves.warning .val { color: var(--ruby); animation: pulse .8s infinite alternate; }
 .stat-box.rank-box .val { color: var(--emerald); }
 @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+/* CÉLZÓ MÓD BANNER */
+.targeting-banner {
+  background: linear-gradient(135deg, #7c2d12, #991b1b);
+  border: 1.5px solid var(--ruby); border-radius: 8px; padding: 6px 12px;
+  display: none; justify-content: space-between; align-items: center;
+  font-size: 11px; font-weight: 900; color: #fff; animation: pulse 0.8s infinite alternate;
+}
+.targeting-banner.active { display: flex; }
+.btn-cancel-target {
+  background: #334155; border: none; border-radius: 6px; color: #fff;
+  padding: 4px 8px; font-size: 10px; font-weight: 800; cursor: pointer;
+}
 
 .mission-strip {
   padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden;
@@ -150,6 +170,7 @@ html, body {
   width: calc(var(--tile-size, 44px) * 8);
   height: calc(var(--tile-size, 44px) * 8);
 }
+.board.targeting-cursor { cursor: crosshair !important; }
 .tile {
   position: absolute; top: 0; left: 0;
   width: var(--tile-size, 44px); height: var(--tile-size, 44px);
@@ -170,13 +191,13 @@ html, body {
   pointer-events: none; z-index: 3;
 }
 
-/* Drágakő színek */
+/* 6 TÖKÉLETESEN ELKÜLÖNÜLŐ, ÉLÉNK SZÍN */
 .tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, #f87171, #dc2626 55%, #7f1d1d); }
-.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #60a5fa, #2563eb 55%, #1e3a8a); }
+.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #60a5fa, #1d4ed8 55%, #172554); }
 .tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, #34d399, #059669 55%, #064e3b); }
-.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, #fbbf24, #d97706 55%, #78350f); }
+.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, #fde047, #ca8a04 55%, #713f12); color:#422006; }
 .tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, #c084fc, #9333ea 55%, #581c87); }
-.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #38bdf8, #0284c7 55%, #0c4a6e); }
+.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #fb923c, #ea580c 55%, #7c2d12); }
 
 /* Jég rétegek */
 .tile.ice-1 .tile-inner {
@@ -231,6 +252,9 @@ html, body {
   font-size: calc(var(--tile-size, 44px) * 0.52); font-weight: 900; z-index: 4;
   text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
   pointer-events: none; position: relative;
+}
+.tile.color-3 .tile-letter {
+  color: #261602; text-shadow: 0 1px 2px rgba(255,255,255,0.6);
 }
 .tile.has-letter .tile-inner {
   border: 2px solid var(--gold);
@@ -391,7 +415,6 @@ html, body {
 .btn-modal.secondary { background: #334155; color: #cbd5e1; }
 .btn-modal.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
 
-/* TARTALÉK LÉPÉSEK INTERAKTÍV VÁLASZTÓJA */
 .stepper-row {
   display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0;
 }
@@ -431,6 +454,22 @@ html, body {
   margin-top: 4px; text-align: center;
 }
 .shop-item .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.letter-market-grid {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 220px;
+  overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 8px;
+}
+.market-char-btn {
+  width: 38px; height: 42px; border-radius: 8px; border: 1px solid #d97706;
+  background: linear-gradient(135deg, #fef3c7, #f59e0b); color: #451a03;
+  font-size: 16px; font-weight: 900; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.market-char-btn:active { transform: scale(0.92); }
+.market-char-btn.rare {
+  background: linear-gradient(135deg, #fbcfe8, #f43f5e); color: #fff;
+  border-color: #be123c;
+}
 
 .calendar-grid {
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 8px 0;
@@ -488,6 +527,12 @@ html, body {
       <div class="dict-status" id="dict-status-txt">Szótár: Betöltés...</div>
     </div>
     <div class="nav-actions">
+      <button class="btn-nav-action restart-btn" id="btn-restart-level-direct" title="A szint újrakezdése tiszta táblával (a megvásárolt javak megmaradnak)">
+        🔄 Szint Újra
+      </button>
+      <button class="btn-nav-action" id="btn-open-market" title="10 perc játékidő után feloldódó betűpiac">
+        ⏳ Betűpiac
+      </button>
       <button class="btn-nav-action" id="btn-switch-user" title="Fiók váltása">👤 Váltás</button>
       <button class="btn-nav-action" id="btn-open-shop">🛒 Bolt</button>
       <button class="btn-nav-action" id="btn-open-daily">
@@ -497,6 +542,11 @@ html, body {
       <button class="btn-nav-action" id="btn-open-lb">🏆 Rang</button>
       <div class="sync-indicator" id="sync-dot"></div>
     </div>
+  </div>
+
+  <div class="targeting-banner glass" id="targeting-banner">
+    <span id="targeting-msg">🎯 CÉLZÓ MÓD AKTÍV</span>
+    <button class="btn-cancel-target" id="btn-cancel-target">MÉGSEM ✖</button>
   </div>
 
   <div class="stats-grid">
@@ -558,7 +608,7 @@ html, body {
 <div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--gold);">👤 FELHŐ PROFIL</div>
-    <p class="modal-desc">Add meg a neved és 4 jegyű PIN kódodat! A rendszer automatikusan a te saját felhős mentésedet és készletedet tölti be.</p>
+    <p class="modal-desc">Add meg a neved és 4 jegyű PIN kódodat! A rendszer a saját egyedi felhős profilodat és készleteidet tölti be.</p>
     <input type="text" class="input-pin" id="auth-name" placeholder="JÁTÉKOSNÉV" maxlength="12" autocomplete="off">
     <input type="password" class="input-pin" id="auth-pin" placeholder="PIN (4 SZÁM)" maxlength="4" inputmode="numeric">
     <div class="modal-buttons">
@@ -571,7 +621,7 @@ html, body {
 <div class="modal-overlay" id="modal-shop">
   <div class="modal-box" style="max-width:440px;">
     <div class="modal-title" style="color:var(--gold);">🛒 HETI PONT ÁRUHÁZ</div>
-    <p class="modal-desc">Vásárolj segédeszközöket előre a heti pontjaidból! A megvásárolt tárgyak örökre a hátizsákodban maradnak, sosem vesznek el!</p>
+    <p class="modal-desc">Vásárolj segédeszközöket a heti pontjaidból! A megvásárolt tárgyak örökre a hátizsákodban maradnak, áruk exponenciálisan emelkedik.</p>
     <div style="font-size:12px; font-weight:900; color:var(--gold);">Egyenleged: <span id="shop-balance">0</span> heti pont</div>
     <div class="shop-grid" id="shop-grid"></div>
     <div class="modal-buttons">
@@ -580,7 +630,57 @@ html, body {
   </div>
 </div>
 
-<!-- 1. LÉPÉS: Tartalék lépések felhasználása Modal (KIZÁRÓLAG MEGLÉVŐ TARTALÉKOKBÓL, SZABADON DÖNTHETŐ DARABSZÁM) -->
+<!-- Sorkilövő Irányválasztó Modal -->
+<div class="modal-overlay" id="modal-lineblaster-choice">
+  <div class="modal-box" style="border-color:var(--gold);">
+    <div class="modal-title" style="color:var(--gold);">↔️↕️ SORKILÖVŐ CÉLZÁS</div>
+    <p class="modal-desc">Döntsd el, hogy egy teljes vízszintes sort, vagy egy teljes függőleges oszlopot akarsz kilőni a tábláról!</p>
+    <div class="modal-buttons">
+      <button class="btn-modal primary" id="btn-blaster-row">↔️ VÍZSZINTES SOR KILÖVÉSE</button>
+      <button class="btn-modal primary" id="btn-blaster-col" style="background:linear-gradient(135deg, #06b6d4, #0891b2);">↕️ FÜGGŐLEGES OSZLOP KILÖVÉSE</button>
+      <button class="btn-modal secondary" id="btn-blaster-cancel">MÉGSEM</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎁 INGYENES BETŰ KÉRÉS JUTALOM ABLAK (4+ VAGY 5+ BETŰS SZAVAKÉRT) -->
+<div class="modal-overlay" id="modal-free-letter-reward">
+  <div class="modal-box" style="border-color:var(--emerald);">
+    <div class="modal-title" style="color:var(--emerald);">🎁 MESTERJUTALOM!</div>
+    <p class="modal-desc" id="free-letter-desc">Gratulálunk! Hosszú szót készítettél! Jutalmul kérhetsz egy <b>INGYENES</b> tetszőleges betűt a raktáradba!</p>
+    <input type="text" class="input-pin" id="input-free-letter" placeholder="ÍRD BE A KÉRT BETŰT (PL. Y, A, K)" maxlength="3" autocomplete="off">
+    <div class="quick-picks" style="flex-wrap:wrap; margin-top:4px;">
+      <button class="btn-pick free-pick-btn" data-char="Y">Y</button>
+      <button class="btn-pick free-pick-btn" data-char="A">A</button>
+      <button class="btn-pick free-pick-btn" data-char="E">E</button>
+      <button class="btn-pick free-pick-btn" data-char="K">K</button>
+      <button class="btn-pick free-pick-btn" data-char="T">T</button>
+      <button class="btn-pick free-pick-btn" data-char="GY">GY</button>
+      <button class="btn-pick free-pick-btn" data-char="SZ">SZ</button>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal primary" id="btn-claim-free-letter">KÉREM A BETŰT 🎁</button>
+    </div>
+  </div>
+</div>
+
+<!-- 10 PERCES PRÉMIUM BETŰPIAC MODAL -->
+<div class="modal-overlay" id="modal-letter-market">
+  <div class="modal-box" style="max-width:440px; border-color:var(--gold);">
+    <div class="modal-title" style="color:var(--gold);">🔤 PRÉMIUM BETŰPIAC</div>
+    <p class="modal-desc">Több mint 10 perc játékidő után feloldva! Válassz ki egy tetszőleges magyar betűt a raktáradba. Az ár minden vásárlással <b>kőkeményen exponenciálisan emelkedik</b>!</p>
+    <div style="font-size:12px; font-weight:900; color:var(--gold);">
+      Következő betű ára: <span id="market-cost-display">250</span> heti pont
+      <small style="display:block; color:#94a3b8; font-size:10px;">Egyenleged: <span id="market-balance-display">0</span>P</small>
+    </div>
+    <div class="letter-market-grid" id="letter-market-grid"></div>
+    <div class="modal-buttons">
+      <button class="btn-modal secondary" id="btn-close-market">BEZÁRÁS</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tartalék lépések felhasználása Modal -->
 <div class="modal-overlay" id="modal-use-stored">
   <div class="modal-box" style="border-color:var(--cyan);">
     <div class="modal-title" style="color:var(--cyan);">🎒 TARTALÉK LÉPÉSEK</div>
@@ -606,7 +706,7 @@ html, body {
   </div>
 </div>
 
-<!-- 2. LÉPÉS: Vásárlási felhívás (CSAK AKKOR JELENIK MEG, HA A TARTALÉK KERET TELJESEN KIFOGYOTT!) -->
+<!-- Lépésvásárlás Modal -->
 <div class="modal-overlay" id="modal-out-of-moves">
   <div class="modal-box" style="border-color:var(--ruby);">
     <div class="modal-title" style="color:var(--ruby);">⏳ ELFOGYTAK A LÉPÉSEK!</div>
@@ -623,7 +723,7 @@ html, body {
 <div class="modal-overlay" id="modal-daily">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--gold);">📅 30 NAPOS BECSEKKOLÁS</div>
-    <p class="modal-desc" id="daily-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért! Ha egy nap kimarad, a sorozat elölről kezdődik.</p>
+    <p class="modal-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért! Ha egy nap kimarad, a sorozat elölről kezdődik.</p>
     <div class="calendar-grid" id="calendar-grid"></div>
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-claim-daily">AJÁNDÉK ÁTVÉTELE 🎁</button>
@@ -772,6 +872,7 @@ function playBlockDropSound(pitchMul = 1) {
 function sfxExplode() { playTone(110, 0.35, 'sawtooth', 0.3); }
 function sfxSnap() { playTone(540, 0.07, 'triangle', 0.18); }
 function sfxCrack() { playTone(280, 0.09, 'sawtooth', 0.25); }
+function sfxLaser() { playTone(880, 0.2, 'sawtooth', 0.28); }
 function sfxWordSuccess() {
   [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
     setTimeout(() => playTone(f, 0.22, 'triangle', 0.18), i * 65);
@@ -841,11 +942,16 @@ const DICT_SOURCES = [
 ];
 const DICT = new Set();
 
+// Önmagukban nem szavak, csupán hangok/betűk
+const NON_WORDS_DIGRAPHS = new Set(['TY', 'SZ', 'CS', 'GY', 'NY', 'LY', 'ZS', 'DZ', 'DZS']);
+
 function sanitizeWord(raw) {
   if(!raw) return null;
   let w = raw.split('/')[0].split('\t')[0].split(' ')[0].trim().toUpperCase();
   if(w.endsWith('.')) w = w.slice(0, -1);
-  if(w.length >= 2 && w.length <= 16 && /^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(w)) return w;
+  if(w.length >= 2 && w.length <= 16 && /^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(w)) {
+    if(!NON_WORDS_DIGRAPHS.has(w)) return w;
+  }
   return null;
 }
 
@@ -867,27 +973,52 @@ async function loadAllDictionaries() {
       .catch(() => {})
   );
   await Promise.allSettled(tasks);
-  if(DICT.size < 500) {
-    ["ALMA","BABA","CICA","KUTYA","KAPU","FA","HÁZ","VÁR","SZÉP","JÓ","MEGY","PIROS","KÉK","ZÖLD","NAGY","KICSI","EMBER","VÁROS","MADÁR","LEVÉL","KÖNYV","ASZTAL","SZÉK","ÉLET","NAP","HOLD","CSILLAG","ROBBANTÁS","ORSZÁG","MAGYAR","GYERMEK","VIRÁG","FOLYTATÁS","ANYA","LÁNY","GOLYÓ","ARANY","ILYEN","OLYAN","KÖNNYŰ"].forEach(w => DICT.add(w));
-  }
+  // Rövid, értelmes 2 és 3 betűs szavak biztosítása
+  ["FA","TÓ","KŐ","FŰ","LÓ","KI","MI","TE","ÉN","ŐK","HA","DE","BE","LE","RÁ","IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY","SZÉP","JÓ","NAGY","KICSI","ALMA","BABA","CICA","KUTYA","KÖNYV","ANYA","LÁNY","GOLYÓ","ARANY","ILYEN","OLYAN","KÖNNYŰ"].forEach(w => DICT.add(w));
   statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
 }
+
+// =====================================================================
+// MAGYAR ÁBÉCÉ
+// =====================================================================
+const GRID_SIZE = 8;
+const MAX_POOL = 40;
+
+const HUNGARIAN_ALPHABET_ALL = [
+  'A', 'Á', 'B', 'C', 'CS', 'D', 'DZ', 'DZS', 'E', 'É', 'F', 'G', 'GY', 'H',
+  'I', 'Í', 'J', 'K', 'L', 'LY', 'M', 'N', 'NY', 'O', 'Ó', 'Ö', 'Ő', 'P',
+  'R', 'S', 'SZ', 'T', 'TY', 'U', 'Ú', 'Ü', 'Ű', 'V', 'Y', 'Z', 'ZS'
+];
+
+const LETTER_DIST = {
+  'A':10, 'Á':5, 'E':10, 'É':5, 'I':6, 'Í':3, 'O':6, 'Ó':3, 'Ö':3, 'Ő':2, 'U':4, 'Ú':2, 'Ü':3, 'Ű':2,
+  'B':3, 'C':2, 'CS':2, 'D':3, 'DZ':1, 'DZS':1, 'F':3, 'G':3, 'GY':3, 'H':3, 'J':3, 'K':6, 'L':5,
+  'LY':2, 'M':5, 'N':6, 'NY':3, 'P':3, 'R':6, 'S':5, 'SZ':3, 'T':6, 'TY':2, 'V':3,
+  'Y':5, 'Z':3, 'ZS':2
+};
+
+const RARE_LETTERS = new Set(['GY','SZ','ZS','TY','LY','NY','CS','DZ','DZS','Ű','Ő','Í','Ú','Ó','Y','C']);
+
+const BAG = [];
+Object.entries(LETTER_DIST).forEach(([char, count]) => {
+  for(let i = 0; i < count; i++) BAG.push(char);
+});
 
 // =====================================================================
 // ÁRUHÁZ DEFINÍCIÓ & EXPONENCIÁLIS ÁRAZÁS
 // =====================================================================
 const SHOP_ITEMS = [
   { id: 'extramoves', name: '➕ +5 Tartalék Lépés', baseCost: 160, desc: '+5 lépést tesz a hátizsákodba, amit bármikor felválthatsz.', action: () => { state.storedMoves = (state.storedMoves || 0) + 5; showToast("➕ +5 lépés a hátizsákodba került!", "ok"); } },
-  { id: 'bomb', name: '💣 Mega Bomba', baseCost: 180, desc: 'Azonnal felrobbant egy 3x3-as területet.', action: () => triggerBomb(3, 3) },
-  { id: 'hammer', name: '🔨 Pöröly', baseCost: 220, desc: 'Minden jég- és faréteget 1 szinttel gyengít a táblán.', action: useHammer },
+  { id: 'tilehammer', name: '🔨 Csempeverő Kalapács', baseCost: 150, desc: 'Kiválaszthatsz egyetlen csempét, amit azonnal szétzúzhatsz!', action: () => startTileTargeting('hammer') },
+  { id: 'lineblaster', name: '↔️ Sorkilövő Rakéta', baseCost: 240, desc: 'Kilőhetsz egy teljes vízszintes sort vagy oszlopot!', action: () => openLineBlasterChoiceModal() },
+  { id: 'bomb', name: '💣 Mega Bomba', baseCost: 190, desc: 'Azonnal felrobbant egy 3x3-as területet.', action: () => triggerBomb(3, 3) },
   { id: 'dynamite', name: '🧨 Dinamit', baseCost: 130, desc: 'Azonnal megsemmisít egy véletlen akadályt a betűk felől.', action: useDynamite },
   { id: 'superhint', name: '💡 Szuper Súgó', baseCost: 170, desc: 'Megtalálja a lehető leghosszabb kirakható szót.', action: useSuperHint },
   { id: 'vowelrain', name: '🅰️ Vokális Eső', baseCost: 100, desc: '3 véletlen magánhangzót ad a betűraktáradba.', action: useVowelRain },
   { id: 'goldencoupon', name: '🌟 Arany Kupon', baseCost: 260, desc: 'A következő kirakott szavadért 3x pontszám jár.', action: () => { state.activeTripleWord = true; showToast("Arany Kupon aktív! Következő szó 3x pontot ér!", "ok"); } },
   { id: 'boardshuffle', name: '🔄 Keverő', baseCost: 80, desc: 'Újrakeveri az összes csempét a táblán.', action: useBoardShuffle },
   { id: 'shield', name: '🛡️ Második Esély', baseCost: 220, desc: 'Ha elfogynának a lépéseid, automatikusan kapsz +3 lépést.', action: () => { state.hasShield = true; showToast("Pajzs aktív! Védve vagy 0 lépés esetén.", "ok"); } },
-  { id: 'clearstorage', name: '🧹 Söprögető', baseCost: 70, desc: 'Kiüríti a betűraktárt, ha túl sok felesleges betűd gyűlt össze.', action: () => { state.pool = []; renderPool(); showToast("Betűraktár kiürítve!", "ok"); } },
-  { id: 'lettergem', name: '🧲 Betűmágnes', baseCost: 190, desc: 'Azonnal kiszabadít 2 betűt a legvastagabb jég/fa alól.', action: useLetterMagnet }
+  { id: 'clearstorage', name: '🧹 Söprögető', baseCost: 70, desc: 'Kiüríti a betűraktárt, ha túl sok felesleges betűd gyűlt össze.', action: () => { state.pool = []; renderPool(); showToast("Betűraktár kiürítve!", "ok"); } }
 ];
 
 function getItemCost(itemId) {
@@ -904,11 +1035,15 @@ function getMoveRefillCost(packSize) {
   return Math.round(base * Math.pow(1.38, count));
 }
 
+function getLetterMarketCost() {
+  const count = (state.purchaseCounts && state.purchaseCounts['letter_market']) || 0;
+  return Math.round(250 * Math.pow(1.65, count));
+}
+
 // =====================================================================
 // 100+ INTELLIGENS, FOKOZATOSAN NEHEZEDŐ QUEST
 // =====================================================================
 const QUESTS = [
-  // --- TIER 1: Kezdő kihívások (1-3. szint) ---
   { id:'t1_match4', tier:1, text:'Robbants fel 4+ csempét egyszerre', check: s => s.stats.biggestMatch >= 4 },
   { id:'t1_match5', tier:1, text:'Robbants fel 5+ csempét egyszerre', check: s => s.stats.biggestMatch >= 5 },
   { id:'t1_word_len4', tier:1, text:'Készíts legalább egy 4 betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 4) },
@@ -930,7 +1065,6 @@ const QUESTS = [
   { id:'t1_score300', tier:1, text:'Szerezz legalább 300 szintpontot', check: s => s.stats.levelScore >= 300 },
   { id:'t1_score500', tier:1, text:'Szerezz legalább 500 szintpontot', check: s => s.stats.levelScore >= 500 },
 
-  // --- TIER 2: Középhaladó (4-7. szint, Jégrétegek) ---
   { id:'t2_match6', tier:2, text:'Robbants fel 6+ csempét egyszerre', check: s => s.stats.biggestMatch >= 6 },
   { id:'t2_match7', tier:2, text:'Robbants fel 7+ csempét egyszerre', check: s => s.stats.biggestMatch >= 7 },
   { id:'t2_ice1', tier:2, text:'Törj össze legalább 1 jégréteget', reqIce:1, check: s => s.stats.iceBroken >= 1 },
@@ -955,7 +1089,6 @@ const QUESTS = [
   { id:'t2_score800', tier:2, text:'Szerezz legalább 800 szintpontot', check: s => s.stats.levelScore >= 800 },
   { id:'t2_score1200', tier:2, text:'Szerezz legalább 1200 szintpontot', check: s => s.stats.levelScore >= 1200 },
 
-  // --- TIER 3: Haladó (8-14. szint, Fa akadályok & vastag jég) ---
   { id:'t3_match8', tier:3, text:'Robbants fel 8+ csempét egyszerre', check: s => s.stats.biggestMatch >= 8 },
   { id:'t3_match9', tier:3, text:'Robbants fel 9+ csempét egyszerre', check: s => s.stats.biggestMatch >= 9 },
   { id:'t3_wood1', tier:3, text:'Törj össze legalább 1 faréteget', reqWood:1, check: s => s.stats.woodBroken >= 1 },
@@ -977,7 +1110,6 @@ const QUESTS = [
   { id:'t3_score2000', tier:3, text:'Szerezz legalább 2000 szintpontot', check: s => s.stats.levelScore >= 2000 },
   { id:'t3_score3000', tier:3, text:'Szerezz legalább 3000 szintpontot', check: s => s.stats.levelScore >= 3000 },
 
-  // --- TIER 4: Mester (15-24. szint) ---
   { id:'t4_match10', tier:4, text:'Robbants fel 10+ csempét egyszerre', check: s => s.stats.biggestMatch >= 10 },
   { id:'t4_match12', tier:4, text:'Robbants fel 12+ csempét egyszerre', check: s => s.stats.biggestMatch >= 12 },
   { id:'t4_wood3', tier:4, text:'Törj össze legalább 3 faréteget', reqWood:3, check: s => s.stats.woodBroken >= 3 },
@@ -991,7 +1123,6 @@ const QUESTS = [
   { id:'t4_score6000', tier:4, text:'Szerezz legalább 6000 szintpontot', check: s => s.stats.levelScore >= 6000 },
   { id:'t4_words5', tier:4, text:'Készíts legalább 5 érvényes szót', check: s => (s.levelWords||[]).length >= 5 },
 
-  // --- TIER 5: Legenda (25+ szint) ---
   { id:'t5_match14', tier:5, text:'Robbants fel 14+ csempét egyszerre', check: s => s.stats.biggestMatch >= 14 },
   { id:'t5_layers8', tier:5, text:'Törj össze összesen 8 réteget', reqLayers:8, check: s => (s.stats.woodBroken + s.stats.iceBroken) >= 8 },
   { id:'t5_wood5', tier:5, text:'Törj össze legalább 5 faréteget', reqWood:5, check: s => s.stats.woodBroken >= 5 },
@@ -1038,25 +1169,8 @@ function pickViableQuest(lvl, board) {
 }
 
 // =====================================================================
-// MAGYAR ÁBÉCÉ & BETŰSÚLYOZÁS (Y-NAL ÉS MINDEN BETŰVEL)
+// JÁTÉK ÁLLAPOT
 // =====================================================================
-const GRID_SIZE = 8;
-const MAX_POOL = 40;
-
-const LETTER_DIST = {
-  'A':10, 'Á':5, 'E':10, 'É':5, 'I':6, 'Í':3, 'O':6, 'Ó':3, 'Ö':3, 'Ő':2, 'U':4, 'Ú':2, 'Ü':3, 'Ű':2,
-  'B':3, 'C':2, 'CS':2, 'D':3, 'DZ':1, 'DZS':1, 'F':3, 'G':3, 'GY':3, 'H':3, 'J':3, 'K':6, 'L':5,
-  'LY':2, 'M':5, 'N':6, 'NY':3, 'P':3, 'R':6, 'S':5, 'SZ':3, 'T':6, 'TY':2, 'V':3,
-  'Y':5, 'Z':3, 'ZS':2
-};
-
-const RARE_LETTERS = new Set(['GY','SZ','ZS','TY','LY','NY','CS','DZ','DZS','Ű','Ő','Í','Ú','Ó','Y','C']);
-
-const BAG = [];
-Object.entries(LETTER_DIST).forEach(([char, count]) => {
-  for(let i = 0; i < count; i++) BAG.push(char);
-});
-
 const state = {
   playerName: null,
   playerPin: null,
@@ -1078,7 +1192,9 @@ const state = {
   checkInStreak: 0,
   lastCheckInDate: null,
   activeTripleWord: false,
-  hasShield: false
+  hasShield: false,
+  activeTargetMode: null,
+  playTimeSeconds: 0
 };
 
 const boardEl = document.getElementById('game-board');
@@ -1099,7 +1215,7 @@ function calcTileMetrics() {
   return size;
 }
 
-// ÚJ SZINT INDÍTÁSA - A HÁTIZSÁK, A TARTALÉK LÉPÉSEK ÉS A PONTOK SOHA NEM VÉSZNEK EL!
+// ÚJ SZINT INDÍTÁSA - KÉSZLETEK, HÁTIZSÁK, PONTOK MEGŐRZÉSE!
 function initLevelData(lvl) {
   state.level = lvl;
   state.pool = [];
@@ -1107,6 +1223,7 @@ function initLevelData(lvl) {
   state.levelWords = [];
   state.bonusDone = false;
   state.activeTripleWord = false;
+  stopTargetingMode();
 
   state.requiredWords = Math.min(10, 3 + Math.floor(lvl / 3));
   state.minWordLen = lvl < 5 ? 3 : (lvl < 12 ? 4 : 5);
@@ -1221,6 +1338,19 @@ function createTileElement(tile, size) {
 }
 
 function onTileClicked(tile) {
+  if(state.activeTargetMode === 'hammer') {
+    executeHammerOnTile(tile);
+    return;
+  }
+  if(state.activeTargetMode === 'blaster-row') {
+    executeBlasterRow(tile.r);
+    return;
+  }
+  if(state.activeTargetMode === 'blaster-col') {
+    executeBlasterCol(tile.c);
+    return;
+  }
+
   if(tile.wood > 0) {
     showToast("Ez a betű fa réteg alatt van! Robbants mellette a töréshez!", "err");
     sfxError();
@@ -1245,6 +1375,156 @@ function onTileClicked(tile) {
   }
 
   executeClusterExplosion(cluster);
+}
+
+function startTileTargeting(mode) {
+  state.activeTargetMode = mode;
+  const banner = document.getElementById('targeting-banner');
+  const msg = document.getElementById('targeting-msg');
+  banner.classList.add('active');
+  boardEl.classList.add('targeting-cursor');
+
+  if(mode === 'hammer') {
+    msg.textContent = '🔨 KATTINTS BÁRMELYIK KOCKÁRA A SZÉTZÚZÁSÁHOZ!';
+  } else if(mode === 'blaster-row') {
+    msg.textContent = '↔️ KATTINTS A KIVÁLASZTOTT SORRA A KILÖVÉSHEZ!';
+  } else if(mode === 'blaster-col') {
+    msg.textContent = '↕️ KATTINTS A KIVÁLASZTOTT OSZLOPRA A KILÖVÉSHEZ!';
+  }
+}
+
+function stopTargetingMode() {
+  state.activeTargetMode = null;
+  document.getElementById('targeting-banner').classList.remove('active');
+  if(boardEl) boardEl.classList.remove('targeting-cursor');
+}
+
+document.getElementById('btn-cancel-target').addEventListener('click', () => {
+  stopTargetingMode();
+  showToast("Célzó mód visszavonva.", "ok");
+});
+
+async function executeHammerOnTile(tile) {
+  stopTargetingMode();
+  isLocked = true;
+  sfxCrack();
+  shakeScreen();
+
+  const boardRect = boardEl.getBoundingClientRect();
+  const px = boardRect.left + (tile.c + 0.5) * (boardRect.width / GRID_SIZE);
+  const py = boardRect.top + (tile.r + 0.5) * (boardRect.height / GRID_SIZE);
+  spawnExplosion(px, py, '#ffffff');
+
+  if(tile.letter && state.pool.length < MAX_POOL) {
+    animateFreedLetters([{ char: tile.letter, x: px, y: py }]);
+    state.stats.lettersFreed++;
+  }
+
+  tile.el.classList.add('clearing');
+  setTimeout(() => { if(tile.el && tile.el.parentNode) tile.el.parentNode.removeChild(tile.el); }, 280);
+  state.board[tile.r][tile.c] = null;
+
+  showToast("🔨 Kocka sikeresen szétzúzva!", "ok");
+  await delay(250);
+  await applyGravityAndRefill();
+  updateStats();
+  await syncCloudState();
+  isLocked = false;
+  verifyGameState();
+}
+
+function openLineBlasterChoiceModal() {
+  document.getElementById('modal-lineblaster-choice').classList.add('active');
+}
+
+document.getElementById('btn-blaster-row').addEventListener('click', () => {
+  document.getElementById('modal-lineblaster-choice').classList.remove('active');
+  startTileTargeting('blaster-row');
+});
+
+document.getElementById('btn-blaster-col').addEventListener('click', () => {
+  document.getElementById('modal-lineblaster-choice').classList.remove('active');
+  startTileTargeting('blaster-col');
+});
+
+document.getElementById('btn-blaster-cancel').addEventListener('click', () => {
+  document.getElementById('modal-lineblaster-choice').classList.remove('active');
+});
+
+async function executeBlasterRow(rowIdx) {
+  stopTargetingMode();
+  isLocked = true;
+  sfxLaser();
+  shakeScreen();
+
+  const boardRect = boardEl.getBoundingClientRect();
+  const freed = [];
+
+  for(let c = 0; c < GRID_SIZE; c++) {
+    const t = state.board[rowIdx][c];
+    if(t) {
+      const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
+      const py = boardRect.top + (rowIdx + 0.5) * (boardRect.height / GRID_SIZE);
+      spawnExplosion(px, py, '#fbbf24');
+
+      if(t.letter && state.pool.length < MAX_POOL) {
+        freed.push({ char: t.letter, x: px, y: py });
+        state.stats.lettersFreed++;
+      }
+
+      t.el.classList.add('clearing');
+      setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
+      state.board[rowIdx][c] = null;
+    }
+  }
+
+  if(freed.length > 0) animateFreedLetters(freed);
+  showToast("↔️ Vízszintes sor kilőve!", "ok");
+
+  await delay(260);
+  await applyGravityAndRefill();
+  updateStats();
+  await syncCloudState();
+  isLocked = false;
+  verifyGameState();
+}
+
+async function executeBlasterCol(colIdx) {
+  stopTargetingMode();
+  isLocked = true;
+  sfxLaser();
+  shakeScreen();
+
+  const boardRect = boardEl.getBoundingClientRect();
+  const freed = [];
+
+  for(let r = 0; r < GRID_SIZE; r++) {
+    const t = state.board[r][colIdx];
+    if(t) {
+      const px = boardRect.left + (colIdx + 0.5) * (boardRect.width / GRID_SIZE);
+      const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
+      spawnExplosion(px, py, '#06b6d4');
+
+      if(t.letter && state.pool.length < MAX_POOL) {
+        freed.push({ char: t.letter, x: px, y: py });
+        state.stats.lettersFreed++;
+      }
+
+      t.el.classList.add('clearing');
+      setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
+      state.board[r][colIdx] = null;
+    }
+  }
+
+  if(freed.length > 0) animateFreedLetters(freed);
+  showToast("↕️ Függőleges oszlop kilőve!", "ok");
+
+  await delay(260);
+  await applyGravityAndRefill();
+  updateStats();
+  await syncCloudState();
+  isLocked = false;
+  verifyGameState();
 }
 
 function getConnectedCluster(startR, startC, color) {
@@ -1314,7 +1594,8 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
 
     const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
     const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-    spawnExplosion(px, py, ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#c084fc'][t.color] || '#fff');
+    const colHex = ['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff';
+    spawnExplosion(px, py, colHex);
 
     if(t.letter && t.ice === 0 && t.wood === 0 && state.pool.length < MAX_POOL) {
       newlyFreedLetters.push({ char: t.letter, x: px, y: py });
@@ -1608,8 +1889,10 @@ function getTrayWord() {
 function validateCurrentTrayWord() {
   const w = getTrayWord();
   trayEl.classList.remove('valid', 'invalid');
-  if(w.length >= state.minWordLen) {
-    if(DICT.has(w)) {
+  if(w.length >= 2) {
+    if(NON_WORDS_DIGRAPHS.has(w)) {
+      trayEl.classList.add('invalid');
+    } else if(DICT.has(w)) {
       trayEl.classList.add('valid');
     } else {
       trayEl.classList.add('invalid');
@@ -1617,15 +1900,27 @@ function validateCurrentTrayWord() {
   }
 }
 
+// =====================================================================
+// SZÓBEKÜLDÉS: RÖVID SZAVAK IS ELFOGADVA + LONE DIGRAPH BLOKK + EXTRA JUTALOM
+// =====================================================================
 document.getElementById('btn-submit').addEventListener('click', async () => {
   const word = getTrayWord();
-  if(word.length < state.minWordLen) {
-    showToast(`Túl rövid! Min. ${state.minWordLen} betű szükséges.`, 'err');
+  if(word.length < 2) {
+    showToast("Legalább 2 betűs szó szükséges!", "err");
     sfxError();
     return;
   }
+
+  // Összetett betűk önmagukban való kiszűrése (nem értelmes szó)
+  if(NON_WORDS_DIGRAPHS.has(word)) {
+    showToast(`"${word}" önmagában csak egy hangjelölés, nem értelmes magyar szó!`, "err");
+    sfxError();
+    return;
+  }
+
+  // Értelmes szótár ellenőrzése
   if(!DICT.has(word)) {
-    showToast(`"${word}" nem szerepel a szótárban!`, 'err');
+    showToast(`"${word}" nem szerepel a magyar szótárban!`, "err");
     sfxError();
     return;
   }
@@ -1646,11 +1941,19 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   const wordScore = Math.floor(Math.pow(word.length, 2.2) * 20 * rareMultiplier);
   state.weeklyScore += wordScore;
   state.stats.levelScore += wordScore;
-  state.stats.wordsMade++;
   state.levelWords.push(word);
 
+  // Teljesíti-e a fő küldetés szóhossz követelményét?
+  const qualifiesForQuest = word.length >= state.minWordLen;
+  if(qualifiesForQuest) {
+    state.stats.wordsMade++;
+    showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
+  } else {
+    // 2-3 betűs rövid szavak elfogadása, pontot ad, de nem növeli a szintcél számlálóját
+    showToast(`Sikeres szó: ${word} (+${wordScore} pont)! (A szintcélhoz min. ${state.minWordLen} betű kell)`, 'ok');
+  }
+
   sfxWordSuccess();
-  showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
 
   const trayRect = trayEl.getBoundingClientRect();
   spawnExplosion(trayRect.left + trayRect.width / 2, trayRect.top + trayRect.height / 2, '#10b981');
@@ -1661,7 +1964,45 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   checkQuestProgress();
   await syncCloudState();
 
+  // 4 VAGY 5+ BETŰS SZAVAKÉRT EXTRA INGYENES BETŰ KÉRÉSI JUTALOM!
+  if(word.length >= 5) {
+    triggerFreeLetterReward(word);
+  }
+
   verifyGameState();
+});
+
+// Ingyenes betűválasztó modal megnyitása
+function triggerFreeLetterReward(word) {
+  document.getElementById('free-letter-desc').innerHTML = 
+    `🎉 Gratulálunk! Készítettél egy <b>${word.length} betűs szót (${word})</b>! Jutalmul kérhetsz egy <b>INGYENES</b> tetszőleges betűt a raktáradba!`;
+  document.getElementById('input-free-letter').value = '';
+  document.getElementById('modal-free-letter-reward').classList.add('active');
+}
+
+document.querySelectorAll('.free-pick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('input-free-letter').value = btn.dataset.char;
+  });
+});
+
+document.getElementById('btn-claim-free-letter').addEventListener('click', async () => {
+  let char = document.getElementById('input-free-letter').value.trim().toUpperCase();
+  if(!char) {
+    showToast("Kérlek írd be vagy válaszd ki a kért betűt!", "err");
+    return;
+  }
+  if(state.pool.length >= MAX_POOL) {
+    showToast("Tele a betűraktárad!", "err");
+    return;
+  }
+
+  state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: char });
+  document.getElementById('modal-free-letter-reward').classList.remove('active');
+  renderPool();
+  await syncCloudState();
+  showToast(`🎁 Az ingyenes "${char}" betű bekerült a raktáradba!`, "ok");
+  sfxWordSuccess();
 });
 
 document.getElementById('btn-back').addEventListener('click', () => {
@@ -1680,6 +2021,17 @@ document.getElementById('btn-clear-tray').addEventListener('click', () => {
   sfxSnap();
   renderTray();
   renderPool();
+});
+
+// =====================================================================
+// „🔄 ÚJRAKEZDEM A PÁLYÁT” GOMB JÁTÉK KÖZBEN
+// =====================================================================
+document.getElementById('btn-restart-level-direct').addEventListener('click', () => {
+  if(confirm(`Biztosan elölről kezded ezt a szintet (${state.level}. szint)?\nMinden megvásárolt javat, tartalék lépést és heti pontodat megtartod!`)) {
+    initLevelData(state.level);
+    syncCloudState();
+    showToast(`Szint újraindítva: ${state.level}. szint! Javak megőrizve.`, "ok");
+  }
 });
 
 function updateStats() {
@@ -1734,9 +2086,6 @@ function checkQuestProgress() {
   updateMissionUI();
 }
 
-// =====================================================================
-// LÉPÉSKIFOGYÁS: ELŐSZÖR A MEGLÉVŐ TARTALÉKOKRA KÉRDEZ RÁ, CSAK VÉGÜL VÁSÁRLÁSRA
-// =====================================================================
 function verifyGameState() {
   const mainGoalDone = state.stats.wordsMade >= state.requiredWords;
   if(mainGoalDone && state.bonusDone) {
@@ -1753,13 +2102,11 @@ function verifyGameState() {
       return;
     }
 
-    // 1. LÉPÉS: Ha van bármennyi tartalék lépése a játékosnak, arra kérdez rá, és ő dönti el, mennyit vált be!
     if((state.storedMoves || 0) > 0) {
       openUseStoredMovesModal();
       return;
     }
 
-    // 2. LÉPÉS: Csak akkor buzdít vásárlásra, ha a keret teljesen elfogyott!
     openOutOfMovesModal();
   }
 }
@@ -1773,20 +2120,15 @@ function openUseStoredMovesModal() {
   document.getElementById('modal-use-stored').classList.add('active');
 }
 
-// Stepper és számbeíró eseménykezelők
 document.getElementById('btn-step-minus').addEventListener('click', () => {
   const inp = document.getElementById('input-step-custom');
   let val = parseInt(inp.value, 10) || 1;
-  if(val > 1) {
-    inp.value = val - 1;
-  }
+  if(val > 1) inp.value = val - 1;
 });
 document.getElementById('btn-step-plus').addEventListener('click', () => {
   const inp = document.getElementById('input-step-custom');
   let val = parseInt(inp.value, 10) || 1;
-  if(val < state.storedMoves) {
-    inp.value = val + 1;
-  }
+  if(val < state.storedMoves) inp.value = val + 1;
 });
 document.getElementById('btn-pick-1').addEventListener('click', () => {
   document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 1);
@@ -1805,12 +2147,10 @@ document.getElementById('btn-confirm-use-stored').addEventListener('click', asyn
   const inp = document.getElementById('input-step-custom');
   let requested = parseInt(inp.value, 10);
   if(isNaN(requested) || requested <= 0) {
-    showToast("Legalább 1 lépést kell megadnod!", "err");
+    showToast("Legalább 1 lépést meg kell adnod!", "err");
     return;
   }
-  if(requested > state.storedMoves) {
-    requested = state.storedMoves;
-  }
+  if(requested > state.storedMoves) requested = state.storedMoves;
 
   state.storedMoves -= requested;
   state.moves += requested;
@@ -1818,7 +2158,7 @@ document.getElementById('btn-confirm-use-stored').addEventListener('click', asyn
   updateStats();
   renderQuickInventory();
   await syncCloudState();
-  showToast(`➕ ${requested} db tartalék lépés sikeresen beváltva!`, "ok");
+  showToast(`➕ ${requested} db tartalék lépés beváltva!`, "ok");
 });
 
 document.getElementById('btn-cancel-use-stored').addEventListener('click', () => {
@@ -1861,7 +2201,6 @@ document.getElementById('btn-buy-moves-10').addEventListener('click', async () =
 
 document.getElementById('btn-retry-from-fail').addEventListener('click', () => {
   document.getElementById('modal-out-of-moves').classList.remove('active');
-  // Újrapróbálás: az inventory és a tartalék lépések sértetlenek maradnak!
   initLevelData(state.level);
   syncCloudState();
 });
@@ -1971,23 +2310,6 @@ function useInventoryItem(item) {
   syncCloudState();
 }
 
-function useHammer() {
-  let cracked = 0;
-  for(let r = 0; r < GRID_SIZE; r++) {
-    for(let c = 0; c < GRID_SIZE; c++) {
-      const t = state.board[r][c];
-      if(t && (t.ice > 0 || t.wood > 0)) {
-        if(t.ice > 0) t.ice--;
-        if(t.wood > 0) t.wood--;
-        refreshTileAppearance(t);
-        cracked++;
-      }
-    }
-  }
-  sfxCrack();
-  showToast(`🔨 Pöröly lecsapott! ${cracked} réteg megroppant!`, "ok");
-}
-
 function useDynamite() {
   let target = null;
   for(let r = 0; r < GRID_SIZE; r++) {
@@ -2012,7 +2334,7 @@ function useSuperHint() {
   const letters = [...state.pool, ...state.tray].map(i => i.char);
   let best = null;
   for(const word of DICT) {
-    if(word.length >= state.minWordLen && word.length <= letters.length) {
+    if(word.length >= 2 && word.length <= letters.length) {
       let temp = [...letters];
       let ok = true;
       for(const ch of word) {
@@ -2065,26 +2387,6 @@ function useBoardShuffle() {
   showToast("🔄 Tábla átrendezve!", "ok");
 }
 
-function useLetterMagnet() {
-  let freed = 0;
-  for(let r = 0; r < GRID_SIZE; r++) {
-    for(let c = 0; c < GRID_SIZE; c++) {
-      const t = state.board[r][c];
-      if(t && t.letter && (t.ice > 0 || t.wood > 0) && freed < 2) {
-        t.ice = 0;
-        t.wood = 0;
-        refreshTileAppearance(t);
-        state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: t.letter });
-        t.letter = null;
-        refreshTileAppearance(t);
-        freed++;
-      }
-    }
-  }
-  renderPool();
-  showToast(`🧲 Mágnes kiszabadított ${freed} betűt!`, "ok");
-}
-
 document.getElementById('btn-open-shop').addEventListener('click', () => {
   renderShop();
   document.getElementById('modal-shop').classList.add('active');
@@ -2093,6 +2395,87 @@ document.getElementById('btn-open-shop').addEventListener('click', () => {
 document.getElementById('btn-close-shop').addEventListener('click', () => {
   document.getElementById('modal-shop').classList.remove('active');
 });
+
+// =====================================================================
+// 10 PERC UTÁN FELOLDÓDÓ PRÉMIUM BETŰPIAC
+// =====================================================================
+function updatePlayTimeTracker() {
+  state.playTimeSeconds = (state.playTimeSeconds || 0) + 1;
+  const btn = document.getElementById('btn-open-market');
+  if(!btn) return;
+
+  if(state.playTimeSeconds < 600) {
+    const remain = 600 - state.playTimeSeconds;
+    const m = Math.floor(remain / 60);
+    const s = remain % 60;
+    btn.innerHTML = `⏳ Betűpiac (${m}:${s < 10 ? '0' : ''}${s})`;
+    btn.classList.remove('unlocked-pulse');
+  } else {
+    btn.innerHTML = `🔤 Betűpiac 🔓`;
+    btn.classList.add('unlocked-pulse');
+  }
+}
+setInterval(updatePlayTimeTracker, 1000);
+
+document.getElementById('btn-open-market').addEventListener('click', () => {
+  if(state.playTimeSeconds < 600) {
+    const remain = 600 - state.playTimeSeconds;
+    const m = Math.floor(remain / 60);
+    const s = remain % 60;
+    showToast(`A Betűpiac még zárva! Hátralévő játékidő: ${m} perc ${s} mp`, "err");
+    return;
+  }
+  renderLetterMarket();
+  document.getElementById('modal-letter-market').classList.add('active');
+});
+
+document.getElementById('btn-close-market').addEventListener('click', () => {
+  document.getElementById('modal-letter-market').classList.remove('active');
+});
+
+function renderLetterMarket() {
+  const currentCost = getLetterMarketCost();
+  document.getElementById('market-cost-display').textContent = currentCost.toLocaleString('hu-HU');
+  document.getElementById('market-balance-display').textContent = state.weeklyScore.toLocaleString('hu-HU');
+
+  const grid = document.getElementById('letter-market-grid');
+  grid.innerHTML = '';
+
+  HUNGARIAN_ALPHABET_ALL.forEach(letter => {
+    const btn = document.createElement('button');
+    btn.className = 'market-char-btn';
+    if(RARE_LETTERS.has(letter)) btn.classList.add('rare');
+    btn.textContent = letter;
+
+    btn.addEventListener('click', () => buySpecificLetter(letter));
+    grid.appendChild(btn);
+  });
+}
+
+async function buySpecificLetter(letter) {
+  const cost = getLetterMarketCost();
+  if(state.weeklyScore < cost) {
+    showToast(`Nincs elég heti pontod! Ez a betű ${cost} heti pontba kerül.`, "err");
+    sfxError();
+    return;
+  }
+  if(state.pool.length >= MAX_POOL) {
+    showToast("Tele a betűraktárad! Rakj ki szót vagy söprögess!", "err");
+    sfxError();
+    return;
+  }
+
+  state.weeklyScore -= cost;
+  state.purchaseCounts['letter_market'] = (state.purchaseCounts['letter_market'] || 0) + 1;
+  state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: letter });
+
+  sfxWordSuccess();
+  showToast(`Megvásárolva: "${letter}" betű! (-${cost} heti pont)`, "ok");
+  renderPool();
+  updateStats();
+  renderLetterMarket();
+  await syncCloudState();
+}
 
 // =====================================================================
 // 30 NAPOS BECSEKKOLÁS
@@ -2217,7 +2600,7 @@ document.getElementById('btn-claim-daily').addEventListener('click', async () =>
 });
 
 // =====================================================================
-// VALÓS IDEJŰ (REALTIME) HETI RANGLISTA & TŰPONTOS PONTOZÁS
+// VALÓS IDEJŰ (REALTIME) HETI RANGLISTA
 // =====================================================================
 function startRealtimeLeaderboardListener() {
   if(!cloudConnected || !db) return;
@@ -2313,7 +2696,7 @@ document.getElementById('btn-close-lb').addEventListener('click', () => {
 });
 
 // =====================================================================
-// FELHŐ MENTÉS & BETÖLTÉS (JAVAK ÉS TARTALÉKOK ÖRÖK MEGTARTÁSÁVAL)
+// FELHŐ MENTÉS & BETÖLTÉS
 // =====================================================================
 async function syncCloudState() {
   if(!cloudConnected || !db || !state.playerName || !state.playerPin) return;
@@ -2359,7 +2742,8 @@ async function syncCloudState() {
     tray: state.tray,
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
-    lastCheckInDate: state.lastCheckInDate || null
+    lastCheckInDate: state.lastCheckInDate || null,
+    playTimeSeconds: state.playTimeSeconds || 0
   };
 
   const cleanPayload = JSON.parse(JSON.stringify(rawPayload));
@@ -2387,10 +2771,10 @@ function restoreFromCloudData(data) {
   }
 
   state.moves = data.moves !== undefined ? data.moves : 30;
-  // Megvásárolt javak és tartalékok pontos betöltése
   state.storedMoves = data.storedMoves || 0;
   state.purchaseCounts = data.purchaseCounts || {};
   state.inventory = data.inventory || {};
+  state.playTimeSeconds = data.playTimeSeconds || 0;
 
   state.requiredWords = data.requiredWords || 3;
   state.minWordLen = data.minWordLen || 3;
@@ -2478,7 +2862,6 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           `Üdvözlünk, ${n}! Korábbi mentést találtunk: ${matchedData.level}. szint, ${(matchedData.weeklyScore||0).toLocaleString('hu-HU')} heti ponttal.`;
         document.getElementById('modal-resume').classList.add('active');
 
-        // 1. FOLYTATÁS: Mindent pontosan onnan folytat, ahol járt
         document.getElementById('btn-resume-continue').onclick = () => {
           document.getElementById('modal-resume').classList.remove('active');
           restoreFromCloudData(matchedData);
@@ -2486,7 +2869,6 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           showToast(`Játék sikeresen betöltve: ${matchedData.level}. szint!`, "ok");
         };
 
-        // 2. SZINT ÚJRA: Az adott szintet újrakezdi, DE A JAVAK, TARTALÉKOK ÉS HETI PONTOK MEGMARADNAK!
         document.getElementById('btn-resume-restart').onclick = () => {
           document.getElementById('modal-resume').classList.remove('active');
           state.checkInStreak = matchedData.checkInStreak || 0;
@@ -2495,13 +2877,13 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           state.storedMoves = matchedData.storedMoves || 0;
           state.purchaseCounts = matchedData.purchaseCounts || {};
           state.weeklyScore = matchedData.weeklyScore || 0;
+          state.playTimeSeconds = matchedData.playTimeSeconds || 0;
           initLevelData(matchedData.level || 1);
           syncCloudState();
           checkDailyStatus();
           showToast(`Szint újraindítva: ${matchedData.level}. szint! (Javak megőrizve)`, "ok");
         };
 
-        // 3. TELJESEN ÚJ JÁTÉK 1. SZINTRŐL: A szint 1-re ugrik, DE A MEGVÁSÁROLT TÁRGYAK ÉS LÉPÉSEK MEGMARADNAK!
         document.getElementById('btn-resume-newgame').onclick = () => {
           document.getElementById('modal-resume').classList.remove('active');
           state.checkInStreak = matchedData.checkInStreak || 0;
@@ -2510,6 +2892,7 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           state.storedMoves = matchedData.storedMoves || 0;
           state.purchaseCounts = matchedData.purchaseCounts || {};
           state.weeklyScore = matchedData.weeklyScore || 0;
+          state.playTimeSeconds = matchedData.playTimeSeconds || 0;
           initLevelData(1);
           syncCloudState();
           checkDailyStatus();
@@ -2523,17 +2906,17 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
     }
   }
 
-  // Teljesen új profil esetén tiszta kezdet
+  // Új játékos inicializálása
   state.inventory = {};
   state.storedMoves = 0;
   state.purchaseCounts = {};
+  state.playTimeSeconds = 0;
   initLevelData(1);
   await syncCloudState();
   checkDailyStatus();
   showToast(`Üdvözlünk, ${n}! Új profil sikeresen létrehozva.`, "ok");
 });
 
-// Fiókváltás gomb a fejlécben
 document.getElementById('btn-switch-user').addEventListener('click', () => {
   document.getElementById('modal-auth').classList.add('active');
   document.getElementById('auth-name').value = '';
