@@ -87,6 +87,9 @@ html, body {
 .btn-nav-action.restart-btn {
   border-color: rgba(239,68,68,0.5); color: #fca5a5; background: rgba(239,68,68,0.12);
 }
+.btn-nav-action.rules-btn {
+  border-color: var(--cyan); color: #a5f3fc; background: rgba(6, 182, 212, 0.15);
+}
 .btn-nav-action.unlocked-pulse {
   border-color: var(--gold); background: rgba(245, 158, 11, 0.2);
   animation: pulse 1s infinite alternate; color: #fde68a;
@@ -121,6 +124,26 @@ html, body {
 .stat-box.moves.warning .val { color: var(--ruby); animation: pulse .8s infinite alternate; }
 .stat-box.rank-box .val { color: var(--emerald); }
 @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+/* KÖZPONTI BOLT & ESZKÖZTÁR SÁV */
+.central-shop-bar {
+  display: flex; flex-direction: column; gap: 4px; padding: 6px 10px;
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+}
+.central-shop-header {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.central-shop-title {
+  font-size: 11px; font-weight: 900; letter-spacing: 1px; color: var(--gold);
+  display: flex; align-items: center; gap: 5px;
+}
+.btn-open-shop-main {
+  background: linear-gradient(135deg, var(--gold), #d97706); border: none; border-radius: 7px;
+  color: #fff; font-size: 10.5px; font-weight: 900; padding: 5px 10px; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+}
+.btn-open-shop-main:active { transform: scale(0.96); }
 
 /* CÉLZÓ MÓD BANNER */
 .targeting-banner {
@@ -191,7 +214,7 @@ html, body {
   pointer-events: none; z-index: 3;
 }
 
-/* 6 TÖKÉLETESEN ELKÜLÖNÜLŐ, ÉLÉNK SZÍN */
+/* 6 KONTRASZTOS SZÍN */
 .tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, #f87171, #dc2626 55%, #7f1d1d); }
 .tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #60a5fa, #1d4ed8 55%, #172554); }
 .tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, #34d399, #059669 55%, #064e3b); }
@@ -356,17 +379,23 @@ html, body {
 }
 
 .quick-inv-row {
-  display: flex; gap: 4px; overflow-x: auto; padding: 2px 0; align-items: center;
+  display: flex; gap: 5px; overflow-x: auto; padding: 2px 0; align-items: center;
 }
 .btn-inv-slot {
   background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-  padding: 6px 8px; display: flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 800; color: #cbd5e1; cursor: pointer;
+  padding: 5px 8px; display: flex; align-items: center; gap: 4px;
+  font-size: 9.5px; font-weight: 800; color: #cbd5e1; cursor: pointer;
   white-space: nowrap; font-family: inherit; flex-shrink: 0;
 }
 .btn-inv-slot:disabled { opacity: 0.3; cursor: not-allowed; }
 .btn-inv-slot .count {
-  background: var(--gold); color: #451a03; border-radius: 10px; padding: 1px 5px; font-size: 9px;
+  background: var(--gold); color: #451a03; border-radius: 10px; padding: 1px 5px; font-size: 8.5px;
+}
+.btn-inv-slot.free-active {
+  border-color: var(--emerald); background: rgba(16, 185, 129, 0.15); color: #6ee7b7;
+}
+.btn-inv-slot.free-active .count {
+  background: var(--emerald); color: #fff;
 }
 .btn-inv-slot.highlight {
   border-color: var(--cyan); background: rgba(6, 182, 212, 0.2);
@@ -390,14 +419,20 @@ html, body {
 .modal-overlay.active { display: flex; animation: modalFadeIn 0.25s ease-out; }
 @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 .modal-box {
-  width: 100%; max-width: 420px; padding: 20px; border-radius: 16px;
+  width: 100%; max-width: 440px; padding: 20px; border-radius: 16px;
   text-align: center; display: flex; flex-direction: column; gap: 12px;
   background: linear-gradient(145deg, #1e293b, #0f172a);
   border: 1.5px solid rgba(255,255,255,0.1);
   box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-  max-height: 90vh; overflow-y: auto;
+  max-height: 90vh; overflow-y: auto; position: relative;
 }
-.modal-title { font-size: 20px; font-weight: 900; letter-spacing: 1px; }
+.modal-close-x {
+  position: absolute; top: 12px; right: 14px; background: #334155; border: none;
+  color: #cbd5e1; font-size: 16px; font-weight: 900; width: 28px; height: 28px;
+  border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.modal-close-x:active { transform: scale(0.92); }
+.modal-title { font-size: 18px; font-weight: 900; letter-spacing: 1px; }
 .modal-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0; }
 .input-pin {
   background: #020617; border: 1.5px solid #334155; border-radius: 8px;
@@ -414,6 +449,21 @@ html, body {
 .btn-modal.danger { background: #dc2626; color: #fff; }
 .btn-modal.secondary { background: #334155; color: #cbd5e1; }
 .btn-modal.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+
+/* JÁTÉKSZABÁLYZAT KÁRTYÁK */
+.rules-container {
+  display: flex; flex-direction: column; gap: 8px; text-align: left; max-height: 60vh;
+  overflow-y: auto; padding-right: 4px;
+}
+.rule-card {
+  background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 10px;
+}
+.rule-card h4 {
+  margin: 0 0 4px 0; font-size: 12px; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 6px;
+}
+.rule-card p {
+  margin: 0; font-size: 10.5px; color: #cbd5e1; line-height: 1.45;
+}
 
 .stepper-row {
   display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0;
@@ -527,14 +577,10 @@ html, body {
       <div class="dict-status" id="dict-status-txt">Szótár: Betöltés...</div>
     </div>
     <div class="nav-actions">
-      <button class="btn-nav-action restart-btn" id="btn-restart-level-direct" title="A szint újrakezdése tiszta táblával (a megvásárolt javak megmaradnak)">
-        🔄 Szint Újra
-      </button>
-      <button class="btn-nav-action" id="btn-open-market" title="10 perc játékidő után feloldódó betűpiac">
-        ⏳ Betűpiac
-      </button>
+      <button class="btn-nav-action rules-btn" id="btn-open-rules" title="Részletes játékszabályzat megnyitása">📖 Szabályzat</button>
+      <button class="btn-nav-action restart-btn" id="btn-restart-level-direct" title="A szint újrakezdése tiszta táblával (a megvásárolt javak megmaradnak)">🔄 Szint Újra</button>
+      <button class="btn-nav-action" id="btn-open-market" title="10 perc játékidő után feloldódó betűpiac">⏳ Betűpiac</button>
       <button class="btn-nav-action" id="btn-switch-user" title="Fiók váltása">👤 Váltás</button>
-      <button class="btn-nav-action" id="btn-open-shop">🛒 Bolt</button>
       <button class="btn-nav-action" id="btn-open-daily">
         📅 Napi
         <div class="badge-dot" id="daily-dot"></div>
@@ -544,16 +590,27 @@ html, body {
     </div>
   </div>
 
-  <div class="targeting-banner glass" id="targeting-banner">
-    <span id="targeting-msg">🎯 CÉLZÓ MÓD AKTÍV</span>
-    <button class="btn-cancel-target" id="btn-cancel-target">MÉGSEM ✖</button>
-  </div>
-
   <div class="stats-grid">
     <div class="stat-box glass"><span class="lbl">Szint</span><span class="val" id="stat-level">1</span></div>
     <div class="stat-box glass moves" id="box-moves"><span class="lbl">Lépés</span><span class="val" id="stat-moves">30</span></div>
     <div class="stat-box glass highlight"><span class="lbl">Heti Pont</span><span class="val" id="stat-weekly">0</span></div>
     <div class="stat-box glass rank-box"><span class="lbl">Helyezés</span><span class="val" id="stat-rank">—</span></div>
+  </div>
+
+  <!-- KÖZPONTI BOLT ÉS ESZKÖZTÁR (KÖZVETLENÜL A PÁLYA FELETT) -->
+  <div class="central-shop-bar glass">
+    <div class="central-shop-header">
+      <div class="central-shop-title">
+        🛒 <span>KÖZPONTI BOLT & ESZKÖZTÁR</span>
+      </div>
+      <button class="btn-open-shop-main" id="btn-open-shop-central">🛒 ÁRUHÁZ MEGNYITÁSA</button>
+    </div>
+    <div class="quick-inv-row" id="quick-inv-row"></div>
+  </div>
+
+  <div class="targeting-banner glass" id="targeting-banner">
+    <span id="targeting-msg">🎯 CÉLZÓ MÓD AKTÍV</span>
+    <button class="btn-cancel-target" id="btn-cancel-target">MÉGSEM ✖</button>
   </div>
 
   <div class="mission-strip glass">
@@ -591,11 +648,6 @@ html, body {
     <div class="pool-grid" id="pool-grid"></div>
   </div>
 
-  <div class="glass" style="padding:6px 8px;">
-    <div style="font-size:8.5px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Hátizsák / Gyors Tárgyak:</div>
-    <div class="quick-inv-row" id="quick-inv-row"></div>
-  </div>
-
   <div class="glass words-panel">
     <div style="font-size:9px; font-weight:800; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Szint szavai:</div>
     <div class="words-list-mini" id="words-list"></div>
@@ -603,6 +655,60 @@ html, body {
 </div>
 
 <div class="toast-msg" id="toast"></div>
+
+<!-- RÉSZLETES JÁTÉKSZABÁLYZAT MODAL (X-SZEL ÉS GOMBBAL IS BEZÁRHATÓ) -->
+<div class="modal-overlay" id="modal-rules">
+  <div class="modal-box" style="border-color:var(--cyan); max-width:460px;">
+    <button class="modal-close-x" id="btn-close-rules-x">✖</button>
+    <div class="modal-title" style="color:var(--cyan);">📖 RÉSZLETES JÁTÉKSZABÁLYZAT</div>
+    
+    <div class="rules-container">
+      <div class="rule-card">
+        <h4>💥 A Játék Lényege és Célja</h4>
+        <p>Koppints az érintkező, azonos színű csempecsoportokra a felrobbantásukhoz! A sárga keretes csempék betűket rejtenek, melyek robbantáskor a lenti betűraktáradba hullanak. A kiszabadított betűkből érvényes magyar szavakat kell összeállítanod a szórakó tálcán.</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>📝 Szóalkotás és Rövid Szavak</h4>
+        <p>A játék elfogadja az <b>értelmes 2 és 3 betűs szavakat is</b> (pl. FA, TÓ, KŐ, NAP, HÁZ), melyekért pont jár és felszabadítják a betűhelyeket. <b>Viszont a szintcél nem teljesül velük</b>, amennyiben a szint ennél hosszabb (pl. 4+ betűs) szót követel meg!</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>🚫 Nem-szavak és Kettős Betűk</h4>
+        <p>Az önmagukban álló összetett mássalhangzók (mint a CS, GY, TY, SZ, ZS, LY, NY) <b>nem számítanak szónak</b>, csupán hangjelölések. A rendszer ezeket önálló szóként azonnal elutasítja.</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>🎁 Mesterjutalom (Hosszú szavakért)</h4>
+        <p>Minden legalább <b>5 betűs értelmes szóért</b> azonnali Mesterjutalom jár: egy felugró ablakban <b>bármilyen tetszőleges betűt ingyenesen kérhetsz</b> a raktáradba!</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>⚡ Segítségek & Körönkénti 1x INGYEN Kvóta</h4>
+        <p>A játékban található összes segítségből (Kalapács, Sorkilövő, Bomba, Súgó stb.) <b>minden körben 1 db INGYENESEN jár</b>! A segítség-halmozás kizárt: az ingyenes kvóta nem vihető át a következő szintekre. Ha az adott körben elhasználtad, további példányok a boltban exponenciálisan dráguló heti pontokért vehetők meg.</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>🎒 Tartalék Lépések & Kifogyás</h4>
+        <p>A megvásárolt lépések a hátizsákodba kerülnek. Ha a szinten elfogynak a lépéseid, a játék nem vásárlást erőltet, hanem <b>megkérdezi, hány tartalék lépést akarsz felváltani</b> (te adhatod meg a pontos darabszámot). Csak akkor ajánl bolti vételt, ha a tartalékkereted teljesen elfogyott!</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>🔤 10 Perces Prémium Betűpiac</h4>
+        <p>10 perc aktív játékidő elérése után kinyílik a Betűpiac, ahol a magyar ábécé bármelyik betűje (akár Y vagy ritka betűk) megvásárolható <b>kőkemény, exponenciálisan emelkedő árakon</b>.</p>
+      </div>
+
+      <div class="rule-card">
+        <h4>🏆 Heti Élő Ranglista & Mentés</h4>
+        <p>A heti ranglista hétfő 00:00-tól vasárnap 23:59-ig tart és valós időben frissül. A heti pontod és a ranglistapontod mindig 100%-ban megegyezik. A Név + 4 jegyű PIN azonosítóddal a felhőben bármikor folytathatod a játékodat bármelyik eszközön!</p>
+      </div>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="btn-modal primary" id="btn-close-rules">BEZÁRÁS ✔</button>
+    </div>
+  </div>
+</div>
 
 <!-- Profil Belépés Modal -->
 <div class="modal-overlay" id="modal-auth">
@@ -620,6 +726,7 @@ html, body {
 <!-- Áruház Modal -->
 <div class="modal-overlay" id="modal-shop">
   <div class="modal-box" style="max-width:440px;">
+    <button class="modal-close-x" id="btn-close-shop-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">🛒 HETI PONT ÁRUHÁZ</div>
     <p class="modal-desc">Vásárolj segédeszközöket a heti pontjaidból! A megvásárolt tárgyak örökre a hátizsákodban maradnak, áruk exponenciálisan emelkedik.</p>
     <div style="font-size:12px; font-weight:900; color:var(--gold);">Egyenleged: <span id="shop-balance">0</span> heti pont</div>
@@ -643,7 +750,7 @@ html, body {
   </div>
 </div>
 
-<!-- 🎁 INGYENES BETŰ KÉRÉS JUTALOM ABLAK (4+ VAGY 5+ BETŰS SZAVAKÉRT) -->
+<!-- 🎁 INGYENES BETŰ KÉRÉS JUTALOM ABLAK -->
 <div class="modal-overlay" id="modal-free-letter-reward">
   <div class="modal-box" style="border-color:var(--emerald);">
     <div class="modal-title" style="color:var(--emerald);">🎁 MESTERJUTALOM!</div>
@@ -667,6 +774,7 @@ html, body {
 <!-- 10 PERCES PRÉMIUM BETŰPIAC MODAL -->
 <div class="modal-overlay" id="modal-letter-market">
   <div class="modal-box" style="max-width:440px; border-color:var(--gold);">
+    <button class="modal-close-x" id="btn-close-market-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">🔤 PRÉMIUM BETŰPIAC</div>
     <p class="modal-desc">Több mint 10 perc játékidő után feloldva! Válassz ki egy tetszőleges magyar betűt a raktáradba. Az ár minden vásárlással <b>kőkeményen exponenciálisan emelkedik</b>!</p>
     <div style="font-size:12px; font-weight:900; color:var(--gold);">
@@ -722,8 +830,9 @@ html, body {
 <!-- Napi Becsekkolás Modal -->
 <div class="modal-overlay" id="modal-daily">
   <div class="modal-box">
+    <button class="modal-close-x" id="btn-close-daily-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">📅 30 NAPOS BECSEKKOLÁS</div>
-    <p class="modal-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért! Ha egy nap kimarad, a sorozat elölről kezdődik.</p>
+    <p class="modal-desc" id="daily-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért! Ha egy nap kimarad, a sorozat elölről kezdődik.</p>
     <div class="calendar-grid" id="calendar-grid"></div>
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-claim-daily">AJÁNDÉK ÁTVÉTELE 🎁</button>
@@ -735,6 +844,7 @@ html, body {
 <!-- Ranglista Modal -->
 <div class="modal-overlay" id="modal-leaderboard">
   <div class="modal-box">
+    <button class="modal-close-x" id="btn-close-lb-x">✖</button>
     <div class="modal-title" style="color:var(--cyan);">🏆 ÉLŐ HETI RANGLISTA</div>
     <p class="modal-desc" id="lb-week-text">Hétfő 00:00 - Vasárnap 23:59:59. Valós időben frissül minden pontszerzéskor!</p>
     <div class="leaderboard-list" id="leaderboard-list">Élő adatok csatlakozása...</div>
@@ -941,8 +1051,6 @@ const DICT_SOURCES = [
   "https://raw.githubusercontent.com/luczsoma/HungarianDiceware/master/words.txt"
 ];
 const DICT = new Set();
-
-// Önmagukban nem szavak, csupán hangok/betűk
 const NON_WORDS_DIGRAPHS = new Set(['TY', 'SZ', 'CS', 'GY', 'NY', 'LY', 'ZS', 'DZ', 'DZS']);
 
 function sanitizeWord(raw) {
@@ -973,7 +1081,6 @@ async function loadAllDictionaries() {
       .catch(() => {})
   );
   await Promise.allSettled(tasks);
-  // Rövid, értelmes 2 és 3 betűs szavak biztosítása
   ["FA","TÓ","KŐ","FŰ","LÓ","KI","MI","TE","ÉN","ŐK","HA","DE","BE","LE","RÁ","IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY","SZÉP","JÓ","NAGY","KICSI","ALMA","BABA","CICA","KUTYA","KÖNYV","ANYA","LÁNY","GOLYÓ","ARANY","ILYEN","OLYAN","KÖNNYŰ"].forEach(w => DICT.add(w));
   statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
 }
@@ -1179,6 +1286,7 @@ const state = {
   moves: 30,
   storedMoves: 0,
   purchaseCounts: {},
+  roundFreeUsed: {}, // Körönkénti 1 ingyen kvóta követése eszközönként
   board: [],
   pool: [],
   tray: [],
@@ -1215,7 +1323,7 @@ function calcTileMetrics() {
   return size;
 }
 
-// ÚJ SZINT INDÍTÁSA - KÉSZLETEK, HÁTIZSÁK, PONTOK MEGŐRZÉSE!
+// Új szint indítása: készletek megmaradnak, de a körönkénti 1 ingyen kvóta újratöltődik!
 function initLevelData(lvl) {
   state.level = lvl;
   state.pool = [];
@@ -1223,6 +1331,7 @@ function initLevelData(lvl) {
   state.levelWords = [];
   state.bonusDone = false;
   state.activeTripleWord = false;
+  state.roundFreeUsed = {}; // Minden segítségből újra elérhető a körönkénti 1 ingyenes kvóta!
   stopTargetingMode();
 
   state.requiredWords = Math.min(10, 3 + Math.floor(lvl / 3));
@@ -1901,7 +2010,7 @@ function validateCurrentTrayWord() {
 }
 
 // =====================================================================
-// SZÓBEKÜLDÉS: RÖVID SZAVAK IS ELFOGADVA + LONE DIGRAPH BLOKK + EXTRA JUTALOM
+// SZÓBEKÜLDÉS
 // =====================================================================
 document.getElementById('btn-submit').addEventListener('click', async () => {
   const word = getTrayWord();
@@ -1911,14 +2020,12 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
     return;
   }
 
-  // Összetett betűk önmagukban való kiszűrése (nem értelmes szó)
   if(NON_WORDS_DIGRAPHS.has(word)) {
     showToast(`"${word}" önmagában csak egy hangjelölés, nem értelmes magyar szó!`, "err");
     sfxError();
     return;
   }
 
-  // Értelmes szótár ellenőrzése
   if(!DICT.has(word)) {
     showToast(`"${word}" nem szerepel a magyar szótárban!`, "err");
     sfxError();
@@ -1943,13 +2050,11 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   state.stats.levelScore += wordScore;
   state.levelWords.push(word);
 
-  // Teljesíti-e a fő küldetés szóhossz követelményét?
   const qualifiesForQuest = word.length >= state.minWordLen;
   if(qualifiesForQuest) {
     state.stats.wordsMade++;
     showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
   } else {
-    // 2-3 betűs rövid szavak elfogadása, pontot ad, de nem növeli a szintcél számlálóját
     showToast(`Sikeres szó: ${word} (+${wordScore} pont)! (A szintcélhoz min. ${state.minWordLen} betű kell)`, 'ok');
   }
 
@@ -1964,7 +2069,7 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   checkQuestProgress();
   await syncCloudState();
 
-  // 4 VAGY 5+ BETŰS SZAVAKÉRT EXTRA INGYENES BETŰ KÉRÉSI JUTALOM!
+  // 5+ betűs szavakért Mesterjutalom (Ingyenes betűkérés!)
   if(word.length >= 5) {
     triggerFreeLetterReward(word);
   }
@@ -1972,7 +2077,6 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   verifyGameState();
 });
 
-// Ingyenes betűválasztó modal megnyitása
 function triggerFreeLetterReward(word) {
   document.getElementById('free-letter-desc').innerHTML = 
     `🎉 Gratulálunk! Készítettél egy <b>${word.length} betűs szót (${word})</b>! Jutalmul kérhetsz egy <b>INGYENES</b> tetszőleges betűt a raktáradba!`;
@@ -2024,7 +2128,7 @@ document.getElementById('btn-clear-tray').addEventListener('click', () => {
 });
 
 // =====================================================================
-// „🔄 ÚJRAKEZDEM A PÁLYÁT” GOMB JÁTÉK KÖZBEN
+// „🔄 ÚJRAKEZDEM A PÁLYÁT” GOMB
 // =====================================================================
 document.getElementById('btn-restart-level-direct').addEventListener('click', () => {
   if(confirm(`Biztosan elölről kezded ezt a szintet (${state.level}. szint)?\nMinden megvásárolt javat, tartalék lépést és heti pontodat megtartod!`)) {
@@ -2212,7 +2316,7 @@ document.getElementById('btn-next-level').addEventListener('click', () => {
 });
 
 // =====================================================================
-// ÁRUHÁZ & HÁTIZSÁK LOGIKA
+// KÖZPONTI BOLT, GYORS ESZKÖZTÁR & KÖRÖNKÉNTI 1x INGYEN LOGIKA
 // =====================================================================
 function renderShop() {
   const shopBal = document.getElementById('shop-balance');
@@ -2225,6 +2329,7 @@ function renderShop() {
     const pCount = (state.purchaseCounts && state.purchaseCounts[item.id]) || 0;
     const currentCost = getItemCost(item.id);
     const nextCost = Math.round(item.baseCost * Math.pow(1.35, pCount + 1));
+    const isFreeThisRound = (item.id !== 'extramoves') && !state.roundFreeUsed[item.id];
 
     const box = document.createElement('div');
     box.className = 'shop-item';
@@ -2232,12 +2337,12 @@ function renderShop() {
       <div>
         <div class="header">
           <span>${item.name}</span>
-          <span style="color:var(--gold);">${currentCost}P</span>
+          <span style="color:${isFreeThisRound ? 'var(--emerald)' : 'var(--gold)'};">${isFreeThisRound ? '1x INGYEN' : currentCost + 'P'}</span>
         </div>
         <div class="desc">${item.desc}</div>
         <div class="price-info">
           <span>Készlet: <b>${owned} ${item.id === 'extramoves' ? 'lépés' : 'db'}</b></span>
-          <span>Köv.: ${nextCost}P</span>
+          <span>${isFreeThisRound ? 'Körönként 1 ingyen' : 'Köv.: ' + nextCost + 'P'}</span>
         </div>
       </div>
       <button class="btn-buy" ${state.weeklyScore < currentCost ? 'disabled' : ''}>MEGVESZEM</button>
@@ -2270,13 +2375,12 @@ function buyShopItem(item) {
   syncCloudState();
 }
 
+// Központi sáv: azonnal használható eszközök körönkénti 1 ingyen lehetőséggel!
 function renderQuickInventory() {
   const row = document.getElementById('quick-inv-row');
   row.innerHTML = '';
-  let count = 0;
 
   if((state.storedMoves || 0) > 0) {
-    count++;
     const btn = document.createElement('button');
     btn.className = 'btn-inv-slot highlight';
     btn.innerHTML = `🎒 Tartalék Lépés <span class="count">${state.storedMoves}</span>`;
@@ -2286,28 +2390,44 @@ function renderQuickInventory() {
 
   SHOP_ITEMS.forEach(item => {
     if(item.id === 'extramoves') return;
+    const isFree = !state.roundFreeUsed[item.id];
     const qty = state.inventory[item.id] || 0;
-    if(qty > 0) {
-      count++;
+
+    // Megjelenítjük, ha ingyenesen elérhető ezen a szinten, VAGY van belőle a hátizsákban
+    if(isFree || qty > 0) {
       const btn = document.createElement('button');
-      btn.className = 'btn-inv-slot';
-      btn.innerHTML = `${item.name} <span class="count">${qty}</span>`;
-      btn.addEventListener('click', () => useInventoryItem(item));
+      btn.className = 'btn-inv-slot' + (isFree ? ' free-active' : '');
+      const badge = isFree ? 'INGYEN' : `${qty} db`;
+      btn.innerHTML = `${item.name} <span class="count">${badge}</span>`;
+      btn.addEventListener('click', () => handleToolActivation(item));
       row.appendChild(btn);
     }
   });
-
-  if(count === 0) {
-    row.innerHTML = '<span style="font-size:9.5px;color:#64748b;font-style:italic;">A hátizsákod üres. Vegyél segédeszközöket vagy tartalék lépést a Boltban!</span>';
-  }
 }
 
-function useInventoryItem(item) {
-  if((state.inventory[item.id] || 0) <= 0) return;
-  state.inventory[item.id]--;
-  item.action();
-  renderQuickInventory();
-  syncCloudState();
+// Eszköz aktiválása: Először a körönkénti ingyenes kvótát használja, utána a hátizsákot!
+function handleToolActivation(item) {
+  if(!state.roundFreeUsed[item.id]) {
+    state.roundFreeUsed[item.id] = true;
+    item.action();
+    showToast(`${item.name} aktiválva (Körönkénti 1x INGYENES használat)!`, "ok");
+    renderQuickInventory();
+    renderShop();
+    syncCloudState();
+    return;
+  }
+
+  if((state.inventory[item.id] || 0) > 0) {
+    state.inventory[item.id]--;
+    item.action();
+    showToast(`${item.name} aktiválva a hátizsákból (${state.inventory[item.id]} maradt)!`, "ok");
+    renderQuickInventory();
+    renderShop();
+    syncCloudState();
+    return;
+  }
+
+  showToast("Ebből a segítségből elfogyott az ingyenes és a hátizsákos készleted!", "err");
 }
 
 function useDynamite() {
@@ -2387,13 +2507,31 @@ function useBoardShuffle() {
   showToast("🔄 Tábla átrendezve!", "ok");
 }
 
-document.getElementById('btn-open-shop').addEventListener('click', () => {
+// =====================================================================
+// KÖZPONTI BOLT GOMB ESEMÉNYEK
+// =====================================================================
+document.getElementById('btn-open-shop-central').addEventListener('click', () => {
   renderShop();
   document.getElementById('modal-shop').classList.add('active');
 });
-
 document.getElementById('btn-close-shop').addEventListener('click', () => {
   document.getElementById('modal-shop').classList.remove('active');
+});
+document.getElementById('btn-close-shop-x').addEventListener('click', () => {
+  document.getElementById('modal-shop').classList.remove('active');
+});
+
+// =====================================================================
+// JÁTÉKSZABÁLYZAT MODAL KEZELÉSE (GOMB ÉS X IS ZÁRJA)
+// =====================================================================
+document.getElementById('btn-open-rules').addEventListener('click', () => {
+  document.getElementById('modal-rules').classList.add('active');
+});
+document.getElementById('btn-close-rules').addEventListener('click', () => {
+  document.getElementById('modal-rules').classList.remove('active');
+});
+document.getElementById('btn-close-rules-x').addEventListener('click', () => {
+  document.getElementById('modal-rules').classList.remove('active');
 });
 
 // =====================================================================
@@ -2430,6 +2568,9 @@ document.getElementById('btn-open-market').addEventListener('click', () => {
 });
 
 document.getElementById('btn-close-market').addEventListener('click', () => {
+  document.getElementById('modal-letter-market').classList.remove('active');
+});
+document.getElementById('btn-close-market-x').addEventListener('click', () => {
   document.getElementById('modal-letter-market').classList.remove('active');
 });
 
@@ -2535,8 +2676,10 @@ document.getElementById('btn-open-daily').addEventListener('click', () => {
   renderDailyCalendar();
   document.getElementById('modal-daily').classList.add('active');
 });
-
 document.getElementById('btn-close-daily').addEventListener('click', () => {
+  document.getElementById('modal-daily').classList.remove('active');
+});
+document.getElementById('btn-close-daily-x').addEventListener('click', () => {
   document.getElementById('modal-daily').classList.remove('active');
 });
 
@@ -2690,13 +2833,15 @@ document.getElementById('btn-open-lb').addEventListener('click', () => {
   const currentWeek = getWeeklyKey();
   document.getElementById('lb-week-text').textContent = `Aktuális Hét: ${currentWeek} (Valós időben élőben frissül)`;
 });
-
 document.getElementById('btn-close-lb').addEventListener('click', () => {
+  document.getElementById('modal-leaderboard').classList.remove('active');
+});
+document.getElementById('btn-close-lb-x').addEventListener('click', () => {
   document.getElementById('modal-leaderboard').classList.remove('active');
 });
 
 // =====================================================================
-// FELHŐ MENTÉS & BETÖLTÉS
+// FELHŐ MENTÉS & BETÖLTÉS (MINDEN JAVAK ÖRÖK MEGTARTÁSA)
 // =====================================================================
 async function syncCloudState() {
   if(!cloudConnected || !db || !state.playerName || !state.playerPin) return;
@@ -2906,7 +3051,6 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
     }
   }
 
-  // Új játékos inicializálása
   state.inventory = {};
   state.storedMoves = 0;
   state.purchaseCounts = {};
