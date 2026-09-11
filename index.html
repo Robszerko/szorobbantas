@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Infinity Desktop & Mobile</title>
+<title>SZÓROBBANTÁS PRO - Infinity Gold Edition</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -51,6 +51,7 @@ html, body {
   width: 100%; max-width: 480px; padding: 8px; margin: 0 auto;
   display: flex; flex-direction: column; gap: 6px;
   z-index: 10; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  position: relative;
 }
 .app-container.shake { animation: appShake .38s cubic-bezier(.36,.07,.19,.97) both; }
 @keyframes appShake {
@@ -60,12 +61,38 @@ html, body {
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 
+/* VÉSZHELYZETI PULZÁLÁS (3 LÉPÉS ALATT) */
+.panic-vignette {
+  position: fixed; inset: 0; pointer-events: none; z-index: 9990;
+  box-shadow: inset 0 0 70px rgba(239, 68, 68, 0.45);
+  animation: panicPulse 1s infinite alternate;
+  display: none;
+}
+.panic-vignette.active { display: block; }
+@keyframes panicPulse { from { opacity: 0.3; } to { opacity: 0.9; } }
+
 .glass {
   background: var(--glass-panel);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 12px;
+}
+
+/* ARANYPÁLYA STÍLUSOK (10-ES SZINTEKEN) */
+.gold-level-active .board {
+  border: 3px solid #fbbf24 !important;
+  box-shadow: 0 0 35px rgba(245, 158, 11, 0.7), inset 0 0 30px rgba(251, 191, 36, 0.4) !important;
+}
+.gold-level-active .mission-strip {
+  background: linear-gradient(135deg, rgba(88, 53, 0, 0.96), rgba(161, 98, 7, 0.95)) !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.5) !important;
+}
+.gold-level-active .brand-title {
+  background: linear-gradient(135deg, #fffbeb, #fef08a, #f59e0b) !important;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: pulse 1s infinite alternate;
 }
 
 .top-nav {
@@ -92,6 +119,13 @@ html, body {
 }
 .btn-nav-action.rules-btn {
   border-color: var(--cyan); color: #a5f3fc; background: rgba(6, 182, 212, 0.15);
+}
+.btn-nav-action.live-btn {
+  border-color: #38bdf8; color: #bae6fd; background: rgba(56, 189, 248, 0.18);
+}
+.btn-nav-action.admin-btn {
+  border-color: #c084fc; color: #f3e8ff; background: rgba(168, 85, 247, 0.25);
+  font-weight: 900;
 }
 .btn-nav-action.unlocked-pulse {
   border-color: var(--gold); background: rgba(245, 158, 11, 0.2);
@@ -165,6 +199,24 @@ html, body {
   transition: width 0.3s ease; box-shadow: 0 0 10px rgba(6,182,212,0.6);
 }
 
+/* NAPI REJTÉLYES BÓNUSZ SZÓ SÁV */
+.daily-secret-strip {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(2, 6, 23, 0.7); border: 1px dashed rgba(245, 158, 11, 0.4);
+  border-radius: 6px; padding: 4px 8px; font-size: 10px; font-weight: 800;
+}
+.daily-secret-word { color: var(--gold-glow); letter-spacing: 2px; font-weight: 900; font-family: monospace; }
+
+/* NÉZŐI SEGÍTŐ CHAT BUBORÉK A JÁTÉKOS KÉPERNYŐJÉN */
+.live-spectator-tip-box {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1.5px solid var(--emerald); border-radius: 8px; padding: 6px 10px;
+  font-size: 11px; font-weight: 800; color: #a7f3d0; display: none;
+  align-items: center; justify-content: space-between; gap: 8px;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+.live-spectator-tip-box.active { display: flex; animation: modalFadeIn 0.3s ease; }
+
 /* BOLT & ESZKÖZTÁR PANEL */
 .central-shop-bar {
   display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; width: 100%;
@@ -191,7 +243,6 @@ html, body {
   display: flex; gap: 5px; overflow-x: auto; padding: 2px 0; align-items: center;
   width: 100%; min-width: 0;
 }
-
 .btn-inv-slot {
   background: #1e293b; border: 1px solid #334155; border-radius: 8px;
   padding: 6px 8px; display: flex; align-items: center; justify-content: space-between; gap: 4px;
@@ -212,25 +263,15 @@ html, body {
   border-color: var(--cyan); background: rgba(6, 182, 212, 0.2);
 }
 
-/* LÉPÉS VISSZASZÁMLÁLÓ FIGYELMEZTETŐ SÁV (A SEGÍTSÉG TÁBLA ALATT, NEM TAKARJA A PÁLYÁT!) */
+/* LÉPÉS VISSZASZÁMLÁLÓ FIGYELMEZTETŐ SÁV */
 .moves-warning-banner {
   background: linear-gradient(135deg, rgba(185, 28, 28, 0.95), rgba(127, 29, 29, 0.95));
-  border: 1.5px solid #f87171;
-  color: #fff;
-  font-size: 11.5px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
-  display: none;
+  border: 1.5px solid #f87171; color: #fff; font-size: 11.5px; font-weight: 900;
+  letter-spacing: 1px; padding: 6px 12px; border-radius: 8px; width: 100%;
+  text-align: center; box-shadow: 0 0 16px rgba(239, 68, 68, 0.6); display: none;
   animation: pulse 0.7s infinite alternate;
 }
-.moves-warning-banner.show {
-  display: block;
-}
+.moves-warning-banner.show { display: block; }
 
 /* CÉLZÓ MÓD BANNER */
 .targeting-banner {
@@ -261,21 +302,29 @@ html, body {
 }
 .board.targeting-cursor { cursor: crosshair !important; }
 
+/* LÁNCROBBANTÁS FELIRAT ELEM */
+.combo-banner {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+  font-size: 24px; font-weight: 900; color: var(--gold-glow);
+  text-shadow: 0 0 20px rgba(245, 158, 11, 0.9), 0 4px 8px #000;
+  pointer-events: none; z-index: 100; opacity: 0;
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.combo-banner.pop { opacity: 1; transform: translate(-50%, -50%) scale(1.35); }
+
 .tile {
   position: absolute; top: 0; left: 0;
   width: var(--tile-size, 44px); height: var(--tile-size, 44px);
   cursor: pointer; will-change: transform;
   display: block;
   transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-  touch-action: none;
-  pointer-events: auto;
+  touch-action: none; pointer-events: auto;
 }
 .tile-inner {
   position: absolute; inset: 2px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.6);
-  font-weight: 900; color: #fff; overflow: hidden;
-  pointer-events: none;
+  font-weight: 900; color: #fff; overflow: hidden; pointer-events: none;
 }
 .tile-inner::before {
   content: ''; position: absolute; top: 8%; left: 12%; width: 40%; height: 28%;
@@ -291,37 +340,21 @@ html, body {
 .tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, #c084fc, #9333ea 55%, #581c87); }
 .tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #fb923c, #ea580c 55%, #7c2d12); }
 
-/* Jég rétegek */
-.tile.ice-1 .tile-inner {
-  border: 2px solid #bae6fd; box-shadow: inset 0 0 12px rgba(186,230,253,0.7), 0 0 10px rgba(56,189,248,0.7);
-}
-.tile.ice-1 .tile-inner::after {
-  content: ''; position: absolute; inset: 0; background: rgba(224, 242, 254, 0.35); pointer-events: none; z-index: 2;
-}
-.tile.ice-2 .tile-inner {
-  border: 3px solid #7dd3fc; box-shadow: inset 0 0 18px rgba(125,211,252,0.9), 0 0 16px rgba(14,165,233,0.9);
-}
-.tile.ice-2 .tile-inner::after {
-  content: ''; position: absolute; inset: 0; background: rgba(186, 230, 253, 0.6); pointer-events: none; z-index: 2;
+/* Arany Kockák Speciális Stílus (Aranypályán) */
+.tile.is-gold .tile-inner {
+  background: radial-gradient(circle at 35% 25%, #fffbeb, #f59e0b 55%, #78350f) !important;
+  border: 2px solid #fef08a !important; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8) !important;
 }
 
-/* Fa rétegek */
-.tile.wood-1 .tile-inner {
-  border: 2px solid #d97706; box-shadow: inset 0 0 10px rgba(69,26,3,0.8), 0 2px 6px rgba(0,0,0,0.6);
-}
-.tile.wood-1 .tile-inner::after {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(45deg, rgba(120,53,15,0.75), rgba(120,53,15,0.75) 4px, rgba(146,64,14,0.75) 4px, rgba(146,64,14,0.75) 8px);
-  pointer-events: none; z-index: 2;
-}
-.tile.wood-2 .tile-inner {
-  border: 3px solid #b45309; box-shadow: inset 0 0 16px rgba(40,14,2,0.95), 0 3px 8px rgba(0,0,0,0.8);
-}
-.tile.wood-2 .tile-inner::after {
-  content: ''; position: absolute; inset: 0;
-  background: repeating-linear-gradient(45deg, rgba(69,26,3,0.88), rgba(69,26,3,0.88) 3px, rgba(120,53,15,0.88) 3px, rgba(120,53,15,0.88) 6px);
-  pointer-events: none; z-index: 2;
-}
+/* Jég és Fa rétegek */
+.tile.ice-1 .tile-inner { border: 2px solid #bae6fd; box-shadow: inset 0 0 12px rgba(186,230,253,0.7), 0 0 10px rgba(56,189,248,0.7); }
+.tile.ice-1 .tile-inner::after { content: ''; position: absolute; inset: 0; background: rgba(224, 242, 254, 0.35); pointer-events: none; z-index: 2; }
+.tile.ice-2 .tile-inner { border: 3px solid #7dd3fc; box-shadow: inset 0 0 18px rgba(125,211,252,0.9), 0 0 16px rgba(14,165,233,0.9); }
+.tile.ice-2 .tile-inner::after { content: ''; position: absolute; inset: 0; background: rgba(186, 230, 253, 0.6); pointer-events: none; z-index: 2; }
+.tile.wood-1 .tile-inner { border: 2px solid #d97706; box-shadow: inset 0 0 10px rgba(69,26,3,0.8), 0 2px 6px rgba(0,0,0,0.6); }
+.tile.wood-1 .tile-inner::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(120,53,15,0.75), rgba(120,53,15,0.75) 4px, rgba(146,64,14,0.75) 4px, rgba(146,64,14,0.75) 8px); pointer-events: none; z-index: 2; }
+.tile.wood-2 .tile-inner { border: 3px solid #b45309; box-shadow: inset 0 0 16px rgba(40,14,2,0.95), 0 3px 8px rgba(0,0,0,0.8); }
+.tile.wood-2 .tile-inner::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(69,26,3,0.88), rgba(69,26,3,0.88) 3px, rgba(120,53,15,0.88) 3px, rgba(120,53,15,0.88) 6px); pointer-events: none; z-index: 2; }
 
 .layer-badge {
   position: absolute; top: 2px; right: 2px; font-size: 9px; line-height: 1;
@@ -329,9 +362,7 @@ html, body {
   border: 1px solid rgba(255,255,255,0.2); pointer-events: none;
 }
 .tile.bomb .tile-inner::before { display: none; }
-.tile.bomb .tile-inner::after {
-  content: '💣'; position: absolute; font-size: 16px; z-index: 5;
-}
+.tile.bomb .tile-inner::after { content: '💣'; position: absolute; font-size: 16px; z-index: 5; }
 .tile.bomb .tile-inner { animation: pulse 0.5s infinite alternate; border: 2px solid #f87171; }
 
 .tile .tile-letter {
@@ -339,18 +370,10 @@ html, body {
   text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
   pointer-events: none; position: relative;
 }
-.tile.color-3 .tile-letter {
-  color: #261602; text-shadow: 0 1px 2px rgba(255,255,255,0.6);
-}
-.tile.has-letter .tile-inner {
-  border: 2px solid var(--gold); box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 0 12px rgba(245,158,11,0.65);
-}
-.tile.highlight .tile-inner {
-  filter: brightness(1.6); transform: scale(0.96); box-shadow: 0 0 14px #fff, inset 0 0 6px #fff;
-}
-.tile.clearing {
-  pointer-events: none; animation: tileClear 0.28s cubic-bezier(0.4,0,1,1) forwards;
-}
+.tile.color-3 .tile-letter { color: #261602; text-shadow: 0 1px 2px rgba(255,255,255,0.6); }
+.tile.has-letter .tile-inner { border: 2px solid var(--gold); box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 0 12px rgba(245,158,11,0.65); }
+.tile.highlight .tile-inner { filter: brightness(1.6); transform: scale(0.96); box-shadow: 0 0 14px #fff, inset 0 0 6px #fff; }
+.tile.clearing { pointer-events: none; animation: tileClear 0.28s cubic-bezier(0.4,0,1,1) forwards; }
 @keyframes tileClear {
   0% { transform: scale(1); opacity: 1; filter: brightness(1.5); }
   100% { transform: scale(0) rotate(20deg); opacity: 0; filter: brightness(3); }
@@ -367,20 +390,13 @@ html, body {
   justify-content: center; flex-wrap: wrap; gap: 5px; padding: 5px;
   transition: all 0.2s; position: relative;
 }
-.builder-tray.valid {
-  border-color: var(--emerald); box-shadow: 0 0 14px rgba(16,185,129,0.4);
-  background: rgba(6,78,59,0.25);
-}
-.builder-tray.invalid {
-  border-color: var(--ruby); box-shadow: 0 0 14px rgba(239,68,68,0.3);
-}
+.builder-tray.valid { border-color: var(--emerald); box-shadow: 0 0 14px rgba(16,185,129,0.4); background: rgba(6,78,59,0.25); }
+.builder-tray.invalid { border-color: var(--ruby); box-shadow: 0 0 14px rgba(239,68,68,0.3); }
 .tray-hint {
   font-size: 10.5px; font-weight: 800; color: #64748b; letter-spacing: 1.5px;
   text-transform: uppercase; pointer-events: none; position: absolute;
 }
-.action-row {
-  display: grid; grid-template-columns: auto 1fr auto; gap: 6px;
-}
+.action-row { display: grid; grid-template-columns: auto 1fr auto; gap: 6px; }
 .btn-control {
   border: none; border-radius: 8px; font-family: inherit; font-weight: 900;
   cursor: pointer; padding: 8px 12px; font-size: 12px; display: flex; align-items: center;
@@ -389,23 +405,17 @@ html, body {
 .btn-control:active { transform: translateY(1px) scale(0.98); }
 .btn-control:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-backspace { background: #334155; }
-.btn-submit {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 3px 0 #047857; font-size: 13px; letter-spacing: 0.5px;
-}
+.btn-submit { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 3px 0 #047857; font-size: 13px; letter-spacing: 0.5px; }
 .btn-clear-tray { background: #475569; }
 
-.pool-panel {
-  padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; width: 100%;
-}
+.pool-panel { padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .pool-header {
   display: flex; justify-content: space-between; align-items: center; font-size: 10px;
   font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;
 }
 .pool-grid {
   display: flex; flex-wrap: wrap; gap: 5px; min-height: 80px; max-height: 120px;
-  overflow-y: auto; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 8px;
-  align-content: flex-start;
+  overflow-y: auto; padding: 4px; background: rgba(0,0,0,0.3); border-radius: 8px; align-content: flex-start;
 }
 .char-tile {
   width: 34px; height: 38px; border-radius: 7px;
@@ -417,13 +427,9 @@ html, body {
   animation: popLetter 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .char-tile:active { cursor: grabbing; transform: scale(1.08); }
-.char-tile.rare {
-  background: linear-gradient(135deg, #fbcfe8, #f43f5e);
-  color: #fff; box-shadow: 0 2px 0 #9f1239, 0 0 8px rgba(244,63,94,0.6);
-}
-.char-tile.rare::after {
-  content: '★'; position: absolute; top: 1px; right: 2px; font-size: 8px;
-}
+.char-tile.rare { background: linear-gradient(135deg, #fbcfe8, #f43f5e); color: #fff; box-shadow: 0 2px 0 #9f1239, 0 0 8px rgba(244,63,94,0.6); }
+.char-tile.rare::after { content: '★'; position: absolute; top: 1px; right: 2px; font-size: 8px; }
+.char-tile.wildcard { background: linear-gradient(135deg, #fef08a, #d97706, #7c3aed); color: #fff; border: 1.5px solid #fff; }
 @keyframes popLetter {
   from { transform: scale(0.4) rotate(-10deg); opacity: 0; }
   to { transform: scale(1) rotate(0); opacity: 1; }
@@ -439,15 +445,10 @@ html, body {
 }
 
 .words-panel { padding: 6px 10px; width: 100%; }
-.words-list-mini {
-  display: flex; flex-wrap: wrap; gap: 4px; max-height: 44px; overflow-y: auto; padding: 2px;
-}
-.word-tag {
-  background: #1e293b; border: 1px solid #334155; border-radius: 4px;
-  padding: 2px 6px; font-size: 10px; font-weight: 800; color: #a7f3d0;
-}
+.words-list-mini { display: flex; flex-wrap: wrap; gap: 4px; max-height: 44px; overflow-y: auto; padding: 2px; }
+.word-tag { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 800; color: #a7f3d0; }
 
-/* Modals */
+/* MODALS */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px); z-index: 20000; display: none;
@@ -486,135 +487,127 @@ html, body {
 .btn-modal.danger { background: #dc2626; color: #fff; }
 .btn-modal.secondary { background: #334155; color: #cbd5e1; }
 .btn-modal.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+.btn-modal.purple { background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff; }
 
 /* JÁTÉKSZABÁLYZAT KÁRTYÁK */
-.rules-container {
-  display: flex; flex-direction: column; gap: 8px; text-align: left; max-height: 60vh;
-  overflow-y: auto; padding-right: 4px;
-}
-.rule-card {
-  background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 10px;
-}
-.rule-card h4 {
-  margin: 0 0 4px 0; font-size: 12px; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 6px;
-}
-.rule-card p {
-  margin: 0; font-size: 10.5px; color: #cbd5e1; line-height: 1.45;
-}
+.rules-container { display: flex; flex-direction: column; gap: 8px; text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+.rule-card { background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 8px; padding: 10px; }
+.rule-card h4 { margin: 0 0 4px 0; font-size: 12px; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+.rule-card p { margin: 0; font-size: 10.5px; color: #cbd5e1; line-height: 1.45; }
 
 /* NEM KITAKARÓ MESTERJUTALOM MODAL */
-#modal-free-letter-reward {
-  background: rgba(3, 7, 18, 0.45);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  align-items: flex-start;
-  padding-top: 14px;
-}
-#modal-free-letter-reward .modal-box {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
-  border: 2px solid var(--emerald);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(16, 185, 129, 0.4);
-}
-.current-pool-preview {
-  background: rgba(0,0,0,0.35); border-radius: 8px; padding: 6px; margin: 4px 0;
-  display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center;
-  max-height: 70px; overflow-y: auto;
-}
-.preview-mini-char {
-  background: #fcd34d; color: #451a03; font-weight: 900; font-size: 11px;
-  padding: 2px 5px; border-radius: 4px;
-}
+#modal-free-letter-reward { background: rgba(3, 7, 18, 0.45); backdrop-filter: none; -webkit-backdrop-filter: none; align-items: flex-start; padding-top: 14px; }
+#modal-free-letter-reward .modal-box { background: linear-gradient(145deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96)); border: 2px solid var(--emerald); box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(16, 185, 129, 0.4); }
+.current-pool-preview { background: rgba(0,0,0,0.35); border-radius: 8px; padding: 6px; margin: 4px 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; max-height: 70px; overflow-y: auto; }
+.preview-mini-char { background: #fcd34d; color: #451a03; font-weight: 900; font-size: 11px; padding: 2px 5px; border-radius: 4px; }
 
-.stepper-row {
-  display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0;
-}
-.btn-step {
-  width: 44px; height: 44px; border-radius: 8px; background: #334155; border: 1px solid #475569;
-  color: #fff; font-size: 22px; font-weight: 900; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
+.stepper-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0; }
+.btn-step { width: 44px; height: 44px; border-radius: 8px; background: #334155; border: 1px solid #475569; color: #fff; font-size: 22px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .btn-step:active { transform: scale(0.92); }
-.input-step-val {
-  width: 80px; height: 44px; background: #020617; border: 1.5px solid var(--cyan);
-  border-radius: 8px; color: var(--cyan); font-size: 22px; font-weight: 900;
-  text-align: center; outline: none; font-family: inherit;
-}
-.quick-picks {
-  display: flex; gap: 6px; justify-content: center; margin-bottom: 4px;
-}
-.btn-pick {
-  background: #1e293b; border: 1px solid #334155; color: #cbd5e1;
-  font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; cursor: pointer;
-}
+.input-step-val { width: 80px; height: 44px; background: #020617; border: 1.5px solid var(--cyan); border-radius: 8px; color: var(--cyan); font-size: 22px; font-weight: 900; text-align: center; outline: none; font-family: inherit; }
+.quick-picks { display: flex; gap: 6px; justify-content: center; margin-bottom: 4px; }
+.btn-pick { background: #1e293b; border: 1px solid #334155; color: #cbd5e1; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
 .btn-pick:active { background: #334155; }
 
-.shop-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 6px 0;
-}
-.shop-item {
-  background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px;
-  display: flex; flex-direction: column; gap: 4px; justify-content: space-between;
-}
+.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; text-align: left; margin: 6px 0; }
+.shop-item { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 4px; justify-content: space-between; }
 .shop-item .header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 900; }
 .shop-item .desc { font-size: 9.5px; color: #94a3b8; line-height: 1.3; }
 .shop-item .price-info { font-size: 9px; color: var(--gold); font-weight: 800; display: flex; justify-content: space-between; }
-.shop-item .btn-buy {
-  background: linear-gradient(135deg, var(--gold), #d97706); border: none; border-radius: 6px;
-  color: #fff; font-weight: 900; font-size: 10px; padding: 6px; cursor: pointer;
-  margin-top: 4px; text-align: center;
-}
+.shop-item .btn-buy { background: linear-gradient(135deg, var(--gold), #d97706); border: none; border-radius: 6px; color: #fff; font-weight: 900; font-size: 10px; padding: 6px; cursor: pointer; margin-top: 4px; text-align: center; }
 .shop-item .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.letter-market-grid {
-  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 220px;
-  overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 8px;
-}
-.market-char-btn {
-  width: 38px; height: 42px; border-radius: 8px; border: 1px solid #d97706;
-  background: linear-gradient(135deg, #fef3c7, #f59e0b); color: #451a03;
-  font-size: 16px; font-weight: 900; cursor: pointer; display: flex;
-  align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-}
+.letter-market-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-height: 220px; overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 8px; }
+.market-char-btn { width: 38px; height: 42px; border-radius: 8px; border: 1px solid #d97706; background: linear-gradient(135deg, #fef3c7, #f59e0b); color: #451a03; font-size: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
 .market-char-btn:active { transform: scale(0.92); }
-.market-char-btn.rare {
-  background: linear-gradient(135deg, #fbcfe8, #f43f5e); color: #fff;
-  border-color: #be123c;
-}
+.market-char-btn.rare { background: linear-gradient(135deg, #fbcfe8, #f43f5e); color: #fff; border-color: #be123c; }
 
-.calendar-grid {
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 8px 0;
-}
-.calendar-cell {
-  background: #0f172a; border: 1px solid #334155; border-radius: 6px;
-  padding: 6px 2px; display: flex; flex-direction: column; align-items: center;
-  gap: 2px; font-size: 9px; font-weight: 800; color: #64748b; position: relative;
-}
-.calendar-cell.claimed {
-  background: rgba(16, 185, 129, 0.15); border-color: var(--emerald); color: #a7f3d0;
-}
-.calendar-cell.today {
-  background: rgba(245, 158, 11, 0.25); border-color: var(--gold); color: #fde68a;
-  animation: pulse 1s infinite alternate;
-}
+.calendar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin: 8px 0; }
+.calendar-cell { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; font-weight: 800; color: #64748b; position: relative; }
+.calendar-cell.claimed { background: rgba(16, 185, 129, 0.15); border-color: var(--emerald); color: #a7f3d0; }
+.calendar-cell.today { background: rgba(245, 158, 11, 0.25); border-color: var(--gold); color: #fde68a; animation: pulse 1s infinite alternate; }
 .calendar-cell.locked { opacity: 0.5; }
 .calendar-cell .c-day { font-size: 8px; }
 .calendar-cell .c-reward { font-size: 10px; color: var(--gold-glow); font-weight: 900; }
 
-.leaderboard-list {
-  display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; text-align: left;
-}
-.leaderboard-item {
-  display: flex; justify-content: space-between; align-items: center;
-  background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px;
-  font-size: 12px; font-weight: 800; transition: transform 0.2s;
-}
-.leaderboard-item.me {
-  border-color: var(--gold); background: rgba(245, 158, 11, 0.18);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
-}
+.leaderboard-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; text-align: left; }
+.leaderboard-item { display: flex; justify-content: space-between; align-items: center; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 800; transition: transform 0.2s; }
+.leaderboard-item.me { border-color: var(--gold); background: rgba(245, 158, 11, 0.18); box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
 .leaderboard-item .rank { color: var(--gold); width: 28px; }
 .leaderboard-item .name { flex: 1; color: #f1f5f9; }
 .leaderboard-item .score { color: var(--emerald); font-variant-numeric: tabular-nums; }
+
+/* =====================================================================
+   FEJLESZTŐI / ADMIN MODAL (LETISZTULT KÁRTYÁS NÉZET)
+   ===================================================================== */
+#modal-admin .modal-box {
+  max-width: 580px; width: 96%; border-color: var(--purple);
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.4); text-align: left;
+}
+.admin-profile-list {
+  display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; margin: 8px 0;
+}
+.admin-card {
+  background: #090d16; border: 1px solid #334155; border-radius: 8px;
+  padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+  transition: all 0.2s; cursor: pointer;
+}
+.admin-card:hover { border-color: var(--purple); background: #131b2e; }
+.admin-card .p-name { font-size: 14px; font-weight: 900; color: #f8fafc; display: flex; align-items: center; gap: 6px; }
+.admin-card .p-online { font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
+.admin-actions-mini { display: flex; align-items: center; gap: 8px; }
+.btn-admin-del {
+  background: rgba(239, 68, 68, 0.2); border: 1px solid var(--ruby);
+  color: #fca5a5; font-size: 10px; font-weight: 800; padding: 5px 10px;
+  border-radius: 6px; cursor: pointer;
+}
+.btn-admin-del:hover { background: #dc2626; color: #fff; }
+
+/* RÉSZLETES JÁTÉKOS ADATLAP & SZERKESZTŐ */
+.admin-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0;
+}
+.admin-input-group {
+  display: flex; flex-direction: column; gap: 2px; text-align: left;
+}
+.admin-input-group label { font-size: 10px; font-weight: 800; color: #94a3b8; }
+.admin-input-group input {
+  background: #020617; border: 1.5px solid #334155; border-radius: 6px;
+  color: #fff; font-size: 12px; font-weight: 800; padding: 6px 8px; outline: none;
+}
+.admin-input-group input:focus { border-color: var(--purple); }
+
+/* =====================================================================
+   ÉLŐ KÖZVETÍTÉS (SPECTATOR MODE)
+   ===================================================================== */
+#modal-live-stream .modal-box {
+  max-width: 500px; width: 96%; border-color: var(--cyan);
+}
+.spectator-board {
+  position: relative; border-radius: 12px; overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, #111827, #030712);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+  border: 2px solid rgba(255,255,255,0.1);
+  margin: 6px auto; pointer-events: none;
+}
+.spectator-chat-box {
+  display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.4);
+  border-radius: 8px; padding: 8px; margin-top: 6px; text-align: left;
+}
+.spectator-chat-messages {
+  max-height: 80px; overflow-y: auto; font-size: 11px; display: flex; flex-direction: column; gap: 4px;
+}
+.chat-msg-row { background: rgba(255,255,255,0.05); padding: 3px 6px; border-radius: 4px; }
+.chat-msg-row b { color: var(--cyan); }
+.spectator-chat-input-row { display: flex; gap: 6px; margin-top: 4px; }
+.spectator-chat-input {
+  flex: 1; background: #020617; border: 1px solid #334155; border-radius: 6px;
+  color: #fff; font-size: 11px; padding: 6px 8px; outline: none;
+}
+.btn-send-tip {
+  background: var(--cyan); border: none; border-radius: 6px; color: #020617;
+  font-weight: 900; font-size: 11px; padding: 6px 12px; cursor: pointer;
+}
 
 .toast-msg {
   position: fixed; top: 16%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
@@ -626,122 +619,48 @@ html, body {
 .toast-msg.ok { background: #065f46; border: 1px solid var(--emerald); color: #a7f3d0; }
 .toast-msg.err { background: #7f1d1d; border: 1px solid var(--ruby); color: #fecaca; }
 
-/* =====================================================================
-   ASZTALI / NAGYKÉPERNYŐS ELRENDEZÉS
-   - Bal oldalon: 11 segítség (2x5 + 1 középen lent) és alatta a figyelmeztető sáv
-   - Középen: játéktábla
-   - Jobb oldalon: szórakó tálca és raktár (nem takar ki semmit!)
-   ===================================================================== */
+/* ASZTALI ELRENDEZÉS */
 @media (min-width: 900px) {
-  body {
-    padding: 12px 16px;
-    align-items: center;
-  }
+  body { padding: 12px 16px; align-items: center; }
   .app-container {
-    max-width: 1140px;
-    width: 100%;
-    margin: 0 auto;
-    display: grid;
+    max-width: 1140px; width: 100%; margin: 0 auto; display: grid;
     grid-template-columns: 290px minmax(360px, 440px) minmax(300px, 360px);
-    gap: 14px;
-    align-items: start;
-    justify-content: center;
-    padding: 0;
+    gap: 14px; align-items: start; justify-content: center; padding: 0;
   }
-  .top-nav {
-    grid-column: 1 / -1;
-  }
-  .stats-grid {
-    grid-column: 1 / -1;
-  }
-  .mission-strip {
-    grid-column: 1 / -1;
-  }
-
-  /* 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR (2 oszlopos rács, a 11. középen lent) */
-  .left-shop-column {
-    grid-column: 1;
-    grid-row: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-  .central-shop-bar {
-    padding: 10px 8px;
-  }
-  .quick-inv-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    overflow: visible !important;
-    width: 100%;
-  }
-  .btn-inv-slot {
-    font-size: 8.5px;
-    padding: 6px 5px;
-    width: 100%;
-  }
-  /* A 11. segítség középre helyezése a két oszlop alatt */
-  .quick-inv-row .btn-inv-slot:nth-child(11) {
-    grid-column: 1 / -1;
-    max-width: 75%;
-    margin: 2px auto 0 auto;
-    justify-content: center;
-  }
-
-  /* 2. OSZLOP: KÖZÉPEN A JÁTÉKTÁBLA */
-  .center-board-column {
-    grid-column: 2;
-    grid-row: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    width: 100%;
-  }
-  .board-container {
-    margin: 0 auto;
-  }
-
-  /* 3. OSZLOP: JOBB OLDALON A SZÓRAKÓ ÉS A RAKTÁR */
-  .right-column {
-    grid-column: 3;
-    grid-row: 4;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-    margin-top: 0;
-  }
-  .pool-grid {
-    max-height: 220px !important;
-    min-height: 140px !important;
-  }
-  .words-list-mini {
-    max-height: 120px !important;
-  }
+  .top-nav { grid-column: 1 / -1; }
+  .stats-grid { grid-column: 1 / -1; }
+  .mission-strip { grid-column: 1 / -1; }
+  .left-shop-column { grid-column: 1; grid-row: 4; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .central-shop-bar { padding: 10px 8px; }
+  .quick-inv-row { display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px; overflow: visible !important; width: 100%; }
+  .btn-inv-slot { font-size: 8.5px; padding: 6px 5px; width: 100%; }
+  .quick-inv-row .btn-inv-slot:nth-child(11) { grid-column: 1 / -1; max-width: 75%; margin: 2px auto 0 auto; justify-content: center; }
+  .center-board-column { grid-column: 2; grid-row: 4; display: flex; flex-direction: column; gap: 6px; align-items: center; width: 100%; }
+  .board-container { margin: 0 auto; }
+  .right-column { grid-column: 3; grid-row: 4; display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 0; }
+  .pool-grid { max-height: 220px !important; min-height: 140px !important; }
+  .words-list-mini { max-height: 120px !important; }
 }
 </style>
 </head>
 <body>
 <canvas id="fx-canvas"></canvas>
+<div class="panic-vignette" id="panic-vignette"></div>
 
 <div class="app-container" id="app-wrap">
   <div class="top-nav glass">
     <div class="brand-group">
-      <div class="brand-title">SZÓROBBANTÁS ∞</div>
+      <div class="brand-title" id="brand-title">SZÓROBBANTÁS ∞</div>
       <div class="dict-status" id="dict-status-txt">Szótár: Betöltés...</div>
     </div>
     <div class="nav-actions">
+      <button class="btn-nav-action live-btn" id="btn-open-live-lobby" title="Élőben online játszó játékosok nézése">👁️ Élő Nézés</button>
+      <button class="btn-nav-action admin-btn" id="btn-open-admin-nav" style="display:none;" title="Fejlesztői Vezérlőpult">⚡ Admin</button>
       <button class="btn-nav-action rules-btn" id="btn-open-rules" title="Részletes játékszabályzat megnyitása">📖 Szabályzat</button>
-      <button class="btn-nav-action restart-btn" id="btn-restart-level-direct" title="A szint újrakezdése tiszta táblával (a megvásárolt javak megmaradnak)">🔄 Szint Újra</button>
+      <button class="btn-nav-action restart-btn" id="btn-restart-level-direct" title="A szint újrakezdése tiszta táblával (a javak megmaradnak)">🔄 Szint Újra</button>
       <button class="btn-nav-action" id="btn-open-market" title="10 perc játékidő után feloldódó betűpiac">⏳ Betűpiac</button>
       <button class="btn-nav-action" id="btn-switch-user" title="Fiók váltása">👤 Váltás</button>
-      <button class="btn-nav-action" id="btn-open-daily">
-        📅 Napi
-        <div class="badge-dot" id="daily-dot"></div>
-      </button>
+      <button class="btn-nav-action" id="btn-open-daily">📅 Napi<div class="badge-dot" id="daily-dot"></div></button>
       <button class="btn-nav-action" id="btn-open-lb">🏆 Rang</button>
       <div class="sync-indicator" id="sync-dot"></div>
     </div>
@@ -754,7 +673,13 @@ html, body {
     <div class="stat-box glass rank-box"><span class="lbl">Helyezés</span><span class="val" id="stat-rank">—</span></div>
   </div>
 
-  <!-- KIEMELT QUEST DASHBOARD (SZINT CÉL & KÖTELEZŐ BÓNUSZ) -->
+  <!-- ÉLŐ NÉZŐI BUBORÉK (HA VALAKI NÉZI A JÁTÉKOSUNKAT ÉS TIPPET ÍR) -->
+  <div class="live-spectator-tip-box" id="spectator-tip-box">
+    <span id="spectator-tip-text">👁️ Egy néző csatlakozott!</span>
+    <button style="background:none; border:none; color:#fff; cursor:pointer; font-weight:900;" onclick="document.getElementById('spectator-tip-box').classList.remove('active')">✖</button>
+  </div>
+
+  <!-- KIEMELT QUEST DASHBOARD (SZINT CÉL, BÓNUSZ & NAPI TITKOS SZÓ) -->
   <div class="mission-strip glass">
     <div class="mission-card">
       <div class="mission-card-header">
@@ -774,25 +699,26 @@ html, body {
         Bónusz küldetés betöltése...
       </div>
     </div>
+
+    <div class="daily-secret-strip">
+      <span>✨ Nap Rejtélyes Szava (+500P & +2 Lépés):</span>
+      <span class="daily-secret-word" id="daily-secret-word">A _ M _</span>
+    </div>
   </div>
 
-  <!-- 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR + ALATTA A FIGYELMEZTETŐ SÁV -->
+  <!-- 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR -->
   <div class="left-shop-column">
     <div class="central-shop-bar glass">
       <div class="central-shop-header">
-        <div class="central-shop-title">
-          🛒 <span>BOLT & ESZKÖZÖK</span>
-        </div>
+        <div class="central-shop-title">🛒 <span>BOLT & ESZKÖZÖK</span></div>
         <button class="btn-open-shop-main" id="btn-open-shop-central">ÁRUHÁZ</button>
       </div>
       <div class="quick-inv-row" id="quick-inv-row"></div>
     </div>
-
-    <!-- A SEGÍTSÉG TÁBLA ALATT ELHELYEZETT VISSZASZÁMLÁLÓ CSÍK (NEM TAKARJA A PÁLYÁT!) -->
     <div class="moves-warning-banner" id="moves-warning-banner">⚠️ MÁR CSAK 5 LÉPÉSED MARADT!</div>
   </div>
 
-  <!-- 2. OSZLOP: KÖZÉPSŐ OSZLOP (JÁTÉKTÁBLA ÉS CÉLZÓ SÁV) -->
+  <!-- 2. OSZLOP: KÖZÉPSŐ OSZLOP (JÁTÉKTÁBLA, CÉLZÓ & COMBO FELIRAT) -->
   <div class="center-board-column">
     <div class="targeting-banner glass" id="targeting-banner">
       <span id="targeting-msg">🎯 CÉLZÓ MÓD AKTÍV</span>
@@ -800,11 +726,12 @@ html, body {
     </div>
 
     <div class="board-container">
+      <div class="combo-banner" id="combo-banner">KOMBO x2!</div>
       <div class="board" id="game-board"></div>
     </div>
   </div>
 
-  <!-- 3. OSZLOP: JOBB OLDALI OSZLOP (SZÓRAKÓ TÁLCA, BETŰRAKTÁR, TALÁLT SZAVAK) -->
+  <!-- 3. OSZLOP: JOBB OLDALON A SZÓRAKÓ ÉS A RAKTÁR -->
   <div class="right-column">
     <div class="builder-panel glass">
       <div class="builder-tray" id="builder-tray">
@@ -834,6 +761,121 @@ html, body {
 
 <div class="toast-msg" id="toast"></div>
 
+<!-- =====================================================================
+     FEJLESZTŐI / ADMIN MODAL (TESZT / 0000)
+     ===================================================================== -->
+<div class="modal-overlay" id="modal-admin">
+  <div class="modal-box">
+    <div class="modal-title" style="color:var(--purple); display:flex; align-items:center; gap:8px;">
+      ⚡ <span>FEJLESZTŐI VEZÉRLŐPULT</span>
+    </div>
+    <p class="modal-desc">
+      Firebase felhő felhasználók listája. Kattints egy játékos nevére a PIN kód és a részletek megtekintéséhez vagy szerkesztéséhez!
+    </p>
+
+    <div class="admin-profile-list" id="admin-profile-list">
+      <div style="text-align:center; padding:12px; color:#94a3b8;">Felhasználók betöltése...</div>
+    </div>
+
+    <div class="modal-buttons" style="flex-direction:row; gap:8px;">
+      <button class="btn-modal purple" style="flex:1;" id="btn-admin-play-test">🎮 Pálya Kipróbálása (100% Ingyenes)</button>
+      <button class="btn-modal secondary" style="flex:1;" id="btn-admin-logout">👤 Kijelentkezés</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEJLESZTŐI JÁTÉKOS ADATLAP SZERKESZTŐ MODAL -->
+<div class="modal-overlay" id="modal-admin-user-detail">
+  <div class="modal-box" style="border-color:var(--purple); max-width:440px;">
+    <button class="modal-close-x" id="btn-close-admin-detail-x">✖</button>
+    <div class="modal-title" style="color:#c084fc;">👤 JÁTÉKOS ADATLAP</div>
+    <div class="admin-detail-grid">
+      <div class="admin-input-group">
+        <label>Játékosnév:</label>
+        <input type="text" id="adm-edit-name" readonly style="opacity:0.8;">
+      </div>
+      <div class="admin-input-group">
+        <label>PIN KÓD (Elfelejtett kód):</label>
+        <input type="text" id="adm-edit-pin" maxlength="4">
+      </div>
+      <div class="admin-input-group">
+        <label>Aktuális Szint:</label>
+        <input type="number" id="adm-edit-level" min="1">
+      </div>
+      <div class="admin-input-group">
+        <label>Heti Pont:</label>
+        <input type="number" id="adm-edit-score" min="0">
+      </div>
+      <div class="admin-input-group">
+        <label>Tartalék Lépések:</label>
+        <input type="number" id="adm-edit-stored-moves" min="0">
+      </div>
+      <div class="admin-input-group">
+        <label>Becsekkolási Nap:</label>
+        <input type="number" id="adm-edit-streak" min="0" max="30">
+      </div>
+    </div>
+    <div style="font-size:10px; color:#94a3b8; text-align:left;" id="adm-detail-misc"></div>
+    <div class="modal-buttons" style="flex-direction:row; gap:6px;">
+      <button class="btn-modal primary" id="btn-save-admin-user" style="flex:1;">MENTÉS ✔</button>
+      <button class="btn-modal secondary" id="btn-close-admin-detail" style="flex:1;">BEZÁRÁS</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     ÉLŐ KÖZVETÍTÉS (SPECTATOR LOBBY & ÉLŐ NÉZŐKEZELŐ)
+     ===================================================================== -->
+<div class="modal-overlay" id="modal-live-lobby">
+  <div class="modal-box" style="border-color:var(--cyan);">
+    <button class="modal-close-x" id="btn-close-live-lobby-x">✖</button>
+    <div class="modal-title" style="color:var(--cyan);">👁️ ÉLŐ JÁTÉKOSOK KÖZVETÍTÉSE</div>
+    <p class="modal-desc">Nézd valós időben mások játékát és segíts nekik chaten a szint teljesítésében!</p>
+    <div class="admin-profile-list" id="live-online-list">
+      <div style="text-align:center; padding:14px; color:#94a3b8;">Online játékosok keresése...</div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal secondary" id="btn-close-live-lobby">BEZÁRÁS</button>
+    </div>
+  </div>
+</div>
+
+<!-- ÉLŐ STREAMELŐ NÉZET MODAL -->
+<div class="modal-overlay" id="modal-live-stream">
+  <div class="modal-box" style="border-color:var(--cyan); max-width:480px;">
+    <button class="modal-close-x" id="btn-close-stream-x">✖</button>
+    <div class="modal-title" style="color:var(--cyan); font-size:15px;" id="stream-player-title">
+      👁️ NÉZŐI MÓD: JÁTÉKOS
+    </div>
+    <div style="font-size:11px; font-weight:800; color:#cbd5e1; display:flex; justify-content:space-around; margin-top:2px;">
+      <span>Szint: <b id="stream-level" style="color:var(--gold);">1</b></span>
+      <span>Lépés: <b id="stream-moves" style="color:var(--cyan);">30</b></span>
+      <span>Pont: <b id="stream-score" style="color:var(--emerald);">0</b></span>
+    </div>
+
+    <div class="board-container" style="margin:4px auto;">
+      <div class="spectator-board" id="stream-board"></div>
+    </div>
+
+    <div style="font-size:10px; font-weight:800; color:#94a3b8;">Játékos tálcája: <span id="stream-tray-display" style="color:#fef08a; font-weight:900; letter-spacing:1.5px;">—</span></div>
+
+    <!-- KÖRÖNKÉNT TISZTULÓ SEGÍTŐ CHAT SÁV -->
+    <div class="spectator-chat-box">
+      <div class="spectator-chat-messages" id="stream-chat-msgs">
+        <div class="chat-msg-row"><i>Írj tippet vagy szójavaslatot a játékosnak!</i></div>
+      </div>
+      <div class="spectator-chat-input-row">
+        <input type="text" class="spectator-chat-input" id="stream-chat-input" placeholder="Segítő tipp (pl. ALMA a jobb sarokban)..." maxlength="50">
+        <button class="btn-send-tip" id="btn-send-chat-tip">KÜLDÉS 💬</button>
+      </div>
+    </div>
+
+    <div class="modal-buttons" style="margin-top:6px;">
+      <button class="btn-modal secondary" id="btn-leave-stream">KILÉPÉS A NÉZÉSBŐL</button>
+    </div>
+  </div>
+</div>
+
 <!-- RÉSZLETES JÁTÉKSZABÁLYZAT MODAL -->
 <div class="modal-overlay" id="modal-rules">
   <div class="modal-box" style="border-color:var(--cyan); max-width:460px;">
@@ -842,43 +884,28 @@ html, body {
     
     <div class="rules-container">
       <div class="rule-card">
-        <h4>💥 A Játék Menete és Célja</h4>
-        <p>Koppints az érintkező, azonos színű csempecsoportokra a felrobbantásukhoz! Az arany keretes csempék betűket rejtenek, melyek robbantáskor a betűraktáradba hullanak. A kiszabadított betűkből érvényes magyar szavakat kell összeállítanod a szórakó tálcán.</p>
+        <h4>💥 Végtelen Pályák & Fair Lépésrendszer</h4>
+        <p>A játék gyakorlatilag végtelenített pályarendszerrel működik. A lépésszám sosem szorul be játszhatatlan szintre (biztonságos 24-34 lépés zóna), a kihívást az összetett fa- és jégrétegek adják.</p>
       </div>
 
       <div class="rule-card">
-        <h4>📝 Szóalkotás és Rövid Szavak</h4>
-        <p>A játék elfogadja az <b>értelmes 2 és 3 betűs szavakat is</b> (pl. FA, TÓ, KŐ, NAP, HÁZ), melyekért azonnal pont jár és felszabadítják a betűhelyeket. <b>Viszont a szintcél nem teljesül velük</b>, amennyiben a szint ennél hosszabb (pl. 4+ betűs) szót követel meg!</p>
+        <h4>👑 10 Pályánkénti ARANYPÁLYA</h4>
+        <p>Minden 10., 20., 30... szint egy grandiózus Aranypálya! Ragyogó aranytábla, bőséges lépésszám, és arany betűkockák várnak, melyek <b>3x pontszorzót</b> adnak a szavakhoz! Teljesítéskor +10 tartalék lépés és +2000 pont üti a markodat!</p>
       </div>
 
       <div class="rule-card">
-        <h4>🚫 Nem-szavak és Kettős Betűk</h4>
-        <p>Az önmagukban álló összetett mássalhangzók (mint a CS, GY, TY, SZ, ZS, LY, NY) <b>nem számítanak szónak</b>, csupán hangjelölések. A rendszer ezeket önálló szóként azonnal elutasítja.</p>
+        <h4>⚡ Segítségek & Minden 3. Szinten INGYEN Kvóta</h4>
+        <p>Az eszköztár segítségei <b>kizárólag minden 3. szinten (3., 6., 9., 12. stb.) tartalmaznak körönként 1-1 INGYENES próbát</b>! A köztes szinteken a segítségek azonnal a hátizsákodból vonódnak le, vagy közvetlenül heti pontért aktiválhatók.</p>
       </div>
 
       <div class="rule-card">
-        <h4>🎁 Mesterjutalom & +2 Lépés Bónuszok</h4>
-        <p>Minden legalább <b>5 betűs szóért azonnal +2 extra lépést kapsz</b>, plusz felugrik a Mesterjutalom ablak, ahol egy <b>INGYENES tetszőleges betűt kérhetsz</b> a raktáradba (anélkül, hogy kitakarná a betűidet)! Ha pedig <b>a teljes raktárat kiüríted</b> (minden betűt felhasználsz), <b>további +2 extra lépés üti a markodat!</b></p>
+        <h4>👁️ Élő Közvetítés & Segítő Chat</h4>
+        <p>Bármikor beléphetsz online játékostársad játékát élőben nézni. A csevegőben tippet küldhetsz neki, amely felugrik a képernyőjén. A szint befejezésekor a chat törlődik, tiszta lapot biztosítva!</p>
       </div>
 
       <div class="rule-card">
-        <h4>⚡ Segítségek & Körönkénti 1x INGYEN Kvóta</h4>
-        <p>A bal oldali eszköztár összes segítségéből (Kalapács, Sorkilövő, Bomba, Súgó stb.) <b>minden körben 1 db INGYENESEN jár</b>! A segítség-halmozás kizárt: az ingyenes kvóta nem vihető át a következő szintekre. Ha az adott körben elhasználtad, további példányok a boltban exponenciálisan dráguló heti pontokért vehetők meg.</p>
-      </div>
-
-      <div class="rule-card">
-        <h4>🎒 Tartalék Lépések Kifogyáskor</h4>
-        <p>A megvásárolt lépések a hátizsákodba kerülnek. Ha a szinten elfogynak a lépéseid, a játék nem buzdít azonnal vásárlásra, hanem <b>megkérdezi, mennyi tartalék lépést akarsz felváltani</b> (te adhatod meg a pontos darabszámot). Csak akkor ajánl bolti vételt, ha a kereted teljesen elfogyott!</p>
-      </div>
-
-      <div class="rule-card">
-        <h4>🔤 10 Perces Prémium Betűpiac</h4>
-        <p>10 perc aktív játékidő elérése után kinyílik a Betűpiac, ahol a magyar ábécé bármelyik betűje megvásárolható <b>kőkemény, exponenciálisan emelkedő árakon</b>.</p>
-      </div>
-
-      <div class="rule-card">
-        <h4>🏆 Heti Élő Ranglista & Felhő</h4>
-        <p>A heti ranglista hétfő 00:00-tól vasárnap 23:59-ig tart és valós időben frissül. A heti pontod és a ranglistapontod mindig 100%-ban megegyezik. A Név + 4 jegyű PIN azonosítóddal a felhőben bármikor folytathatod a játékodat bármelyik eszközön!</p>
+        <h4>★ Csillag Dzsoker & Láncreakciók</h4>
+        <p>A lezuhanó kockák önálló láncreakciói x2, x3 szorzót adnak! A ritkán megjelenő <b>★ Dzsoker betű</b> bármilyen betűt helyettesíthet a szórakó tálcán.</p>
       </div>
     </div>
 
@@ -888,11 +915,11 @@ html, body {
   </div>
 </div>
 
-<!-- Profil Belépés Modal -->
+<!-- PROFIL BELÉPÉS MODAL -->
 <div class="modal-overlay" id="modal-auth">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--gold);">👤 FELHŐ PROFIL</div>
-    <p class="modal-desc">Add meg a neved és 4 jegyű PIN kódodat! A rendszer a saját egyedi felhős profilodat és készleteidet tölti be.</p>
+    <p class="modal-desc">Add meg a neved és 4 jegyű PIN kódodat! A rendszer a saját felhős profilodat és készleteidet tölti be.</p>
     <input type="text" class="input-pin" id="auth-name" placeholder="JÁTÉKOSNÉV" maxlength="12" autocomplete="off">
     <input type="password" class="input-pin" id="auth-pin" placeholder="PIN (4 SZÁM)" maxlength="4" inputmode="numeric">
     <div class="modal-buttons">
@@ -901,12 +928,12 @@ html, body {
   </div>
 </div>
 
-<!-- Áruház Modal -->
+<!-- ÁRUHÁZ MODAL -->
 <div class="modal-overlay" id="modal-shop">
   <div class="modal-box" style="max-width:440px;">
     <button class="modal-close-x" id="btn-close-shop-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">🛒 HETI PONT ÁRUHÁZ</div>
-    <p class="modal-desc">Vásárolj segédeszközöket a heti pontjaidból! A megvásárolt tárgyak örökre a hátizsákodban maradnak, áruk exponenciálisan emelkedik.</p>
+    <p class="modal-desc">Vásárolj segédeszközöket a heti pontjaidból! A megvásárolt tárgyak örökre a hátizsákodban maradnak.</p>
     <div style="font-size:12px; font-weight:900; color:var(--gold);">Egyenleged: <span id="shop-balance">0</span> heti pont</div>
     <div class="shop-grid" id="shop-grid"></div>
     <div class="modal-buttons">
@@ -915,7 +942,7 @@ html, body {
   </div>
 </div>
 
-<!-- Sorkilövő Irányválasztó Modal -->
+<!-- SORKILÖVŐ IRÁNYVÁLASZTÓ MODAL -->
 <div class="modal-overlay" id="modal-lineblaster-choice">
   <div class="modal-box" style="border-color:var(--gold);">
     <div class="modal-title" style="color:var(--gold);">↔️↕️ SORKILÖVŐ CÉLZÁS</div>
@@ -928,15 +955,13 @@ html, body {
   </div>
 </div>
 
-<!-- 🎁 INGYENES BETŰ KÉRÉS JUTALOM ABLAK (NEM TAKARJA KI A RAKTÁRAT) -->
+<!-- INGYENES BETŰ KÉRÉS JUTALOM ABLAK -->
 <div class="modal-overlay" id="modal-free-letter-reward">
   <div class="modal-box" style="border-color:var(--emerald); max-width:440px;">
     <div class="modal-title" style="color:var(--emerald);">🎁 MESTERJUTALOM!</div>
     <p class="modal-desc" id="free-letter-desc">Gratulálunk! Hosszú szót készítettél! <b>+2 Extra lépést kaptál</b> és kérhetsz egy <b>INGYENES tetszőleges betűt</b> a raktáradba!</p>
-    
     <div style="font-size:10px; font-weight:800; color:#94a3b8; margin-top:2px;">JELENLEGI BETŰID A RAKTÁRBAN:</div>
     <div class="current-pool-preview" id="reward-pool-preview"></div>
-
     <input type="text" class="input-pin" id="input-free-letter" placeholder="KÉRT BETŰ (PL. Y, K, A)" maxlength="3" autocomplete="off">
     <div class="quick-picks" style="flex-wrap:wrap; margin-top:4px;">
       <button class="btn-pick free-pick-btn" data-char="Y">Y</button>
@@ -958,7 +983,7 @@ html, body {
   <div class="modal-box" style="max-width:440px; border-color:var(--gold);">
     <button class="modal-close-x" id="btn-close-market-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">🔤 PRÉMIUM BETŰPIAC</div>
-    <p class="modal-desc">Több mint 10 perc játékidő után feloldva! Válassz ki egy tetszőleges magyar betűt a raktáradba. Az ár minden vásárlással <b>kőkeményen exponenciálisan emelkedik</b>!</p>
+    <p class="modal-desc">10 perc aktív játékidő után feloldva! Válassz ki egy tetszőleges betűt a raktáradba.</p>
     <div style="font-size:12px; font-weight:900; color:var(--gold);">
       Következő betű ára: <span id="market-cost-display">250</span> heti pont
       <small style="display:block; color:#94a3b8; font-size:10px;">Egyenleged: <span id="market-balance-display">0</span>P</small>
@@ -970,25 +995,22 @@ html, body {
   </div>
 </div>
 
-<!-- Tartalék lépések felhasználása Modal -->
+<!-- TARTALÉK LÉPÉSEK FELHASZNÁLÁSA MODAL -->
 <div class="modal-overlay" id="modal-use-stored">
   <div class="modal-box" style="border-color:var(--cyan);">
     <div class="modal-title" style="color:var(--cyan);">🎒 TARTALÉK LÉPÉSEK</div>
-    <p class="modal-desc" id="use-stored-desc">Elfogyott a lépésed a szinten! Van megvásárolt tartalék lépésed a hátizsákodban. Te döntheted el, hányat szeretnél most felhasználni belőle!</p>
-    
+    <p class="modal-desc" id="use-stored-desc">Elfogyott a lépésed a szinten! A hátizsákodból pontosan annyi lépést válthatsz be, amennyit szeretnél!</p>
     <div class="stepper-row">
       <button class="btn-step" id="btn-step-minus">-</button>
       <input type="number" class="input-step-val" id="input-step-custom" min="1" value="1">
       <button class="btn-step" id="btn-step-plus">+</button>
     </div>
-
     <div class="quick-picks">
       <button class="btn-pick" id="btn-pick-1">+1</button>
       <button class="btn-pick" id="btn-pick-3">+3</button>
       <button class="btn-pick" id="btn-pick-5">+5</button>
       <button class="btn-pick" id="btn-pick-all">Összes</button>
     </div>
-
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-confirm-use-stored">LÉPÉSEK BEVÁLTÁSA ✔</button>
       <button class="btn-modal secondary" id="btn-cancel-use-stored">MÉGSEM / SZINT ÚJRAKEZDÉSE</button>
@@ -996,11 +1018,11 @@ html, body {
   </div>
 </div>
 
-<!-- Lépésvásárlás Modal (Csak akkor, ha a keret teljesen elfogyott!) -->
+<!-- LÉPÉSVÁSÁRLÁS MODAL (HA A TARTALÉK IS ELFOGYOTT) -->
 <div class="modal-overlay" id="modal-out-of-moves">
   <div class="modal-box" style="border-color:var(--ruby);">
     <div class="modal-title" style="color:var(--ruby);">⏳ ELFOGYTAK A LÉPÉSEK!</div>
-    <p class="modal-desc">Elfogyott a lépésed a szinten, és a hátizsákodból is elfogyott a tartalék lépés. Szeretnél új lépéscsomagot vásárolni a heti pontjaidból, vagy újrapróbálod a szintet?</p>
+    <p class="modal-desc">Elfogyott a lépésed a szinten és a hátizsákodból is elfogyott a tartalék. Szeretnél új lépéscsomagot venni vagy újrapróbálod a szintet?</p>
     <div class="modal-buttons">
       <button class="btn-modal gold" id="btn-buy-moves-5">➕ +5 LÉPÉS VÉTELE (<span id="lbl-cost-5">180</span> heti pont)</button>
       <button class="btn-modal gold" id="btn-buy-moves-10">➕ +10 LÉPÉS VÉTELE (<span id="lbl-cost-10">340</span> heti pont)</button>
@@ -1009,12 +1031,12 @@ html, body {
   </div>
 </div>
 
-<!-- Napi Becsekkolás Modal -->
+<!-- NAPI BECSEKKOLÁS MODAL -->
 <div class="modal-overlay" id="modal-daily">
   <div class="modal-box">
     <button class="modal-close-x" id="btn-close-daily-x">✖</button>
     <div class="modal-title" style="color:var(--gold);">📅 30 NAPOS BECSEKKOLÁS</div>
-    <p class="modal-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért! Ha egy nap kimarad, a sorozat elölről kezdődik.</p>
+    <p class="modal-desc">Csekkolj be minden nap az egyre értékesebb bónuszokért!</p>
     <div class="calendar-grid" id="calendar-grid"></div>
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-claim-daily">AJÁNDÉK ÁTVÉTELE 🎁</button>
@@ -1023,12 +1045,12 @@ html, body {
   </div>
 </div>
 
-<!-- Ranglista Modal -->
+<!-- RANGLISTA MODAL -->
 <div class="modal-overlay" id="modal-leaderboard">
   <div class="modal-box">
     <button class="modal-close-x" id="btn-close-lb-x">✖</button>
     <div class="modal-title" style="color:var(--cyan);">🏆 ÉLŐ HETI RANGLISTA</div>
-    <p class="modal-desc" id="lb-week-text">Hétfő 00:00 - Vasárnap 23:59:59. Valós időben frissül minden pontszerzéskor!</p>
+    <p class="modal-desc" id="lb-week-text">Valós időben frissül minden pontszerzéskor!</p>
     <div class="leaderboard-list" id="leaderboard-list">Élő adatok csatlakozása...</div>
     <div class="modal-buttons">
       <button class="btn-modal secondary" id="btn-close-lb">BEZÁRÁS</button>
@@ -1036,7 +1058,7 @@ html, body {
   </div>
 </div>
 
-<!-- Folytatás Modal -->
+<!-- FOLYTATÁS MODAL -->
 <div class="modal-overlay" id="modal-resume">
   <div class="modal-box">
     <div class="modal-title" style="color:var(--cyan);">☁️ MENTETT ÁLLÁS</div>
@@ -1049,11 +1071,11 @@ html, body {
   </div>
 </div>
 
-<!-- Szint Győzelem Modal -->
+<!-- SZINT GYŐZELEM MODAL -->
 <div class="modal-overlay" id="modal-win">
   <div class="modal-box" style="border-color:var(--emerald);">
-    <div class="modal-title" style="color:var(--emerald);">🎉 SZINT TELJESÍTVE!</div>
-    <p class="modal-desc">Kiváló munka! Minden küldetés sikeresen végrehajtva. A megmaradt betűk törlődtek, az új szinten új gyűjtés kezdődik!</p>
+    <div class="modal-title" style="color:var(--emerald);" id="win-modal-title">🎉 SZINT TELJESÍTVE!</div>
+    <p class="modal-desc" id="win-modal-desc">Kiváló munka! Minden küldetés sikeresen végrehajtva!</p>
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-next-level">KÖVETKEZŐ SZINT ➔</button>
     </div>
@@ -1062,7 +1084,7 @@ html, body {
 
 <script>
 // =====================================================================
-// FIREBASE KONFIGURÁCIÓ & PROFIL KULCS MOTOR
+// FIREBASE KONFIGURÁCIÓ & MOTOR
 // =====================================================================
 const firebaseConfig = {
   apiKey: "AIzaSyBW6D4v9rzN5WieT-2Z5wHvp_NBwzV_M90",
@@ -1077,6 +1099,7 @@ let db = null;
 let currentUserUid = null;
 let cloudConnected = false;
 let leaderboardUnsubscribe = null;
+let activeStreamUnsubscribe = null;
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -1119,7 +1142,7 @@ function getProfileDocId(name, pin) {
 }
 
 // =====================================================================
-// AUDIO MOTOR
+// AUDIO MOTOR & EFEEKTEK
 // =====================================================================
 let audioCtx = null;
 function initAudio() {
@@ -1161,6 +1184,24 @@ function playBlockDropSound(pitchMul = 1) {
   } catch(e) {}
 }
 
+function playHeartbeat() {
+  try {
+    initAudio();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(65, t);
+    osc.frequency.exponentialRampToValueAtTime(35, t + 0.12);
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.12);
+  } catch(e) {}
+}
+
 function sfxExplode() { playTone(110, 0.35, 'sawtooth', 0.3); }
 function sfxSnap() { playTone(540, 0.07, 'triangle', 0.18); }
 function sfxCrack() { playTone(280, 0.09, 'sawtooth', 0.25); }
@@ -1168,6 +1209,11 @@ function sfxLaser() { playTone(880, 0.2, 'sawtooth', 0.28); }
 function sfxWordSuccess() {
   [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
     setTimeout(() => playTone(f, 0.22, 'triangle', 0.18), i * 65);
+  });
+}
+function sfxFanfare() {
+  [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.32, 'triangle', 0.25), i * 80);
   });
 }
 function sfxError() { playTone(150, 0.18, 'square', 0.2); }
@@ -1221,7 +1267,7 @@ function fxLoop() {
 requestAnimationFrame(fxLoop);
 
 // =====================================================================
-// SZÓTÁR BETÖLTÉS (7 FORRÁS)
+// SZÓTÁR MOTOR
 // =====================================================================
 const DICT_SOURCES = [
   "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/hu_HU/hu_HU.dic",
@@ -1265,10 +1311,11 @@ async function loadAllDictionaries() {
   await Promise.allSettled(tasks);
   ["FA","TÓ","KŐ","FŰ","LÓ","KI","MI","TE","ÉN","ŐK","HA","DE","BE","LE","RÁ","IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY","SZÉP","JÓ","NAGY","KICSI","ALMA","BABA","CICA","KUTYA","KÖNYV","ANYA","LÁNY","GOLYÓ","ARANY","ILYEN","OLYAN","KÖNNYŰ"].forEach(w => DICT.add(w));
   statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
+  initDailySecretWord();
 }
 
 // =====================================================================
-// MAGYAR ÁBÉCÉ
+// MAGYAR ÁBÉCÉ & BETŰELOSZLÁS
 // =====================================================================
 const GRID_SIZE = 8;
 const MAX_POOL = 40;
@@ -1294,7 +1341,25 @@ Object.entries(LETTER_DIST).forEach(([char, count]) => {
 });
 
 // =====================================================================
-// ÁRUHÁZ DEFINÍCIÓ & EXPONENCIÁLIS ÁRAZÁS
+// NAPI REJTÉLYES SZÓ GENERÁLÓ (NAP SZAVA)
+// =====================================================================
+const SECRET_WORD_POOL = ["ALMA", "KAPU", "HÁZIKÓ", "ARANY", "CSILLAG", "VILÁG", "KÖNYV", "MADÁR", "BARÁT", "FENYŐ"];
+let currentDailySecret = "ALMA";
+let dailySecretClaimed = false;
+
+function initDailySecretWord() {
+  const dayIndex = new Date().getDate() % SECRET_WORD_POOL.length;
+  currentDailySecret = SECRET_WORD_POOL[dayIndex];
+  let mask = "";
+  for(let i = 0; i < currentDailySecret.length; i++) {
+    mask += (i % 2 === 0) ? currentDailySecret[i] : "_ ";
+  }
+  const el = document.getElementById('daily-secret-word');
+  if(el) el.textContent = mask.trim();
+}
+
+// =====================================================================
+// ÁRUHÁZ DEFINÍCIÓ & ÁRAZÁS
 // =====================================================================
 const SHOP_ITEMS = [
   { id: 'extramoves', name: '➕ +5 Tartalék Lépés', baseCost: 160, desc: '+5 lépést tesz a hátizsákodba, amit bármikor felválthatsz.', action: () => { state.storedMoves = (state.storedMoves || 0) + 5; showToast("➕ +5 lépés a hátizsákodba került!", "ok"); } },
@@ -1310,7 +1375,12 @@ const SHOP_ITEMS = [
   { id: 'clearstorage', name: '🧹 Söprögető', baseCost: 70, desc: 'Kiüríti a betűraktárt, ha túl sok felesleges betűd gyűlt össze.', action: () => { state.pool = []; renderPool(); showToast("Betűraktár kiürítve!", "ok"); } }
 ];
 
+function isDevTestUser() {
+  return state.playerName === 'TESZT' && state.playerPin === '0000';
+}
+
 function getItemCost(itemId) {
+  if(isDevTestUser()) return 0;
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if(!item) return 100;
   const count = (state.purchaseCounts && state.purchaseCounts[itemId]) || 0;
@@ -1318,6 +1388,7 @@ function getItemCost(itemId) {
 }
 
 function getMoveRefillCost(packSize) {
+  if(isDevTestUser()) return 0;
   const key = `moves_refill_${packSize}`;
   const base = packSize === 5 ? 180 : 340;
   const count = (state.purchaseCounts && state.purchaseCounts[key]) || 0;
@@ -1325,120 +1396,53 @@ function getMoveRefillCost(packSize) {
 }
 
 function getLetterMarketCost() {
+  if(isDevTestUser()) return 0;
   const count = (state.purchaseCounts && state.purchaseCounts['letter_market']) || 0;
   return Math.round(250 * Math.pow(1.65, count));
 }
 
+function isHelperFreeAvailable(itemId) {
+  if(isDevTestUser()) return true;
+  if(itemId === 'extramoves') return false;
+  if(state.level % 3 !== 0) return false;
+  return !state.roundFreeUsed[itemId];
+}
+
 // =====================================================================
-// 100+ INTELLIGENS, FOKOZATOSAN NEHEZEDŐ QUEST
+// QUEST DEFINÍCIÓK
 // =====================================================================
 const QUESTS = [
   { id:'t1_match4', tier:1, text:'Robbants fel 4+ csempét egyszerre', check: s => s.stats.biggestMatch >= 4 },
-  { id:'t1_match5', tier:1, text:'Robbants fel 5+ csempét egyszerre', check: s => s.stats.biggestMatch >= 5 },
   { id:'t1_word_len4', tier:1, text:'Készíts legalább egy 4 betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 4) },
   { id:'t1_start_a', tier:1, text:'Készíts "A" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('A')) },
   { id:'t1_start_k', tier:1, text:'Készíts "K" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('K')) },
-  { id:'t1_start_m', tier:1, text:'Készíts "M" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('M')) },
-  { id:'t1_start_s', tier:1, text:'Készíts "S" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('S')) },
-  { id:'t1_start_t', tier:1, text:'Készíts "T" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('T')) },
-  { id:'t1_start_b', tier:1, text:'Készíts "B" betűvel kezdődő szót', check: s => (s.levelWords||[]).some(w => w.startsWith('B')) },
   { id:'t1_end_k', tier:1, text:'Készíts "K" betűre végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('K')) },
-  { id:'t1_end_t', tier:1, text:'Készíts "T" betűre végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('T')) },
-  { id:'t1_end_r', tier:1, text:'Készíts "R" betűre végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('R')) },
-  { id:'t1_end_a', tier:1, text:'Készíts "A" betűre végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('A')) },
-  { id:'t1_end_e', tier:1, text:'Készíts "E" betűre végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('E')) },
-  { id:'t1_contain_e', tier:1, text:'Készíts "E" vagy "É" betűs szót', check: s => (s.levelWords||[]).some(w => w.includes('E') || w.includes('É')) },
-  { id:'t1_contain_o', tier:1, text:'Készíts "O" vagy "Ó" betűs szót', check: s => (s.levelWords||[]).some(w => w.includes('O') || w.includes('Ó')) },
-  { id:'t1_freed4', tier:1, text:'Szabadíts fel legalább 4 betűt', check: s => s.stats.lettersFreed >= 4 },
   { id:'t1_freed6', tier:1, text:'Szabadíts fel legalább 6 betűt', check: s => s.stats.lettersFreed >= 6 },
-  { id:'t1_score300', tier:1, text:'Szerezz legalább 300 szintpontot', check: s => s.stats.levelScore >= 300 },
   { id:'t1_score500', tier:1, text:'Szerezz legalább 500 szintpontot', check: s => s.stats.levelScore >= 500 },
 
   { id:'t2_match6', tier:2, text:'Robbants fel 6+ csempét egyszerre', check: s => s.stats.biggestMatch >= 6 },
-  { id:'t2_match7', tier:2, text:'Robbants fel 7+ csempét egyszerre', check: s => s.stats.biggestMatch >= 7 },
-  { id:'t2_ice1', tier:2, text:'Törj össze legalább 1 jégréteget', reqIce:1, check: s => s.stats.iceBroken >= 1 },
   { id:'t2_ice2', tier:2, text:'Törj össze legalább 2 jégréteget', reqIce:2, check: s => s.stats.iceBroken >= 2 },
-  { id:'t2_ice3', tier:2, text:'Törj össze legalább 3 jégréteget', reqIce:3, check: s => s.stats.iceBroken >= 3 },
   { id:'t2_word_len5', tier:2, text:'Készíts egy 5+ betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 5) },
-  { id:'t2_contain_y', tier:2, text:'Készíts "Y"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('Y')) },
-  { id:'t2_contain_gy', tier:2, text:'Készíts "GY"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('GY')) },
-  { id:'t2_contain_sz', tier:2, text:'Készíts "SZ"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('SZ')) },
-  { id:'t2_contain_cs', tier:2, text:'Készíts "CS"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('CS')) },
-  { id:'t2_contain_ny', tier:2, text:'Készíts "NY"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('NY')) },
-  { id:'t2_contain_ly', tier:2, text:'Készíts "LY"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('LY')) },
-  { id:'t2_rare', tier:2, text:'Alkoss szót csillagos ritka betűvel', check: s => s.stats.usedRareChar },
-  { id:'t2_vowels3', tier:2, text:'Készíts 3 magánhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 3) },
-  { id:'t2_cons3', tier:2, text:'Készíts 3 mássalhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 3) },
   { id:'t2_two_len4', tier:2, text:'Készíts 2 db legalább 4 betűs szót', check: s => (s.levelWords||[]).filter(w => w.length >= 4).length >= 2 },
-  { id:'t2_same_start_end', tier:2, text:'Azonos betűvel kezdődő és végződő szó', check: s => (s.levelWords||[]).some(w => w.length >= 3 && w[0] === w[w.length - 1]) },
-  { id:'t2_word_ak', tier:2, text:'Készíts "AK"-ra végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('AK')) },
-  { id:'t2_word_ek', tier:2, text:'Készíts "EK"-re végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('EK')) },
-  { id:'t2_word_os', tier:2, text:'Készíts "OS"-ra végződő szót', check: s => (s.levelWords||[]).some(w => w.endsWith('OS')) },
-  { id:'t2_freed10', tier:2, text:'Szabadíts fel legalább 10 betűt', check: s => s.stats.lettersFreed >= 10 },
-  { id:'t2_score800', tier:2, text:'Szerezz legalább 800 szintpontot', check: s => s.stats.levelScore >= 800 },
   { id:'t2_score1200', tier:2, text:'Szerezz legalább 1200 szintpontot', check: s => s.stats.levelScore >= 1200 },
 
   { id:'t3_match8', tier:3, text:'Robbants fel 8+ csempét egyszerre', check: s => s.stats.biggestMatch >= 8 },
-  { id:'t3_match9', tier:3, text:'Robbants fel 9+ csempét egyszerre', check: s => s.stats.biggestMatch >= 9 },
-  { id:'t3_wood1', tier:3, text:'Törj össze legalább 1 faréteget', reqWood:1, check: s => s.stats.woodBroken >= 1 },
   { id:'t3_wood2', tier:3, text:'Törj össze legalább 2 faréteget', reqWood:2, check: s => s.stats.woodBroken >= 2 },
-  { id:'t3_wood_ice', tier:3, text:'Törj legalább 1 fát és 1 jeget', reqWood:1, reqIce:1, check: s => s.stats.woodBroken >= 1 && s.stats.iceBroken >= 1 },
-  { id:'t3_ice4', tier:3, text:'Törj össze legalább 4 jégréteget', reqIce:4, check: s => s.stats.iceBroken >= 4 },
   { id:'t3_word_len6', tier:3, text:'Készíts egy legalább 6 betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 6) },
-  { id:'t3_two_len5', tier:3, text:'Készíts 2 db legalább 5 betűs szót', check: s => (s.levelWords||[]).filter(w => w.length >= 5).length >= 2 },
-  { id:'t3_contain_zs', tier:3, text:'Készíts "ZS"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('ZS')) },
-  { id:'t3_contain_ty', tier:3, text:'Készíts "TY"-t tartalmazó szót', check: s => (s.levelWords||[]).some(w => w.includes('TY')) },
-  { id:'t3_contain_dz', tier:3, text:'Készíts "DZ" vagy "DZS" betűs szót', check: s => (s.levelWords||[]).some(w => w.includes('DZ') || w.includes('DZS')) },
-  { id:'t3_double_letter', tier:3, text:'Készíts dupla betűs szót (pl. LL, TT, SS)', check: s => (s.levelWords||[]).some(w => /(.)\1/.test(w)) },
-  { id:'t3_palindrome', tier:3, text:'Készíts palindrom szót (pl. KÉK, PAP)', check: s => (s.levelWords||[]).some(w => w.length >= 3 && w === w.split('').reverse().join('')) },
-  { id:'t3_all_diff', tier:3, text:'5 betűs szó ahol minden betű eltér', check: s => (s.levelWords||[]).some(w => w.length === 5 && new Set(w).size === 5) },
-  { id:'t3_vowels4', tier:3, text:'Készíts 4 magánhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 4) },
-  { id:'t3_cons4', tier:3, text:'Készíts 4 mássalhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 4) },
   { id:'t3_bomb', tier:3, text:'Használj vagy robbants fel egy bombát', reqBomb:true, check: s => s.stats.bombsTriggered >= 1 },
-  { id:'t3_freed15', tier:3, text:'Szabadíts fel legalább 15 betűt', check: s => s.stats.lettersFreed >= 15 },
-  { id:'t3_score2000', tier:3, text:'Szerezz legalább 2000 szintpontot', check: s => s.stats.levelScore >= 2000 },
-  { id:'t3_score3000', tier:3, text:'Szerezz legalább 3000 szintpontot', check: s => s.stats.levelScore >= 3000 },
-
-  { id:'t4_match10', tier:4, text:'Robbants fel 10+ csempét egyszerre', check: s => s.stats.biggestMatch >= 10 },
-  { id:'t4_match12', tier:4, text:'Robbants fel 12+ csempét egyszerre', check: s => s.stats.biggestMatch >= 12 },
-  { id:'t4_wood3', tier:4, text:'Törj össze legalább 3 faréteget', reqWood:3, check: s => s.stats.woodBroken >= 3 },
-  { id:'t4_layers5', tier:4, text:'Törj össze 5 réteget (fa vagy jég)', reqLayers:5, check: s => (s.stats.woodBroken + s.stats.iceBroken) >= 5 },
-  { id:'t4_word_len7', tier:4, text:'Készíts egy legalább 7 betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 7) },
-  { id:'t4_two_len6', tier:4, text:'Készíts 2 db legalább 6 betűs szót', check: s => (s.levelWords||[]).filter(w => w.length >= 6).length >= 2 },
-  { id:'t4_vowels5', tier:4, text:'Készíts 5 magánhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g)||[]).length >= 5) },
-  { id:'t4_cons5', tier:4, text:'Készíts 5 mássalhangzós szót', check: s => (s.levelWords||[]).some(w => (w.match(/[BCDFGHJKLMNPQRSTVWXYZ]/g)||[]).length >= 5) },
-  { id:'t4_freed20', tier:4, text:'Szabadíts fel legalább 20 betűt', check: s => s.stats.lettersFreed >= 20 },
-  { id:'t4_score4500', tier:4, text:'Szerezz legalább 4500 szintpontot', check: s => s.stats.levelScore >= 4500 },
-  { id:'t4_score6000', tier:4, text:'Szerezz legalább 6000 szintpontot', check: s => s.stats.levelScore >= 6000 },
-  { id:'t4_words5', tier:4, text:'Készíts legalább 5 érvényes szót', check: s => (s.levelWords||[]).length >= 5 },
-
-  { id:'t5_match14', tier:5, text:'Robbants fel 14+ csempét egyszerre', check: s => s.stats.biggestMatch >= 14 },
-  { id:'t5_layers8', tier:5, text:'Törj össze összesen 8 réteget', reqLayers:8, check: s => (s.stats.woodBroken + s.stats.iceBroken) >= 8 },
-  { id:'t5_wood5', tier:5, text:'Törj össze legalább 5 faréteget', reqWood:5, check: s => s.stats.woodBroken >= 5 },
-  { id:'t5_word_len8', tier:5, text:'Készíts egy legalább 8 betűs szót', check: s => (s.levelWords||[]).some(w => w.length >= 8) },
-  { id:'t5_three_len6', tier:5, text:'Készíts 3 db legalább 6 betűs szót', check: s => (s.levelWords||[]).filter(w => w.length >= 6).length >= 3 },
-  { id:'t5_freed25', tier:5, text:'Szabadíts fel legalább 25 betűt', check: s => s.stats.lettersFreed >= 25 },
-  { id:'t5_score8000', tier:5, text:'Szerezz legalább 8000 szintpontot', check: s => s.stats.levelScore >= 8000 },
-  { id:'t5_score10000', tier:5, text:'Szerezz legalább 10000 szintpontot', check: s => s.stats.levelScore >= 10000 },
-  { id:'t5_words6', tier:5, text:'Készíts legalább 6 érvényes szót', check: s => (s.levelWords||[]).length >= 6 }
+  { id:'t3_score2500', tier:3, text:'Szerezz legalább 2500 szintpontot', check: s => s.stats.levelScore >= 2500 }
 ];
 
 function pickViableQuest(lvl, board) {
   let targetTier = 1;
-  if(lvl >= 25) targetTier = 5;
-  else if(lvl >= 15) targetTier = 4;
-  else if(lvl >= 8) targetTier = 3;
-  else if(lvl >= 4) targetTier = 2;
+  if(lvl >= 15) targetTier = 3;
+  else if(lvl >= 6) targetTier = 2;
 
-  let totalIce = 0;
-  let totalWood = 0;
+  let totalIce = 0, totalWood = 0;
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
       const t = board[r][c];
-      if(t) {
-        totalIce += (t.ice || 0);
-        totalWood += (t.wood || 0);
-      }
+      if(t) { totalIce += (t.ice || 0); totalWood += (t.wood || 0); }
     }
   }
 
@@ -1446,19 +1450,14 @@ function pickViableQuest(lvl, board) {
     if(q.tier > targetTier) return false;
     if(q.reqIce && totalIce < q.reqIce) return false;
     if(q.reqWood && totalWood < q.reqWood) return false;
-    if(q.reqLayers && (totalIce + totalWood) < q.reqLayers) return false;
-    if(q.reqBomb && lvl < 5 && (state.inventory['bomb'] || 0) <= 0) return false;
     return true;
   });
 
-  if(eligible.length === 0) return QUESTS[0];
-  const currentTierEligible = eligible.filter(q => q.tier === targetTier);
-  const pool = currentTierEligible.length > 0 ? currentTierEligible : eligible;
-  return pool[Math.floor(Math.random() * pool.length)];
+  return eligible[Math.floor(Math.random() * eligible.length)] || QUESTS[0];
 }
 
 // =====================================================================
-// JÁTÉK ÁLLAPOT
+// JÁTÉK ÁLLAPOT & VÉGTELENÍTETT LOGIKA
 // =====================================================================
 const state = {
   playerName: null,
@@ -1492,8 +1491,12 @@ const trayEl = document.getElementById('builder-tray');
 const poolEl = document.getElementById('pool-grid');
 let isLocked = false;
 let isClaimingDaily = false;
+let currentComboCount = 0;
 
-// Képernyőmérethez igazodó, kicsúszásmentes dinamikus csempeméret számítás
+function isGoldenLevel(lvl) {
+  return lvl % 10 === 0;
+}
+
 function calcTileMetrics() {
   const isDesktop = window.innerWidth >= 861;
   let size;
@@ -1517,7 +1520,6 @@ function calcTileMetrics() {
   return size;
 }
 
-// Szint indítás: készletek megmaradnak, de a körönkénti 1 ingyen kvóta újratöltődik!
 function initLevelData(lvl) {
   state.level = lvl;
   state.pool = [];
@@ -1529,9 +1531,24 @@ function initLevelData(lvl) {
   isLocked = false;
   stopTargetingMode();
 
-  state.requiredWords = Math.min(10, 3 + Math.floor(lvl / 3));
-  state.minWordLen = lvl < 5 ? 3 : (lvl < 12 ? 4 : 5);
-  state.moves = Math.max(14, 32 - Math.floor(lvl * 0.5));
+  const isGold = isGoldenLevel(lvl);
+  const wrap = document.getElementById('app-wrap');
+  if(isGold) wrap.classList.add('gold-level-active');
+  else wrap.classList.remove('gold-level-active');
+
+  // HULLÁMZÓ ÉS BIZTONSÁGOS LÉPÉSSZÁMOK
+  if(isGold) {
+    state.moves = 36;
+    state.requiredWords = 4;
+    state.minWordLen = 3;
+    showToast(`👑 ${lvl}. SZINT: NAGY ARANYPÁLYA! (3x pontok & bőséges lépések)`, "ok");
+    sfxFanfare();
+  } else {
+    const cycle = (lvl - 1) % 10;
+    state.moves = Math.max(24, 32 - Math.floor(cycle * 0.8));
+    state.requiredWords = Math.min(7, 3 + Math.floor(cycle / 3));
+    state.minWordLen = cycle < 4 ? 3 : (cycle < 7 ? 4 : 5);
+  }
 
   state.stats = {
     wordsMade: 0, biggestMatch: 0, iceBroken: 0,
@@ -1560,41 +1577,50 @@ function generateProceduralGrid(lvl) {
   state.board = [];
   const colorCount = getColorsForLevel(lvl);
   const tileSize = calcTileMetrics();
+  const isGold = isGoldenLevel(lvl);
 
-  const iceChance = Math.min(0.35, 0.04 * lvl);
-  const woodChance = lvl >= 3 ? Math.min(0.30, 0.03 * (lvl - 2)) : 0;
+  const iceChance = isGold ? 0.15 : Math.min(0.32, 0.04 * ((lvl % 10) || 1));
+  const woodChance = isGold ? 0.10 : (lvl % 10 >= 3 ? Math.min(0.28, 0.03 * ((lvl % 10) - 2)) : 0);
   const maxLayer = lvl < 6 ? 1 : 2;
 
   for(let r = 0; r < GRID_SIZE; r++) {
     state.board[r] = [];
     for(let c = 0; c < GRID_SIZE; c++) {
       const color = Math.floor(Math.random() * colorCount);
-      let hasLetter = Math.random() < (0.22 + Math.min(lvl * 0.015, 0.22));
-      let char = hasLetter ? BAG[Math.floor(Math.random() * BAG.length)] : null;
+      let hasLetter = Math.random() < 0.28;
+      let char = hasLetter ? getBalancedLetter() : null;
 
-      let iceLayer = 0;
-      let woodLayer = 0;
-
+      let iceLayer = 0, woodLayer = 0;
       if(hasLetter) {
-        if(Math.random() < woodChance) {
-          woodLayer = (maxLayer > 1 && Math.random() < 0.4) ? 2 : 1;
-        } else if(Math.random() < iceChance) {
-          iceLayer = (maxLayer > 1 && Math.random() < 0.4) ? 2 : 1;
-        }
+        if(Math.random() < woodChance) woodLayer = (maxLayer > 1 && Math.random() < 0.4) ? 2 : 1;
+        else if(Math.random() < iceChance) iceLayer = (maxLayer > 1 && Math.random() < 0.4) ? 2 : 1;
       }
 
       const t = {
         r, c, color,
-        ice: iceLayer,
-        wood: woodLayer,
-        letter: char,
-        bomb: false,
+        ice: iceLayer, wood: woodLayer,
+        letter: char, bomb: false,
+        isGold: isGold && (Math.random() < 0.35 || hasLetter),
+        isWildcard: Math.random() < 0.03,
         el: null
       };
       state.board[r][c] = t;
       createTileElement(t, tileSize);
     }
   }
+}
+
+// BAD LUCK PROTECTION A BETŰSORSOLÁSNÁL
+function getBalancedLetter() {
+  const vowels = ['A','E','I','O','U','Á','É','Ó','Ö','Ő','Ú','Ü','Ű'];
+  const consonants = BAG.filter(ch => !vowels.includes(ch));
+  
+  // Ha túl sok mássalhangzó gyűlt össze magánhangzó nélkül, garantált magánhangzó
+  const poolVowels = state.pool.filter(item => vowels.includes(item.char)).length;
+  if(state.pool.length >= 6 && poolVowels === 0) {
+    return vowels[Math.floor(Math.random() * vowels.length)];
+  }
+  return BAG[Math.floor(Math.random() * BAG.length)];
 }
 
 function createTileElement(tile, size) {
@@ -1604,6 +1630,7 @@ function createTileElement(tile, size) {
   if(tile.wood > 0) el.classList.add(`wood-${tile.wood}`);
   if(tile.letter) el.classList.add('has-letter');
   if(tile.bomb) el.classList.add('bomb');
+  if(tile.isGold) el.classList.add('is-gold');
 
   el.style.width = size + 'px';
   el.style.height = size + 'px';
@@ -1645,33 +1672,13 @@ function createTileElement(tile, size) {
 function onTileClicked(tile) {
   if(isLocked) return;
 
-  if(state.activeTargetMode === 'hammer') {
-    executeHammerOnTile(tile);
-    return;
-  }
-  if(state.activeTargetMode === 'blaster-row') {
-    executeBlasterRow(tile.r);
-    return;
-  }
-  if(state.activeTargetMode === 'blaster-col') {
-    executeBlasterCol(tile.c);
-    return;
-  }
+  if(state.activeTargetMode === 'hammer') { executeHammerOnTile(tile); return; }
+  if(state.activeTargetMode === 'blaster-row') { executeBlasterRow(tile.r); return; }
+  if(state.activeTargetMode === 'blaster-col') { executeBlasterCol(tile.c); return; }
 
-  if(tile.wood > 0) {
-    showToast("Ez a betű fa réteg alatt van! Robbants mellette a töréshez!", "err");
-    sfxError();
-    return;
-  }
-  if(tile.ice > 0) {
-    showToast("Ez a betű jégbe fagyott! Robbants mellette az olvasztáshoz!", "err");
-    sfxError();
-    return;
-  }
-  if(tile.bomb) {
-    triggerBomb(tile.r, tile.c);
-    return;
-  }
+  if(tile.wood > 0) { showToast("Fa réteg alatt van! Robbants mellette!", "err"); sfxError(); return; }
+  if(tile.ice > 0) { showToast("Jégbe fagyott! Robbants mellette!", "err"); sfxError(); return; }
+  if(tile.bomb) { triggerBomb(tile.r, tile.c); return; }
 
   const cluster = getConnectedCluster(tile.r, tile.c, tile.color);
   if(cluster.length < 2) {
@@ -1681,6 +1688,7 @@ function onTileClicked(tile) {
     return;
   }
 
+  currentComboCount = 1;
   executeClusterExplosion(cluster);
 }
 
@@ -1691,13 +1699,9 @@ function startTileTargeting(mode) {
   banner.classList.add('active');
   boardEl.classList.add('targeting-cursor');
 
-  if(mode === 'hammer') {
-    msg.textContent = '🔨 KATTINTS BÁRMELYIK KOCKÁRA A SZÉTZÚZÁSÁHOZ!';
-  } else if(mode === 'blaster-row') {
-    msg.textContent = '↔️ KATTINTS A KIVÁLASZTOTT SORRA A KILÖVÉSHEZ!';
-  } else if(mode === 'blaster-col') {
-    msg.textContent = '↕️ KATTINTS A KIVÁLASZTOTT OSZLOPRA A KILÖVÉSHEZ!';
-  }
+  if(mode === 'hammer') msg.textContent = '🔨 KATTINTS BÁRMELYIK KOCKÁRA A SZÉTZÚZÁSHOZ!';
+  else if(mode === 'blaster-row') msg.textContent = '↔️ KATTINTS A KIVÁLASZTOTT SORRA A KILÖVÉSHEZ!';
+  else if(mode === 'blaster-col') msg.textContent = '↕️ KATTINTS A KIVÁLASZTOTT OSZLOPRA A KILÖVÉSHEZ!';
 }
 
 function stopTargetingMode() {
@@ -1718,14 +1722,13 @@ async function executeHammerOnTile(tile) {
   try {
     sfxCrack();
     shakeScreen();
-
     const boardRect = boardEl.getBoundingClientRect();
     const px = boardRect.left + (tile.c + 0.5) * (boardRect.width / GRID_SIZE);
     const py = boardRect.top + (tile.r + 0.5) * (boardRect.height / GRID_SIZE);
     spawnExplosion(px, py, '#ffffff');
 
     if(tile.letter && state.pool.length < MAX_POOL) {
-      animateFreedLetters([{ char: tile.letter, x: px, y: py }]);
+      animateFreedLetters([{ char: tile.letter, x: px, y: py, isGold: tile.isGold }]);
       state.stats.lettersFreed++;
     }
 
@@ -1733,14 +1736,14 @@ async function executeHammerOnTile(tile) {
     setTimeout(() => { if(tile.el && tile.el.parentNode) tile.el.parentNode.removeChild(tile.el); }, 280);
     state.board[tile.r][tile.c] = null;
 
-    showToast("🔨 Kocka sikeresen szétzúzva!", "ok");
+    showToast("🔨 Kocka szétzúzva!", "ok");
     await delay(250);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
     await syncCloudState();
   } catch(err) {
-    console.error("Kalapács hiba:", err);
+    console.error(err);
   } finally {
     isLocked = false;
   }
@@ -1750,17 +1753,14 @@ async function executeHammerOnTile(tile) {
 function openLineBlasterChoiceModal() {
   document.getElementById('modal-lineblaster-choice').classList.add('active');
 }
-
 document.getElementById('btn-blaster-row').addEventListener('click', () => {
   document.getElementById('modal-lineblaster-choice').classList.remove('active');
   startTileTargeting('blaster-row');
 });
-
 document.getElementById('btn-blaster-col').addEventListener('click', () => {
   document.getElementById('modal-lineblaster-choice').classList.remove('active');
   startTileTargeting('blaster-col');
 });
-
 document.getElementById('btn-blaster-cancel').addEventListener('click', () => {
   document.getElementById('modal-lineblaster-choice').classList.remove('active');
 });
@@ -1771,7 +1771,6 @@ async function executeBlasterRow(rowIdx) {
   try {
     sfxLaser();
     shakeScreen();
-
     const boardRect = boardEl.getBoundingClientRect();
     const freed = [];
 
@@ -1781,28 +1780,23 @@ async function executeBlasterRow(rowIdx) {
         const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
         const py = boardRect.top + (rowIdx + 0.5) * (boardRect.height / GRID_SIZE);
         spawnExplosion(px, py, '#fbbf24');
-
         if(t.letter && state.pool.length < MAX_POOL) {
-          freed.push({ char: t.letter, x: px, y: py });
+          freed.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
           state.stats.lettersFreed++;
         }
-
         t.el.classList.add('clearing');
         setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
         state.board[rowIdx][c] = null;
       }
     }
-
     if(freed.length > 0) animateFreedLetters(freed);
-    showToast("↔️ Vízszintes sor kilőve!", "ok");
-
     await delay(260);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
     await syncCloudState();
   } catch(err) {
-    console.error("Sor kilövési hiba:", err);
+    console.error(err);
   } finally {
     isLocked = false;
   }
@@ -1815,7 +1809,6 @@ async function executeBlasterCol(colIdx) {
   try {
     sfxLaser();
     shakeScreen();
-
     const boardRect = boardEl.getBoundingClientRect();
     const freed = [];
 
@@ -1825,28 +1818,23 @@ async function executeBlasterCol(colIdx) {
         const px = boardRect.left + (colIdx + 0.5) * (boardRect.width / GRID_SIZE);
         const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
         spawnExplosion(px, py, '#06b6d4');
-
         if(t.letter && state.pool.length < MAX_POOL) {
-          freed.push({ char: t.letter, x: px, y: py });
+          freed.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
           state.stats.lettersFreed++;
         }
-
         t.el.classList.add('clearing');
         setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
         state.board[r][colIdx] = null;
       }
     }
-
     if(freed.length > 0) animateFreedLetters(freed);
-    showToast("↕️ Függőleges oszlop kilőve!", "ok");
-
     await delay(260);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
     await syncCloudState();
   } catch(err) {
-    console.error("Oszlop kilövési hiba:", err);
+    console.error(err);
   } finally {
     isLocked = false;
   }
@@ -1863,10 +1851,8 @@ function getConnectedCluster(startR, startC, color) {
     const curr = q.pop();
     res.push(curr);
     const neighbors = [
-      {r: curr.r - 1, c: curr.c},
-      {r: curr.r + 1, c: curr.c},
-      {r: curr.r, c: curr.c - 1},
-      {r: curr.r, c: curr.c + 1}
+      {r: curr.r - 1, c: curr.c}, {r: curr.r + 1, c: curr.c},
+      {r: curr.r, c: curr.c - 1}, {r: curr.r, c: curr.c + 1}
     ];
     for(const n of neighbors) {
       if(n.r >= 0 && n.r < GRID_SIZE && n.c >= 0 && n.c < GRID_SIZE) {
@@ -1902,11 +1888,12 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
   if(isLocked) return;
   isLocked = true;
   try {
-    state.moves--;
+    if(!isBomb) state.moves--;
     const matchSize = tilesPos.length;
     state.stats.biggestMatch = Math.max(state.stats.biggestMatch, matchSize);
 
-    let earnedScore = Math.floor(Math.pow(matchSize, 1.8) * 10);
+    let earnedScore = Math.floor(Math.pow(matchSize, 1.8) * 10 * currentComboCount);
+    if(isGoldenLevel(state.level)) earnedScore *= 3;
     state.weeklyScore += earnedScore;
     state.stats.levelScore += earnedScore;
 
@@ -1922,12 +1909,15 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
 
       const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
       const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-      const colHex = ['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff';
+      const colHex = t.isGold ? '#fbbf24' : (['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff');
       spawnExplosion(px, py, colHex);
 
       if(t.letter && t.ice === 0 && t.wood === 0 && state.pool.length < MAX_POOL) {
-        newlyFreedLetters.push({ char: t.letter, x: px, y: py });
+        newlyFreedLetters.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
         state.stats.lettersFreed++;
+      } else if(t.isWildcard && state.pool.length < MAX_POOL) {
+        newlyFreedLetters.push({ char: '★', x: px, y: py, isGold: true });
+        showToast("🌟 Dzsoker betű szabadult fel!", "ok");
       }
 
       t.el.classList.add('clearing');
@@ -1958,7 +1948,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
     checkQuestProgress();
     await syncCloudState();
   } catch(err) {
-    console.error("Robbantási hiba:", err);
+    console.error(err);
   } finally {
     isLocked = false;
   }
@@ -1990,6 +1980,7 @@ function refreshTileAppearance(t) {
   if(t.wood > 0) t.el.classList.add(`wood-${t.wood}`);
   if(t.letter) t.el.classList.add('has-letter');
   if(t.bomb) t.el.classList.add('bomb');
+  if(t.isGold) t.el.classList.add('is-gold');
 
   const inner = t.el.querySelector('.tile-inner');
   if(inner) {
@@ -2013,7 +2004,7 @@ function refreshTileAppearance(t) {
 function animateFreedLetters(letters) {
   const poolRect = poolEl.getBoundingClientRect();
   letters.forEach(item => {
-    state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: item.char });
+    state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: item.char, isGold: item.isGold });
 
     const ghost = document.createElement('div');
     ghost.className = 'flying-ghost';
@@ -2028,10 +2019,7 @@ function animateFreedLetters(letters) {
     ghost.animate([
       { transform: 'translate(-50%, -50%) scale(1.2)', opacity: 1 },
       { transform: `translate(${targetX - item.x}px, ${targetY - item.y}px) scale(0.6)`, opacity: 0.8 }
-    ], {
-      duration: 480,
-      easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)'
-    }).onfinish = () => {
+    ], { duration: 480, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' }).onfinish = () => {
       ghost.remove();
       sfxSnap();
       renderPool();
@@ -2042,6 +2030,7 @@ function animateFreedLetters(letters) {
 async function applyGravityAndRefill() {
   const colorCount = getColorsForLevel(state.level);
   const tileSize = calcTileMetrics();
+  const isGold = isGoldenLevel(state.level);
 
   for(let c = 0; c < GRID_SIZE; c++) {
     let emptyRow = GRID_SIZE - 1;
@@ -2059,13 +2048,13 @@ async function applyGravityAndRefill() {
     let spawnOffset = 1;
     for(let r = emptyRow; r >= 0; r--) {
       const color = Math.floor(Math.random() * colorCount);
-      let hasLetter = Math.random() < 0.24;
-      let char = hasLetter ? BAG[Math.floor(Math.random() * BAG.length)] : null;
+      let hasLetter = Math.random() < 0.26;
+      let char = hasLetter ? getBalancedLetter() : null;
       const t = {
-        r, c, color,
-        ice: 0, wood: 0,
-        letter: char,
-        bomb: false,
+        r, c, color, ice: 0, wood: 0,
+        letter: char, bomb: false,
+        isGold: isGold && (Math.random() < 0.35 || hasLetter),
+        isWildcard: Math.random() < 0.02,
         el: null
       };
       state.board[r][c] = t;
@@ -2086,10 +2075,38 @@ async function applyGravityAndRefill() {
   }
   playBlockDropSound(1 + (Math.random() * 0.2 - 0.1));
   await delay(180);
+
+  // AUTOMATIKUS LÁNCROBBANTÁS VIZSGÁLAT (CASCADING COMBO)
+  checkForCascadingMatches();
+}
+
+function checkForCascadingMatches() {
+  for(let r = 0; r < GRID_SIZE; r++) {
+    for(let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[r][c];
+      if(t && t.ice === 0 && t.wood === 0) {
+        const cluster = getConnectedCluster(r, c, t.color);
+        if(cluster.length >= 4) {
+          currentComboCount++;
+          triggerComboAnimation(currentComboCount);
+          executeClusterExplosion(cluster);
+          return;
+        }
+      }
+    }
+  }
+}
+
+function triggerComboAnimation(multiplier) {
+  const banner = document.getElementById('combo-banner');
+  banner.textContent = `KOMBO x${multiplier}!`;
+  banner.classList.add('pop');
+  playTone(600 + multiplier * 150, 0.2, 'triangle', 0.25);
+  setTimeout(() => banner.classList.remove('pop'), 600);
 }
 
 // =====================================================================
-// BETŰK KIRAKÁSA
+// BETŰK ÉS SZÓRAKÁS
 // =====================================================================
 function renderTray() {
   trayEl.innerHTML = '';
@@ -2100,12 +2117,10 @@ function renderTray() {
       const el = document.createElement('div');
       el.className = 'char-tile';
       if(RARE_LETTERS.has(item.char)) el.classList.add('rare');
+      if(item.char === '★') el.classList.add('wildcard');
       el.textContent = item.char;
 
-      el.addEventListener('pointerdown', (e) => {
-        handleDragStart(e, item, 'tray', index);
-      });
-
+      el.addEventListener('pointerdown', (e) => handleDragStart(e, item, 'tray', index));
       el.addEventListener('click', (e) => {
         if(e._dragged) return;
         state.tray.splice(index, 1);
@@ -2114,7 +2129,6 @@ function renderTray() {
         renderTray();
         renderPool();
       });
-
       trayEl.appendChild(el);
     });
   }
@@ -2129,12 +2143,10 @@ function renderPool() {
     const el = document.createElement('div');
     el.className = 'char-tile';
     if(RARE_LETTERS.has(item.char)) el.classList.add('rare');
+    if(item.char === '★') el.classList.add('wildcard');
     el.textContent = item.char;
 
-    el.addEventListener('pointerdown', (e) => {
-      handleDragStart(e, item, 'pool', index);
-    });
-
+    el.addEventListener('pointerdown', (e) => handleDragStart(e, item, 'pool', index));
     el.addEventListener('click', (e) => {
       if(e._dragged) return;
       if(state.tray.length >= 14) return;
@@ -2144,7 +2156,6 @@ function renderPool() {
       renderTray();
       renderPool();
     });
-
     poolEl.appendChild(el);
   });
 }
@@ -2170,20 +2181,14 @@ function handleDragStart(e, item, from, sourceIdx) {
       ghost.style.top = cy + 'px';
       document.body.appendChild(ghost);
     }
-    if(ghost) {
-      ghost.style.left = cx + 'px';
-      ghost.style.top = cy + 'px';
-    }
+    if(ghost) { ghost.style.left = cx + 'px'; ghost.style.top = cy + 'px'; }
   }
 
   function onPointerUp(ev) {
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
 
-    if(!hasMoved) {
-      if(ghost) ghost.remove();
-      return;
-    }
+    if(!hasMoved) { if(ghost) ghost.remove(); return; }
     ev._dragged = true;
     if(ghost) ghost.remove();
 
@@ -2191,11 +2196,7 @@ function handleDragStart(e, item, from, sourceIdx) {
     const cy = ev.clientY || (ev.changedTouches && ev.changedTouches[0].clientY);
     const trayRect = trayEl.getBoundingClientRect();
 
-    const droppedInTray = (
-      cx >= trayRect.left && cx <= trayRect.right &&
-      cy >= trayRect.top && cy <= trayRect.bottom
-    );
-
+    const droppedInTray = (cx >= trayRect.left && cx <= trayRect.right && cy >= trayRect.top && cy <= trayRect.bottom);
     if(droppedInTray && from === 'pool') {
       state.pool.splice(sourceIdx, 1);
       state.tray.push(item);
@@ -2205,7 +2206,6 @@ function handleDragStart(e, item, from, sourceIdx) {
       state.pool.push(item);
       sfxSnap();
     }
-
     renderTray();
     renderPool();
   }
@@ -2218,71 +2218,71 @@ function getTrayWord() {
   return state.tray.map(i => i.char).join('');
 }
 
+function isValidWithWildcard(wordPattern) {
+  if(!wordPattern.includes('★')) return DICT.has(wordPattern);
+  for(const validWord of DICT) {
+    if(validWord.length === wordPattern.length) {
+      let match = true;
+      for(let i = 0; i < wordPattern.length; i++) {
+        if(wordPattern[i] !== '★' && wordPattern[i] !== validWord[i]) { match = false; break; }
+      }
+      if(match) return true;
+    }
+  }
+  return false;
+}
+
 function validateCurrentTrayWord() {
   const w = getTrayWord();
   trayEl.classList.remove('valid', 'invalid');
   if(w.length >= 2) {
-    if(NON_WORDS_DIGRAPHS.has(w)) {
-      trayEl.classList.add('invalid');
-    } else if(DICT.has(w)) {
-      trayEl.classList.add('valid');
-    } else {
-      trayEl.classList.add('invalid');
-    }
+    if(NON_WORDS_DIGRAPHS.has(w)) trayEl.classList.add('invalid');
+    else if(isValidWithWildcard(w)) trayEl.classList.add('valid');
+    else trayEl.classList.add('invalid');
   }
 }
 
 // =====================================================================
-// SZÓBEKÜLDÉS: HOSSZÚ SZAVAKÉRT +2 LÉPÉS & ÜRES RAKTÁRÉRT +2 LÉPÉS!
+// SZÓBEKÜLDÉS ÉS DICSÉRETEK
 // =====================================================================
 document.getElementById('btn-submit').addEventListener('click', async () => {
   const word = getTrayWord();
-  if(word.length < 2) {
-    showToast("Legalább 2 betűs szó szükséges!", "err");
-    sfxError();
-    return;
-  }
+  if(word.length < 2) { showToast("Legalább 2 betűs szó szükséges!", "err"); sfxError(); return; }
+  if(NON_WORDS_DIGRAPHS.has(word)) { showToast(`"${word}" csak egy hangjelölés!`, "err"); sfxError(); return; }
 
-  if(NON_WORDS_DIGRAPHS.has(word)) {
-    showToast(`"${word}" önmagában csak egy hangjelölés, nem értelmes magyar szó!`, "err");
-    sfxError();
-    return;
-  }
-
-  if(!DICT.has(word)) {
-    showToast(`"${word}" nem szerepel a magyar szótárban!`, "err");
-    sfxError();
-    return;
-  }
+  const isValid = isValidWithWildcard(word);
+  if(!isValid) { showToast(`"${word}" nem szerepel a magyar szótárban!`, "err"); sfxError(); return; }
 
   let rareMultiplier = 1;
+  let hasGoldTile = false;
   state.tray.forEach(i => {
-    if(RARE_LETTERS.has(i.char)) {
-      rareMultiplier += 0.5;
-      state.stats.usedRareChar = true;
-    }
+    if(RARE_LETTERS.has(i.char)) { rareMultiplier += 0.5; state.stats.usedRareChar = true; }
+    if(i.isGold) hasGoldTile = true;
   });
 
-  if(state.activeTripleWord) {
-    rareMultiplier *= 3;
-    state.activeTripleWord = false;
-  }
+  if(hasGoldTile || isGoldenLevel(state.level)) rareMultiplier *= 3;
+  if(state.activeTripleWord) { rareMultiplier *= 3; state.activeTripleWord = false; }
 
   const wordScore = Math.floor(Math.pow(word.length, 2.2) * 20 * rareMultiplier);
   state.weeklyScore += wordScore;
   state.stats.levelScore += wordScore;
   state.levelWords.push(word);
 
-  const qualifiesForQuest = word.length >= state.minWordLen;
-  if(qualifiesForQuest) {
-    state.stats.wordsMade++;
-    showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
-  } else {
-    showToast(`Sikeres szó: ${word} (+${wordScore} pont)! (A szintcélhoz min. ${state.minWordLen} betű kell)`, 'ok');
+  // VIZUÁLIS HYPE DICSÉRETEK
+  if(word.length >= 7) showToast(`🌟 ZSENIÁLIS! (${word} +${wordScore}P)`, "ok");
+  else if(word.length >= 5) showToast(`🔥 KIVÁLÓ SZÓ! (${word} +${wordScore}P)`, "ok");
+  else showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
+
+  // NAPI TITKOS SZÓ ELLENŐRZÉS
+  if(!dailySecretClaimed && word === currentDailySecret) {
+    dailySecretClaimed = true;
+    state.weeklyScore += 500;
+    state.storedMoves = (state.storedMoves || 0) + 2;
+    showToast(`✨ MEGOLDOTTAD A NAP SZAVÁT (${word})! +500P & +2 Lépés!`, "ok");
+    sfxFanfare();
   }
 
   sfxWordSuccess();
-
   const trayRect = trayEl.getBoundingClientRect();
   spawnExplosion(trayRect.left + trayRect.width / 2, trayRect.top + trayRect.height / 2, '#10b981');
 
@@ -2291,41 +2291,32 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
 
   if(word.length >= 5) {
     state.moves += 2;
-    showToast(`🎉 Hosszú szó (${word}): +2 EXTRA LÉPÉS! 🔥`, "ok");
     triggerFreeLetterReward(word);
   }
 
   if(state.pool.length === 0) {
     state.moves += 2;
     showToast(`🧹 ZSENIÁLIS! Teljes raktárat kiürítetted: +2 EXTRA LÉPÉS! 🎯`, "ok");
-    playTone(880, 0.3, 'triangle', 0.25);
   }
 
   updateStats();
   updateMovesWatermark();
   checkQuestProgress();
   await syncCloudState();
-
   verifyGameState();
 });
 
 function triggerFreeLetterReward(word) {
   document.getElementById('free-letter-desc').innerHTML = 
-    `🎉 Gratulálunk! Készítettél egy <b>${word.length} betűs szót (${word})</b>! Kaptál <b>+2 lépést</b>, és kérhetsz egy <b>INGYENES tetszőleges betűt</b> a raktáradba!`;
-  
+    `🎉 Készítettél egy <b>${word.length} betűs szót (${word})</b>! Kaptál <b>+2 lépést</b>, és kérhetsz egy <b>INGYENES tetszőleges betűt</b> a raktáradba!`;
   const previewBox = document.getElementById('reward-pool-preview');
   previewBox.innerHTML = '';
-  if(state.pool.length === 0) {
-    previewBox.innerHTML = '<span style="font-size:10px; color:#94a3b8; font-style:italic;">A raktárad jelenleg üres. Bármilyen betű jól jön!</span>';
-  } else {
-    state.pool.forEach(item => {
-      const span = document.createElement('span');
-      span.className = 'preview-mini-char';
-      span.textContent = item.char;
-      previewBox.appendChild(span);
-    });
-  }
-
+  state.pool.forEach(item => {
+    const span = document.createElement('span');
+    span.className = 'preview-mini-char';
+    span.textContent = item.char;
+    previewBox.appendChild(span);
+  });
   document.getElementById('input-free-letter').value = '';
   document.getElementById('modal-free-letter-reward').classList.add('active');
 }
@@ -2338,14 +2329,8 @@ document.querySelectorAll('.free-pick-btn').forEach(btn => {
 
 document.getElementById('btn-claim-free-letter').addEventListener('click', async () => {
   let char = document.getElementById('input-free-letter').value.trim().toUpperCase();
-  if(!char) {
-    showToast("Kérlek írd be vagy válaszd ki a kért betűt!", "err");
-    return;
-  }
-  if(state.pool.length >= MAX_POOL) {
-    showToast("Tele a betűraktárad!", "err");
-    return;
-  }
+  if(!char) { showToast("Kérlek adj meg egy betűt!", "err"); return; }
+  if(state.pool.length >= MAX_POOL) { showToast("Tele a betűraktárad!", "err"); return; }
 
   state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: char });
   document.getElementById('modal-free-letter-reward').classList.remove('active');
@@ -2365,20 +2350,17 @@ document.getElementById('btn-back').addEventListener('click', () => {
 });
 
 document.getElementById('btn-clear-tray').addEventListener('click', () => {
-  while(state.tray.length > 0) {
-    state.pool.push(state.tray.pop());
-  }
+  while(state.tray.length > 0) state.pool.push(state.tray.pop());
   sfxSnap();
   renderTray();
   renderPool();
 });
 
-// „🔄 ÚJRAKEZDEM A PÁLYÁT”
 document.getElementById('btn-restart-level-direct').addEventListener('click', () => {
-  if(confirm(`Biztosan elölről kezded ezt a szintet (${state.level}. szint)?\nMinden megvásárolt javat, tartalék lépést és heti pontodat megtartod!`)) {
+  if(confirm(`Biztosan újrakezded a ${state.level}. szintet?\nMinden megvásárolt eszközöd és heti pontod megmarad!`)) {
     initLevelData(state.level);
     syncCloudState();
-    showToast(`Szint újraindítva: ${state.level}. szint! Javak megőrizve.`, "ok");
+    showToast(`Szint újraindítva: ${state.level}. szint!`, "ok");
   }
 });
 
@@ -2392,6 +2374,15 @@ function updateStats() {
   const movesBox = document.getElementById('box-moves');
   if(state.moves <= 5) movesBox.classList.add('warning');
   else movesBox.classList.remove('warning');
+
+  // PÁNIK PULZÁLÁS VÉSZHELYZETBEN
+  const vig = document.getElementById('panic-vignette');
+  if(state.moves <= 3 && state.moves > 0) {
+    vig.classList.add('active');
+    playHeartbeat();
+  } else {
+    vig.classList.remove('active');
+  }
 
   const wordsListEl = document.getElementById('words-list');
   wordsListEl.innerHTML = '';
@@ -2418,13 +2409,10 @@ function updateMissionUI() {
   document.getElementById('mission-goal-desc').textContent = `Készíts ${state.requiredWords} szót (min. ${state.minWordLen} betű)`;
   const cur = Math.min(state.stats.wordsMade, state.requiredWords);
   document.getElementById('mission-badge').textContent = `${cur} / ${state.requiredWords}`;
-  
   const pct = Math.min(100, (cur / state.requiredWords) * 100);
   document.getElementById('mission-bar').style.width = pct + '%';
 
-  if(state.currentQuest) {
-    document.getElementById('bonus-goal-desc').textContent = state.currentQuest.text;
-  }
+  if(state.currentQuest) document.getElementById('bonus-goal-desc').textContent = state.currentQuest.text;
 
   const bBadge = document.getElementById('bonus-badge');
   if(state.bonusDone) {
@@ -2445,10 +2433,23 @@ function checkQuestProgress() {
   updateMissionUI();
 }
 
-// LÉPÉSKIFOGYÁS: KORLÁTOZÁS NÉLKÜL TÖLTŐDHET VISSZA TARTALÉKBÓL VAGY VÁSÁROLVA
 function verifyGameState() {
   const mainGoalDone = state.stats.wordsMade >= state.requiredWords;
   if(mainGoalDone && state.bonusDone) {
+    const winTitle = document.getElementById('win-modal-title');
+    const winDesc = document.getElementById('win-modal-desc');
+
+    if(isGoldenLevel(state.level)) {
+      winTitle.innerHTML = '👑 ARANYPÁLYA TELJESÍTVE!';
+      winDesc.innerHTML = 'Fantasztikus teljesítmény! <b>+10 Tartalék lépés</b> került a hátizsákodba és <b>+2000 Heti Bónuszpont</b> jóváírva!';
+      state.storedMoves = (state.storedMoves || 0) + 10;
+      state.weeklyScore += 2000;
+      sfxFanfare();
+    } else {
+      winTitle.textContent = '🎉 SZINT TELJESÍTVE!';
+      winDesc.textContent = 'Kiváló munka! Minden küldetés sikeresen végrehajtva!';
+    }
+
     document.getElementById('modal-win').classList.add('active');
     return;
   }
@@ -2462,12 +2463,7 @@ function verifyGameState() {
       showToast("🛡️ Pajzs megvédett! +3 megmentő lépést kaptál!", "ok");
       return;
     }
-
-    if((state.storedMoves || 0) > 0) {
-      openUseStoredMovesModal();
-      return;
-    }
-
+    if((state.storedMoves || 0) > 0) { openUseStoredMovesModal(); return; }
     openOutOfMovesModal();
   }
 }
@@ -2477,7 +2473,7 @@ function openUseStoredMovesModal() {
   customInput.max = state.storedMoves;
   customInput.value = Math.min(state.storedMoves, 3);
   document.getElementById('use-stored-desc').innerHTML = 
-    `Elfogyott a lépésed a szinten! A hátizsákodban <b style="color:var(--cyan);">${state.storedMoves} db</b> megvásárolt tartalék lépés van. Te döntheted el, pontosan hányat szeretnél most felhasználni!`;
+    `Elfogyott a lépésed a szinten! A hátizsákodban <b style="color:var(--cyan);">${state.storedMoves} db</b> megvásárolt tartalék lépés van. Te döntheted el, pontosan hányat használsz fel!`;
   document.getElementById('modal-use-stored').classList.add('active');
 }
 
@@ -2491,26 +2487,15 @@ document.getElementById('btn-step-plus').addEventListener('click', () => {
   let val = parseInt(inp.value, 10) || 1;
   if(val < state.storedMoves) inp.value = val + 1;
 });
-document.getElementById('btn-pick-1').addEventListener('click', () => {
-  document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 1);
-});
-document.getElementById('btn-pick-3').addEventListener('click', () => {
-  document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 3);
-});
-document.getElementById('btn-pick-5').addEventListener('click', () => {
-  document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 5);
-});
-document.getElementById('btn-pick-all').addEventListener('click', () => {
-  document.getElementById('input-step-custom').value = state.storedMoves;
-});
+document.getElementById('btn-pick-1').addEventListener('click', () => { document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 1); });
+document.getElementById('btn-pick-3').addEventListener('click', () => { document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 3); });
+document.getElementById('btn-pick-5').addEventListener('click', () => { document.getElementById('input-step-custom').value = Math.min(state.storedMoves, 5); });
+document.getElementById('btn-pick-all').addEventListener('click', () => { document.getElementById('input-step-custom').value = state.storedMoves; });
 
 document.getElementById('btn-confirm-use-stored').addEventListener('click', async () => {
   const inp = document.getElementById('input-step-custom');
   let requested = parseInt(inp.value, 10);
-  if(isNaN(requested) || requested <= 0) {
-    showToast("Legalább 1 lépést meg kell adnod!", "err");
-    return;
-  }
+  if(isNaN(requested) || requested <= 0) return;
   if(requested > state.storedMoves) requested = state.storedMoves;
 
   state.storedMoves -= requested;
@@ -2539,7 +2524,7 @@ function openOutOfMovesModal() {
 
 document.getElementById('btn-buy-moves-5').addEventListener('click', async () => {
   const cost = getMoveRefillCost(5);
-  if(state.weeklyScore < cost) { showToast(`Nincs elég heti pontod (${cost} kell)!`, "err"); return; }
+  if(state.weeklyScore < cost && !isDevTestUser()) { showToast(`Nincs elég pontod (${cost} kell)!`, "err"); return; }
   state.weeklyScore -= cost;
   state.purchaseCounts['moves_refill_5'] = (state.purchaseCounts['moves_refill_5'] || 0) + 1;
   state.moves += 5;
@@ -2547,12 +2532,11 @@ document.getElementById('btn-buy-moves-5').addEventListener('click', async () =>
   updateStats();
   updateMovesWatermark();
   await syncCloudState();
-  showToast("➕ +5 lépés aktiválva!", "ok");
 });
 
 document.getElementById('btn-buy-moves-10').addEventListener('click', async () => {
   const cost = getMoveRefillCost(10);
-  if(state.weeklyScore < cost) { showToast(`Nincs elég heti pontod (${cost} kell)!`, "err"); return; }
+  if(state.weeklyScore < cost && !isDevTestUser()) { showToast(`Nincs elég pontod (${cost} kell)!`, "err"); return; }
   state.weeklyScore -= cost;
   state.purchaseCounts['moves_refill_10'] = (state.purchaseCounts['moves_refill_10'] || 0) + 1;
   state.moves += 10;
@@ -2560,7 +2544,6 @@ document.getElementById('btn-buy-moves-10').addEventListener('click', async () =
   updateStats();
   updateMovesWatermark();
   await syncCloudState();
-  showToast("➕ +10 lépés aktiválva!", "ok");
 });
 
 document.getElementById('btn-retry-from-fail').addEventListener('click', () => {
@@ -2576,7 +2559,7 @@ document.getElementById('btn-next-level').addEventListener('click', () => {
 });
 
 // =====================================================================
-// KÖZPONTI BOLT, GYORS ESZKÖZTÁR (11 SEGÍTSÉG, KÖRÖNKÉNT 1x INGYEN)
+// BOLT & GYORS ESZKÖZTÁR
 // =====================================================================
 function renderShop() {
   const shopBal = document.getElementById('shop-balance');
@@ -2586,10 +2569,8 @@ function renderShop() {
 
   SHOP_ITEMS.forEach(item => {
     const owned = (item.id === 'extramoves') ? (state.storedMoves || 0) : (state.inventory[item.id] || 0);
-    const pCount = (state.purchaseCounts && state.purchaseCounts[item.id]) || 0;
     const currentCost = getItemCost(item.id);
-    const nextCost = Math.round(item.baseCost * Math.pow(1.35, pCount + 1));
-    const isFreeThisRound = (item.id !== 'extramoves') && !state.roundFreeUsed[item.id];
+    const isFreeThisRound = isHelperFreeAvailable(item.id);
 
     const box = document.createElement('div');
     box.className = 'shop-item';
@@ -2601,11 +2582,11 @@ function renderShop() {
         </div>
         <div class="desc">${item.desc}</div>
         <div class="price-info">
-          <span>Készlet: <b>${owned} ${item.id === 'extramoves' ? 'lépés' : 'db'}</b></span>
-          <span>${isFreeThisRound ? 'Körönként 1 ingyen' : 'Köv.: ' + nextCost + 'P'}</span>
+          <span>Készlet: <b>${owned}</b></span>
+          <span>${isFreeThisRound ? '3. szinten ingyen' : currentCost + 'P'}</span>
         </div>
       </div>
-      <button class="btn-buy" ${state.weeklyScore < currentCost ? 'disabled' : ''}>MEGVESZEM</button>
+      <button class="btn-buy" ${(!isDevTestUser() && state.weeklyScore < currentCost) ? 'disabled' : ''}>MEGVESZEM</button>
     `;
     box.querySelector('.btn-buy').addEventListener('click', () => buyShopItem(item));
     grid.appendChild(box);
@@ -2614,18 +2595,12 @@ function renderShop() {
 
 function buyShopItem(item) {
   const cost = getItemCost(item.id);
-  if(state.weeklyScore < cost) {
-    showToast(`Nincs elég heti pontod (${cost} kell)!`, "err");
-    return;
-  }
+  if(state.weeklyScore < cost && !isDevTestUser()) { showToast(`Nincs elég heti pontod!`, "err"); return; }
   state.weeklyScore -= cost;
   state.purchaseCounts[item.id] = (state.purchaseCounts[item.id] || 0) + 1;
 
-  if(item.id === 'extramoves') {
-    state.storedMoves = (state.storedMoves || 0) + 5;
-  } else {
-    state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
-  }
+  if(item.id === 'extramoves') state.storedMoves = (state.storedMoves || 0) + 5;
+  else state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
 
   showToast(`Sikeres vásárlás: ${item.name}!`, "ok");
   sfxSnap();
@@ -2640,18 +2615,13 @@ function renderQuickInventory() {
   row.innerHTML = '';
 
   SHOP_ITEMS.forEach(item => {
-    const isFree = (item.id !== 'extramoves') && !state.roundFreeUsed[item.id];
+    const isFree = isHelperFreeAvailable(item.id);
     const qty = (item.id === 'extramoves') ? (state.storedMoves || 0) : (state.inventory[item.id] || 0);
 
     const btn = document.createElement('button');
     btn.className = 'btn-inv-slot' + (isFree ? ' free-active' : (item.id === 'extramoves' && qty > 0 ? ' highlight' : ''));
     
-    let badgeText;
-    if(item.id === 'extramoves') {
-      badgeText = `${qty} lp`;
-    } else {
-      badgeText = isFree ? 'INGYEN' : `${qty} db`;
-    }
+    let badgeText = (item.id === 'extramoves') ? `${qty} lp` : (isFree ? 'INGYEN' : (qty > 0 ? `${qty} db` : `${getItemCost(item.id)}P`));
 
     btn.innerHTML = `<span>${item.name}</span> <span class="count">${badgeText}</span>`;
     btn.addEventListener('click', () => {
@@ -2667,10 +2637,10 @@ function renderQuickInventory() {
 }
 
 function handleToolActivation(item) {
-  if(!state.roundFreeUsed[item.id]) {
+  if(isHelperFreeAvailable(item.id)) {
     state.roundFreeUsed[item.id] = true;
     item.action();
-    showToast(`${item.name} aktiválva (Körönkénti 1x INGYENES használat)!`, "ok");
+    showToast(`${item.name} aktiválva (Ingyenes kvóta)!`, "ok");
     renderQuickInventory();
     renderShop();
     syncCloudState();
@@ -2680,14 +2650,26 @@ function handleToolActivation(item) {
   if((state.inventory[item.id] || 0) > 0) {
     state.inventory[item.id]--;
     item.action();
-    showToast(`${item.name} aktiválva a hátizsákból (${state.inventory[item.id]} maradt)!`, "ok");
+    showToast(`${item.name} aktiválva a hátizsákból!`, "ok");
     renderQuickInventory();
     renderShop();
     syncCloudState();
     return;
   }
 
-  showToast("Ebből a segítségből elfogyott az ingyenes és a hátizsákos készleted!", "err");
+  const cost = getItemCost(item.id);
+  if(state.weeklyScore >= cost || isDevTestUser()) {
+    state.weeklyScore -= cost;
+    state.purchaseCounts[item.id] = (state.purchaseCounts[item.id] || 0) + 1;
+    item.action();
+    showToast(`${item.name} aktiválva (-${cost} heti pont)!`, "ok");
+    renderQuickInventory();
+    renderShop();
+    syncCloudState();
+    return;
+  }
+
+  showToast(`Nincs elég heti pontod (${cost} kell)!`, "err");
 }
 
 function useDynamite() {
@@ -2700,14 +2682,11 @@ function useDynamite() {
     if(target) break;
   }
   if(target) {
-    target.ice = 0;
-    target.wood = 0;
+    target.ice = 0; target.wood = 0;
     refreshTileAppearance(target);
     sfxExplode();
-    showToast("🧨 Dinamit felrobbantotta az akadályt!", "ok");
-  } else {
-    showToast("Nincs akadály a táblán!", "err");
-  }
+    showToast("🧨 Dinamit robbantva!", "ok");
+  } else showToast("Nincs akadály a táblán!", "err");
 }
 
 function useSuperHint() {
@@ -2722,16 +2701,11 @@ function useSuperHint() {
         if(idx === -1) { ok = false; break; }
         temp.splice(idx, 1);
       }
-      if(ok && (!best || word.length > best.length)) {
-        best = word;
-      }
+      if(ok && (!best || word.length > best.length)) best = word;
     }
   }
-  if(best) {
-    showToast(`💡 SZUPER SÚGÓ: "${best}" (${best.length} betű)`, "ok");
-  } else {
-    showToast("Nem rakható ki érvényes szó a raktáradból.", "err");
-  }
+  if(best) showToast(`💡 SZUPER SÚGÓ: "${best}"`, "ok");
+  else showToast("Nem rakható ki szó a raktárból.", "err");
 }
 
 function useVowelRain() {
@@ -2767,45 +2741,28 @@ function useBoardShuffle() {
   showToast("🔄 Tábla átrendezve!", "ok");
 }
 
-// =====================================================================
-// BOLT GOMBOK
-// =====================================================================
 document.getElementById('btn-open-shop-central').addEventListener('click', () => {
   renderShop();
   document.getElementById('modal-shop').classList.add('active');
 });
-document.getElementById('btn-close-shop').addEventListener('click', () => {
-  document.getElementById('modal-shop').classList.remove('active');
-});
-document.getElementById('btn-close-shop-x').addEventListener('click', () => {
-  document.getElementById('modal-shop').classList.remove('active');
-});
+document.getElementById('btn-close-shop').addEventListener('click', () => document.getElementById('modal-shop').classList.remove('active'));
+document.getElementById('btn-close-shop-x').addEventListener('click', () => document.getElementById('modal-shop').classList.remove('active'));
+
+document.getElementById('btn-open-rules').addEventListener('click', () => document.getElementById('modal-rules').classList.add('active'));
+document.getElementById('btn-close-rules').addEventListener('click', () => document.getElementById('modal-rules').classList.remove('active'));
+document.getElementById('btn-close-rules-x').addEventListener('click', () => document.getElementById('modal-rules').classList.remove('active'));
 
 // =====================================================================
-// JÁTÉKSZABÁLYZAT MODAL
-// =====================================================================
-document.getElementById('btn-open-rules').addEventListener('click', () => {
-  document.getElementById('modal-rules').classList.add('active');
-});
-document.getElementById('btn-close-rules').addEventListener('click', () => {
-  document.getElementById('modal-rules').classList.remove('active');
-});
-document.getElementById('btn-close-rules-x').addEventListener('click', () => {
-  document.getElementById('modal-rules').classList.remove('active');
-});
-
-// =====================================================================
-// 10 PERC UTÁN FELOLDÓDÓ PRÉMIUM BETŰPIAC
+// BETŰPIAC (10 PERC UTÁN)
 // =====================================================================
 function updatePlayTimeTracker() {
   state.playTimeSeconds = (state.playTimeSeconds || 0) + 1;
   const btn = document.getElementById('btn-open-market');
   if(!btn) return;
 
-  if(state.playTimeSeconds < 600) {
+  if(state.playTimeSeconds < 600 && !isDevTestUser()) {
     const remain = 600 - state.playTimeSeconds;
-    const m = Math.floor(remain / 60);
-    const s = remain % 60;
+    const m = Math.floor(remain / 60), s = remain % 60;
     btn.innerHTML = `⏳ Betűpiac (${m}:${s < 10 ? '0' : ''}${s})`;
     btn.classList.remove('unlocked-pulse');
   } else {
@@ -2816,23 +2773,15 @@ function updatePlayTimeTracker() {
 setInterval(updatePlayTimeTracker, 1000);
 
 document.getElementById('btn-open-market').addEventListener('click', () => {
-  if(state.playTimeSeconds < 600) {
-    const remain = 600 - state.playTimeSeconds;
-    const m = Math.floor(remain / 60);
-    const s = remain % 60;
-    showToast(`A Betűpiac még zárva! Hátralévő játékidő: ${m} perc ${s} mp`, "err");
+  if(state.playTimeSeconds < 600 && !isDevTestUser()) {
+    showToast("A Betűpiac még zárva! 10 perc játékidő szükséges.", "err");
     return;
   }
   renderLetterMarket();
   document.getElementById('modal-letter-market').classList.add('active');
 });
-
-document.getElementById('btn-close-market').addEventListener('click', () => {
-  document.getElementById('modal-letter-market').classList.remove('active');
-});
-document.getElementById('btn-close-market-x').addEventListener('click', () => {
-  document.getElementById('modal-letter-market').classList.remove('active');
-});
+document.getElementById('btn-close-market').addEventListener('click', () => document.getElementById('modal-letter-market').classList.remove('active'));
+document.getElementById('btn-close-market-x').addEventListener('click', () => document.getElementById('modal-letter-market').classList.remove('active'));
 
 function renderLetterMarket() {
   const currentCost = getLetterMarketCost();
@@ -2841,13 +2790,11 @@ function renderLetterMarket() {
 
   const grid = document.getElementById('letter-market-grid');
   grid.innerHTML = '';
-
   HUNGARIAN_ALPHABET_ALL.forEach(letter => {
     const btn = document.createElement('button');
     btn.className = 'market-char-btn';
     if(RARE_LETTERS.has(letter)) btn.classList.add('rare');
     btn.textContent = letter;
-
     btn.addEventListener('click', () => buySpecificLetter(letter));
     grid.appendChild(btn);
   });
@@ -2855,23 +2802,15 @@ function renderLetterMarket() {
 
 async function buySpecificLetter(letter) {
   const cost = getLetterMarketCost();
-  if(state.weeklyScore < cost) {
-    showToast(`Nincs elég heti pontod! Ez a betű ${cost} heti pontba kerül.`, "err");
-    sfxError();
-    return;
-  }
-  if(state.pool.length >= MAX_POOL) {
-    showToast("Tele a betűraktárad! Rakj ki szót vagy söprögess!", "err");
-    sfxError();
-    return;
-  }
+  if(state.weeklyScore < cost && !isDevTestUser()) { showToast("Nincs elég heti pontod!", "err"); return; }
+  if(state.pool.length >= MAX_POOL) { showToast("Tele a raktárad!", "err"); return; }
 
   state.weeklyScore -= cost;
   state.purchaseCounts['letter_market'] = (state.purchaseCounts['letter_market'] || 0) + 1;
   state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: letter });
 
   sfxWordSuccess();
-  showToast(`Megvásárolva: "${letter}" betű! (-${cost} heti pont)`, "ok");
+  showToast(`Megvásárolva: "${letter}" betű!`, "ok");
   renderPool();
   updateStats();
   renderLetterMarket();
@@ -2881,11 +2820,7 @@ async function buySpecificLetter(letter) {
 // =====================================================================
 // 30 NAPOS BECSEKKOLÁS
 // =====================================================================
-const DAILY_REWARDS = [
-  50, 75, 100, 120, 150, 180, 220, 260, 300, 350,
-  400, 450, 500, 560, 620, 700, 780, 860, 950, 1050,
-  1150, 1260, 1380, 1500, 1650, 1800, 2000, 2250, 2550, 3000
-];
+const DAILY_REWARDS = [50, 75, 100, 120, 150, 180, 220, 260, 300, 350, 400, 450, 500, 560, 620, 700, 780, 860, 950, 1050, 1150, 1260, 1380, 1500, 1650, 1800, 2000, 2250, 2550, 3000];
 
 function getTodayString() {
   const d = new Date();
@@ -2895,11 +2830,8 @@ function getTodayString() {
 function checkDailyStatus() {
   const today = getTodayString();
   const dot = document.getElementById('daily-dot');
-  if(!state.lastCheckInDate || state.lastCheckInDate !== today) {
-    dot.classList.add('active');
-  } else {
-    dot.classList.remove('active');
-  }
+  if(!state.lastCheckInDate || state.lastCheckInDate !== today) dot.classList.add('active');
+  else dot.classList.remove('active');
 }
 
 function renderDailyCalendar() {
@@ -2932,59 +2864,22 @@ function renderDailyCalendar() {
   claimBtn.textContent = claimedToday ? "MÁRA MÁR ÁTVÉVE ✔" : "AJÁNDÉK ÁTVÉTELE 🎁";
 }
 
-document.getElementById('btn-open-daily').addEventListener('click', () => {
-  renderDailyCalendar();
-  document.getElementById('modal-daily').classList.add('active');
-});
-document.getElementById('btn-close-daily').addEventListener('click', () => {
-  document.getElementById('modal-daily').classList.remove('active');
-});
-document.getElementById('btn-close-daily-x').addEventListener('click', () => {
-  document.getElementById('modal-daily').classList.remove('active');
-});
+document.getElementById('btn-open-daily').addEventListener('click', () => { renderDailyCalendar(); document.getElementById('modal-daily').classList.add('active'); });
+document.getElementById('btn-close-daily').addEventListener('click', () => document.getElementById('modal-daily').classList.remove('active'));
+document.getElementById('btn-close-daily-x').addEventListener('click', () => document.getElementById('modal-daily').classList.remove('active'));
 
 document.getElementById('btn-claim-daily').addEventListener('click', async () => {
   if(isClaimingDaily) return;
   const today = getTodayString();
-
-  if(state.lastCheckInDate === today) {
-    showToast("Mára már átvetted az ajándékot! Gyere vissza holnap!", "err");
-    return;
-  }
+  if(state.lastCheckInDate === today) { showToast("Mára már átvetted az ajándékot!", "err"); return; }
 
   isClaimingDaily = true;
-  const claimBtn = document.getElementById('btn-claim-daily');
-  claimBtn.disabled = true;
-
-  if(cloudConnected && db && state.playerName && state.playerPin) {
-    try {
-      const docId = getProfileDocId(state.playerName, state.playerPin);
-      const snap = await db.collection('users').doc(docId).get();
-      if(snap.exists && snap.data().lastCheckInDate === today) {
-        state.lastCheckInDate = today;
-        isClaimingDaily = false;
-        renderDailyCalendar();
-        checkDailyStatus();
-        showToast("Mára már átvetted az ajándékot!", "err");
-        return;
-      }
-    } catch(e) {}
-  }
+  document.getElementById('btn-claim-daily').disabled = true;
 
   let newStreak = 1;
   if(state.lastCheckInDate) {
-    const last = new Date(state.lastCheckInDate);
-    const curr = new Date(today);
-    const diffDays = Math.round((curr - last) / (1000 * 60 * 60 * 24));
-    if(diffDays === 1) {
-      newStreak = (state.checkInStreak % 30) + 1;
-    } else if(diffDays > 1) {
-      newStreak = 1;
-    } else if(diffDays === 0) {
-      showToast("Mára már átvetted az ajándékot!", "err");
-      isClaimingDaily = false;
-      return;
-    }
+    const diffDays = Math.round((new Date(today) - new Date(state.lastCheckInDate)) / (1000 * 60 * 60 * 24));
+    if(diffDays === 1) newStreak = (state.checkInStreak % 30) + 1;
   }
 
   state.checkInStreak = newStreak;
@@ -2994,7 +2889,6 @@ document.getElementById('btn-claim-daily').addEventListener('click', async () =>
 
   sfxWordSuccess();
   showToast(`🎁 Becsekkolva! +${reward} heti pont jóváírva!`, 'ok');
-
   updateStats();
   checkDailyStatus();
   renderDailyCalendar();
@@ -3003,26 +2897,21 @@ document.getElementById('btn-claim-daily').addEventListener('click', async () =>
 });
 
 // =====================================================================
-// VALÓS IDEJŰ (REALTIME) HETI RANGLISTA
+// VALÓS IDEJŰ HETI RANGLISTA (TESZT TELJESEN KIZÁRVA)
 // =====================================================================
 function startRealtimeLeaderboardListener() {
   if(!cloudConnected || !db) return;
   if(leaderboardUnsubscribe) leaderboardUnsubscribe();
-
   const currentWeek = getWeeklyKey();
 
   try {
     leaderboardUnsubscribe = db.collection('users')
       .orderBy('weeklyScore', 'desc')
-      .limit(100)
+      .limit(60)
       .onSnapshot(snapshot => {
         renderLeaderboardFromSnapshot(snapshot, currentWeek);
-      }, err => {
-        console.warn("Realtime listener hiba:", err);
-      });
-  } catch(e) {
-    console.warn("onSnapshot hiba:", e);
-  }
+      }, err => console.warn(err));
+  } catch(e) {}
 }
 
 function renderLeaderboardFromSnapshot(snapshot, currentWeek) {
@@ -3031,98 +2920,66 @@ function renderLeaderboardFromSnapshot(snapshot, currentWeek) {
 
   snapshot.forEach(doc => {
     const d = doc.data();
-    if(d.weekKey === currentWeek && d.playerName) {
+    // TESZT profil soha nem jelenik meg a ranglistán
+    if(d.weekKey === currentWeek && d.playerName && d.playerName.trim().toUpperCase() !== 'TESZT') {
       const name = d.playerName.trim().toUpperCase();
       const isMe = (state.playerName && name === state.playerName.trim().toUpperCase());
       const score = isMe ? state.weeklyScore : (d.weeklyScore || 0);
-      if(score > 0) {
-        if(!userMap.has(name) || isMe) {
-          userMap.set(name, { id: doc.id, playerName: name, weeklyScore: score });
-        }
-      }
+      if(score > 0) userMap.set(name, { playerName: name, weeklyScore: score });
     }
   });
 
-  if(state.playerName && state.weeklyScore > 0) {
-    userMap.set(state.playerName.trim().toUpperCase(), {
-      id: getProfileDocId(state.playerName, state.playerPin),
-      playerName: state.playerName,
-      weeklyScore: state.weeklyScore
-    });
+  if(state.playerName && state.playerName !== 'TESZT' && state.weeklyScore > 0) {
+    userMap.set(state.playerName.trim().toUpperCase(), { playerName: state.playerName, weeklyScore: state.weeklyScore });
   }
 
-  const currentWeekUsers = Array.from(userMap.values());
-  currentWeekUsers.sort((a, b) => b.weeklyScore - a.weeklyScore);
-
+  const users = Array.from(userMap.values()).sort((a, b) => b.weeklyScore - a.weeklyScore);
   const statRankEl = document.getElementById('stat-rank');
+
   if(statRankEl) {
-    if(state.playerName && state.weeklyScore > 0) {
-      const myIndex = currentWeekUsers.findIndex(u => u.playerName === state.playerName.trim().toUpperCase());
-      statRankEl.textContent = (myIndex !== -1) ? `#${myIndex + 1}` : '—';
-    } else {
-      statRankEl.textContent = '—';
-    }
+    if(state.playerName && state.playerName !== 'TESZT' && state.weeklyScore > 0) {
+      const idx = users.findIndex(u => u.playerName === state.playerName.trim().toUpperCase());
+      statRankEl.textContent = idx !== -1 ? `#${idx + 1}` : '—';
+    } else statRankEl.textContent = '—';
   }
 
   if(!listEl) return;
-
-  if(currentWeekUsers.length === 0) {
-    listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;">Még senki sem szerzett pontot ezen a héten. Legyél te az első! 🚀</div>';
+  if(users.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;">Még nincs pont ezen a héten. Legyél te az első! 🚀</div>';
     return;
   }
 
   listEl.innerHTML = '';
-  currentWeekUsers.slice(0, 50).forEach((u, i) => {
+  users.slice(0, 50).forEach((u, i) => {
     const item = document.createElement('div');
     item.className = 'leaderboard-item';
-    const isMe = (state.playerName && u.playerName === state.playerName.trim().toUpperCase());
-    if(isMe) item.classList.add('me');
-
+    if(state.playerName && u.playerName === state.playerName.trim().toUpperCase()) item.classList.add('me');
     const medal = (i === 0) ? '🥇' : ((i === 1) ? '🥈' : ((i === 2) ? '🥉' : `${i + 1}.`));
-    item.innerHTML = `
-      <span class="rank">${medal}</span>
-      <span class="name">${u.playerName}</span>
-      <span class="score">${(u.weeklyScore || 0).toLocaleString('hu-HU')} pont</span>
-    `;
+    item.innerHTML = `<span class="rank">${medal}</span><span class="name">${u.playerName}</span><span class="score">${u.weeklyScore.toLocaleString('hu-HU')} pont</span>`;
     listEl.appendChild(item);
   });
 }
 
 document.getElementById('btn-open-lb').addEventListener('click', () => {
   document.getElementById('modal-leaderboard').classList.add('active');
-  const currentWeek = getWeeklyKey();
-  document.getElementById('lb-week-text').textContent = `Aktuális Hét: ${currentWeek} (Valós időben élőben frissül)`;
+  document.getElementById('lb-week-text').textContent = `Aktuális Hét: ${getWeeklyKey()} (Élőben frissül)`;
 });
-document.getElementById('btn-close-lb').addEventListener('click', () => {
-  document.getElementById('modal-leaderboard').classList.remove('active');
-});
-document.getElementById('btn-close-lb-x').addEventListener('click', () => {
-  document.getElementById('modal-leaderboard').classList.remove('active');
-});
+document.getElementById('btn-close-lb').addEventListener('click', () => document.getElementById('modal-leaderboard').classList.remove('active'));
+document.getElementById('btn-close-lb-x').addEventListener('click', () => document.getElementById('modal-leaderboard').classList.remove('active'));
 
 // =====================================================================
-// FELHŐ MENTÉS & BETÖLTÉS (MINDEN JAVAK ÖRÖK MEGTARTÁSA)
+// FELHŐ SZINKRONIZÁCIÓ & JELENLÉT
 // =====================================================================
 async function syncCloudState() {
   if(!cloudConnected || !db || !state.playerName || !state.playerPin) return;
   setSyncDot('saving');
-
   const docId = getProfileDocId(state.playerName, state.playerPin);
 
   const flatBoard = [];
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
       const t = state.board[r] ? state.board[r][c] : null;
-      if(t) {
-        flatBoard.push({
-          r, c,
-          color: t.color,
-          letter: t.letter || null,
-          ice: t.ice || 0,
-          wood: t.wood || 0,
-          bomb: t.bomb || false
-        });
-      }
+      if(t) flatBoard.push({ r, c, color: t.color, letter: t.letter || null, ice: t.ice || 0, wood: t.wood || 0, bomb: t.bomb || false, isGold: t.isGold || false });
     }
   }
 
@@ -3132,7 +2989,7 @@ async function syncCloudState() {
     playerPin: state.playerPin,
     weekKey: getWeeklyKey(),
     level: state.level,
-    weeklyScore: state.weeklyScore,
+    weeklyScore: isDevTestUser() ? 0 : state.weeklyScore,
     moves: state.moves,
     storedMoves: state.storedMoves || 0,
     purchaseCounts: state.purchaseCounts || {},
@@ -3148,7 +3005,8 @@ async function syncCloudState() {
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
     lastCheckInDate: state.lastCheckInDate || null,
-    playTimeSeconds: state.playTimeSeconds || 0
+    playTimeSeconds: state.playTimeSeconds || 0,
+    lastActive: Date.now()
   };
 
   const cleanPayload = JSON.parse(JSON.stringify(rawPayload));
@@ -3158,7 +3016,6 @@ async function syncCloudState() {
     await db.collection('users').doc(docId).set(cleanPayload, { merge: true });
     setSyncDot('online');
   } catch(e) {
-    console.error("Felhő mentési hiba:", e);
     setSyncDot('offline');
   }
 }
@@ -3167,20 +3024,12 @@ function restoreFromCloudData(data) {
   state.playerName = data.playerName || state.playerName;
   state.playerPin = data.playerPin || state.playerPin;
   state.level = data.level || 1;
-
-  const currentWeek = getWeeklyKey();
-  if(data.weekKey === currentWeek) {
-    state.weeklyScore = data.weeklyScore || 0;
-  } else {
-    state.weeklyScore = 0;
-  }
-
+  state.weeklyScore = (data.weekKey === getWeeklyKey()) ? (data.weeklyScore || 0) : 0;
   state.moves = data.moves !== undefined ? data.moves : 30;
   state.storedMoves = data.storedMoves || 0;
   state.purchaseCounts = data.purchaseCounts || {};
   state.inventory = data.inventory || {};
   state.playTimeSeconds = data.playTimeSeconds || 0;
-
   state.requiredWords = data.requiredWords || 3;
   state.minWordLen = data.minWordLen || 3;
   state.bonusDone = data.bonusDone || false;
@@ -3198,28 +3047,15 @@ function restoreFromCloudData(data) {
   for(let r = 0; r < GRID_SIZE; r++) state.board[r] = new Array(GRID_SIZE).fill(null);
 
   let flatTiles = [];
-  if(data.boardJson) {
-    try { flatTiles = JSON.parse(data.boardJson); } catch(e) {}
-  }
+  if(data.boardJson) { try { flatTiles = JSON.parse(data.boardJson); } catch(e) {} }
 
   if(flatTiles.length > 0) {
     flatTiles.forEach(cell => {
-      const t = {
-        r: cell.r,
-        c: cell.c,
-        color: cell.color,
-        letter: cell.letter,
-        ice: cell.ice || 0,
-        wood: cell.wood || 0,
-        bomb: cell.bomb || false,
-        el: null
-      };
+      const t = { r: cell.r, c: cell.c, color: cell.color, letter: cell.letter, ice: cell.ice || 0, wood: cell.wood || 0, bomb: cell.bomb || false, isGold: cell.isGold || false, el: null };
       state.board[cell.r][cell.c] = t;
       createTileElement(t, tileSize);
     });
-  } else {
-    generateProceduralGrid(state.level);
-  }
+  } else generateProceduralGrid(state.level);
 
   renderTray();
   renderPool();
@@ -3228,9 +3064,303 @@ function restoreFromCloudData(data) {
   updateMovesWatermark();
   updateMissionUI();
   checkDailyStatus();
+  startSpectatorIncomingTipListener();
 }
 
-// Belépés Név és PIN kód alapján
+// =====================================================================
+// FEJLESZTŐI / ADMIN MODAL MOTOR (LETISZTULT KÁRTYÁS NÉZET)
+// =====================================================================
+let adminUsersData = [];
+
+async function loadAdminDashboard() {
+  const container = document.getElementById('admin-profile-list');
+  container.innerHTML = '<div style="text-align:center; padding:12px; color:#94a3b8;">Játékosprofilok betöltése...</div>';
+
+  if(!cloudConnected || !db) {
+    container.innerHTML = '<div style="color:var(--ruby); text-align:center;">Nincs kapcsolat a felhővel!</div>';
+    return;
+  }
+
+  try {
+    const snap = await db.collection('users').get();
+    adminUsersData = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if(d.playerName && d.playerName.trim().toUpperCase() !== 'TESZT') {
+        adminUsersData.push({ id: doc.id, ...d });
+      }
+    });
+
+    adminUsersData.sort((a, b) => (b.lastActive || 0) - (a.lastActive || 0));
+    renderAdminCards();
+  } catch(e) {
+    container.innerHTML = `<div style="color:var(--ruby); text-align:center;">Hiba: ${e.message}</div>`;
+  }
+}
+
+function renderAdminCards() {
+  const container = document.getElementById('admin-profile-list');
+  container.innerHTML = '';
+
+  if(adminUsersData.length === 0) {
+    container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:14px;">Még nincs regisztrált játékos a felhőben.</div>';
+    return;
+  }
+
+  adminUsersData.forEach(user => {
+    let lastSeen = "Régen / ismeretlen";
+    if(user.lastActive) {
+      const diffSec = Math.floor((Date.now() - user.lastActive) / 1000);
+      if(diffSec < 60) lastSeen = "🟢 ÉPP MOST ONLINE";
+      else if(diffSec < 3600) lastSeen = `${Math.floor(diffSec / 60)} perce volt online`;
+      else lastSeen = new Date(user.lastActive).toLocaleDateString('hu-HU', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    const card = document.createElement('div');
+    card.className = 'admin-card';
+    card.innerHTML = `
+      <div>
+        <div class="p-name">👤 ${user.playerName}</div>
+        <div class="p-online">Utoljára online: <b style="color:#c4b5fd;">${lastSeen}</b></div>
+      </div>
+      <div class="admin-actions-mini">
+        <span style="font-size:11px; font-weight:800; color:var(--gold);">${user.level || 1}. szint</span>
+        <button class="btn-admin-del">🗑️</button>
+      </div>
+    `;
+
+    card.addEventListener('click', (e) => {
+      if(e.target.classList.contains('btn-admin-del')) return;
+      openAdminUserDetail(user);
+    });
+
+    card.querySelector('.btn-admin-del').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if(confirm(`Biztosan véglegesen törölni akarod ${user.playerName} profilját?`)) {
+        await db.collection('users').doc(user.id).delete();
+        showToast(`${user.playerName} törölve!`, "ok");
+        loadAdminDashboard();
+      }
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function openAdminUserDetail(u) {
+  document.getElementById('adm-edit-name').value = u.playerName || '';
+  document.getElementById('adm-edit-pin').value = u.playerPin || '';
+  document.getElementById('adm-edit-level').value = u.level || 1;
+  document.getElementById('adm-edit-score').value = u.weeklyScore || 0;
+  document.getElementById('adm-edit-stored-moves').value = u.storedMoves || 0;
+  document.getElementById('adm-edit-streak').value = u.checkInStreak || 0;
+
+  const sec = u.playTimeSeconds || 0;
+  document.getElementById('adm-detail-misc').innerHTML = `
+    Játékidő: <b>${Math.floor(sec/60)} perc</b> | Lépések: <b>${u.moves || 0}</b> | DocID: <small>${u.id}</small>
+  `;
+
+  document.getElementById('btn-save-admin-user').onclick = async () => {
+    const updated = {
+      playerPin: document.getElementById('adm-edit-pin').value.trim(),
+      level: parseInt(document.getElementById('adm-edit-level').value, 10) || 1,
+      weeklyScore: parseInt(document.getElementById('adm-edit-score').value, 10) || 0,
+      storedMoves: parseInt(document.getElementById('adm-edit-stored-moves').value, 10) || 0,
+      checkInStreak: parseInt(document.getElementById('adm-edit-streak').value, 10) || 0
+    };
+    await db.collection('users').doc(u.id).update(updated);
+    showToast("Profiladatok sikeresen frissítve a felhőben!", "ok");
+    document.getElementById('modal-admin-user-detail').classList.remove('active');
+    loadAdminDashboard();
+  };
+
+  document.getElementById('modal-admin-user-detail').classList.add('active');
+}
+
+document.getElementById('btn-close-admin-detail-x').addEventListener('click', () => document.getElementById('modal-admin-user-detail').classList.remove('active'));
+document.getElementById('btn-close-admin-detail').addEventListener('click', () => document.getElementById('modal-admin-user-detail').classList.remove('active'));
+document.getElementById('btn-admin-logout').addEventListener('click', () => {
+  document.getElementById('modal-admin').classList.remove('active');
+  document.getElementById('modal-auth').classList.add('active');
+});
+document.getElementById('btn-admin-play-test').addEventListener('click', () => {
+  document.getElementById('modal-admin').classList.remove('active');
+  initLevelData(1);
+  showToast("Teszt üzemmód: Minden segítség 100% ingyenes!", "ok");
+});
+document.getElementById('btn-open-admin-nav').addEventListener('click', () => {
+  document.getElementById('modal-admin').classList.add('active');
+  loadAdminDashboard();
+});
+
+// =====================================================================
+// ÉLŐ KÖZVETÍTÉS ÉS NÉZŐI SEGÍTŐ CHAT (SPECTATOR MODE)
+// =====================================================================
+let currentStreamTargetDocId = null;
+
+document.getElementById('btn-open-live-lobby').addEventListener('click', async () => {
+  if(!state.playerName || state.playerName === 'TESZT') {
+    showToast("Élő közvetítés nézéséhez lépj be egy játékosfiókkal!", "err");
+    return;
+  }
+  document.getElementById('modal-live-lobby').classList.add('active');
+  loadLiveOnlinePlayers();
+});
+document.getElementById('btn-close-live-lobby').addEventListener('click', () => document.getElementById('modal-live-lobby').classList.remove('active'));
+document.getElementById('btn-close-live-lobby-x').addEventListener('click', () => document.getElementById('modal-live-lobby').classList.remove('active'));
+
+async function loadLiveOnlinePlayers() {
+  const container = document.getElementById('live-online-list');
+  container.innerHTML = '<div style="text-align:center; padding:12px; color:#94a3b8;">Online játékosok keresése...</div>';
+
+  if(!cloudConnected || !db) return;
+  try {
+    const snap = await db.collection('users').get();
+    const activeThreshold = Date.now() - 55000;
+    const onlineList = [];
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      if(d.playerName && d.playerName !== state.playerName && d.playerName !== 'TESZT') {
+        if(d.lastActive && d.lastActive >= activeThreshold) {
+          onlineList.push({ id: doc.id, ...d });
+        }
+      }
+    });
+
+    container.innerHTML = '';
+    if(onlineList.length === 0) {
+      container.innerHTML = '<div style="padding:14px; text-align:center; color:#94a3b8; font-size:12px; line-height:1.6;">Jelenleg egyetlen játékos sem online, nézz vissza később, vagy játssz egy játékot! 🎮</div>';
+      return;
+    }
+
+    onlineList.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'admin-card';
+      item.innerHTML = `
+        <div>
+          <div class="p-name">🔴 ${p.playerName} <small style="color:var(--emerald); font-size:10px;">ÉLŐBEN JÁTSZIK</small></div>
+          <div class="p-online">${p.level || 1}. szint | ${p.moves || 0} lépése maradt</div>
+        </div>
+        <button class="btn-modal primary" style="padding:6px 12px; font-size:11px;">NÉZÉS 👁️</button>
+      `;
+      item.addEventListener('click', () => startWatchingPlayer(p));
+      container.appendChild(item);
+    });
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--ruby); text-align:center;">Hiba a lekéréskor.</div>';
+  }
+}
+
+function startWatchingPlayer(p) {
+  document.getElementById('modal-live-lobby').classList.remove('active');
+  document.getElementById('modal-live-stream').classList.add('active');
+  document.getElementById('stream-player-title').textContent = `👁️ NÉZŐI MÓD: ${p.playerName}`;
+  currentStreamTargetDocId = p.id;
+
+  // Értesítés küldése a játékosnak
+  sendSpectatorTipToPlayer(p.id, `${state.playerName} csatlakozott, és nézi a játékodat! 👁️`);
+
+  if(activeStreamUnsubscribe) activeStreamUnsubscribe();
+  activeStreamUnsubscribe = db.collection('users').doc(p.id).onSnapshot(doc => {
+    if(!doc.exists) return;
+    renderSpectatorBoard(doc.data());
+  });
+}
+
+function renderSpectatorBoard(d) {
+  document.getElementById('stream-level').textContent = d.level || 1;
+  document.getElementById('stream-moves').textContent = d.moves || 0;
+  document.getElementById('stream-score').textContent = (d.weeklyScore || 0).toLocaleString('hu-HU');
+  document.getElementById('stream-tray-display').textContent = (d.tray && d.tray.length > 0) ? d.tray.map(i => i.char).join(' ') : '—';
+
+  const sBoard = document.getElementById('stream-board');
+  const size = 32;
+  sBoard.style.width = (size * GRID_SIZE) + 'px';
+  sBoard.style.height = (size * GRID_SIZE) + 'px';
+  sBoard.innerHTML = '';
+
+  let tiles = [];
+  if(d.boardJson) { try { tiles = JSON.parse(d.boardJson); } catch(e) {} }
+
+  tiles.forEach(cell => {
+    const el = document.createElement('div');
+    el.className = `tile color-${cell.color}`;
+    if(cell.letter) el.classList.add('has-letter');
+    if(cell.isGold) el.classList.add('is-gold');
+    el.style.width = size + 'px';
+    el.style.height = size + 'px';
+    el.style.transform = `translate3d(${cell.c * size}px, ${cell.r * size}px, 0)`;
+
+    const inner = document.createElement('div');
+    inner.className = 'tile-inner';
+    if(cell.letter) {
+      const l = document.createElement('span');
+      l.className = 'tile-letter';
+      l.style.fontSize = '15px';
+      l.textContent = cell.letter;
+      inner.appendChild(l);
+    }
+    el.appendChild(inner);
+    sBoard.appendChild(el);
+  });
+}
+
+document.getElementById('btn-send-chat-tip').addEventListener('click', () => {
+  const inp = document.getElementById('stream-chat-input');
+  const txt = inp.value.trim();
+  if(!txt || !currentStreamTargetDocId) return;
+
+  sendSpectatorTipToPlayer(currentStreamTargetDocId, `${state.playerName}: "${txt}"`);
+  
+  const msgBox = document.getElementById('stream-chat-msgs');
+  const row = document.createElement('div');
+  row.className = 'chat-msg-row';
+  row.innerHTML = `<b>Te:</b> ${txt}`;
+  msgBox.appendChild(row);
+  msgBox.scrollTop = msgBox.scrollHeight;
+  inp.value = '';
+});
+
+async function sendSpectatorTipToPlayer(targetDocId, tipMsg) {
+  try {
+    await db.collection('users').doc(targetDocId).update({
+      incomingTip: tipMsg,
+      incomingTipTime: Date.now()
+    });
+  } catch(e) {}
+}
+
+function startSpectatorIncomingTipListener() {
+  if(!cloudConnected || !db || !state.playerName || !state.playerPin) return;
+  const docId = getProfileDocId(state.playerName, state.playerPin);
+
+  db.collection('users').doc(docId).onSnapshot(doc => {
+    if(!doc.exists) return;
+    const d = doc.data();
+    if(d.incomingTip && (Date.now() - (d.incomingTipTime || 0)) < 15000) {
+      const box = document.getElementById('spectator-tip-box');
+      document.getElementById('spectator-tip-text').textContent = `👁️ ${d.incomingTip}`;
+      box.classList.add('active');
+      sfxSnap();
+      setTimeout(() => box.classList.remove('active'), 9000);
+    }
+  });
+}
+
+document.getElementById('btn-close-stream-x').addEventListener('click', stopStreaming);
+document.getElementById('btn-leave-stream').addEventListener('click', stopStreaming);
+
+function stopStreaming() {
+  if(activeStreamUnsubscribe) activeStreamUnsubscribe();
+  activeStreamUnsubscribe = null;
+  currentStreamTargetDocId = null;
+  document.getElementById('modal-live-stream').classList.remove('active');
+}
+
+// =====================================================================
+// BELÉPÉS / REGISZTRÁCIÓ
+// =====================================================================
 document.getElementById('btn-auth-confirm').addEventListener('click', async () => {
   const n = document.getElementById('auth-name').value.trim().toUpperCase();
   const p = document.getElementById('auth-pin').value.trim();
@@ -3244,6 +3374,17 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
   state.playerPin = p;
   document.getElementById('modal-auth').classList.remove('active');
 
+  // FEJLESZTŐI BELÉPÉS (TESZT / 0000)
+  if(n === 'TESZT' && p === '0000') {
+    document.getElementById('btn-open-admin-nav').style.display = 'flex';
+    document.getElementById('modal-admin').classList.add('active');
+    loadAdminDashboard();
+    showToast("⚡ FEJLESZTŐI HOZZÁFÉRÉS MEGNYITVA!", "ok");
+    return;
+  } else {
+    document.getElementById('btn-open-admin-nav').style.display = 'none';
+  }
+
   const profileKey = getProfileDocId(n, p);
 
   if(cloudConnected && db) {
@@ -3252,15 +3393,8 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
       let matchedData = docSnap.exists ? docSnap.data() : null;
 
       if(!matchedData) {
-        const qSnap = await db.collection('users')
-          .where('playerName', '==', n)
-          .limit(10)
-          .get();
-
-        qSnap.forEach(doc => {
-          const d = doc.data();
-          if(d.playerPin === p) matchedData = d;
-        });
+        const qSnap = await db.collection('users').where('playerName', '==', n).limit(10).get();
+        qSnap.forEach(doc => { if(doc.data().playerPin === p) matchedData = doc.data(); });
       }
 
       if(matchedData) {
@@ -3272,7 +3406,7 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           document.getElementById('modal-resume').classList.remove('active');
           restoreFromCloudData(matchedData);
           syncCloudState();
-          showToast(`Játék sikeresen betöltve: ${matchedData.level}. szint!`, "ok");
+          showToast(`Játék betöltve: ${matchedData.level}. szint!`, "ok");
         };
 
         document.getElementById('btn-resume-restart').onclick = () => {
@@ -3287,7 +3421,7 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           initLevelData(matchedData.level || 1);
           syncCloudState();
           checkDailyStatus();
-          showToast(`Szint újraindítva: ${matchedData.level}. szint! (Javak megőrizve)`, "ok");
+          showToast(`Szint újraindítva: ${matchedData.level}. szint!`, "ok");
         };
 
         document.getElementById('btn-resume-newgame').onclick = () => {
@@ -3302,17 +3436,14 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
           initLevelData(1);
           syncCloudState();
           checkDailyStatus();
-          showToast("Új játék indult 1. szintről! (Hátizsák és javak megőrizve)", "ok");
+          showToast("Új játék indult 1. szintről!", "ok");
         };
-
         return;
       }
-    } catch(e) {
-      console.warn("Profilkeresési hiba:", e);
-    }
+    } catch(e) {}
   }
 
-  // Új profil inicializálása
+  // ÚJ PROFIL
   state.inventory = {};
   state.storedMoves = 0;
   state.purchaseCounts = {};
@@ -3320,7 +3451,8 @@ document.getElementById('btn-auth-confirm').addEventListener('click', async () =
   initLevelData(1);
   await syncCloudState();
   checkDailyStatus();
-  showToast(`Üdvözlünk, ${n}! Új profil sikeresen létrehozva.`, "ok");
+  startSpectatorIncomingTipListener();
+  showToast(`Üdvözlünk, ${n}! Új profil létrehozva.`, "ok");
 });
 
 document.getElementById('btn-switch-user').addEventListener('click', () => {
@@ -3333,7 +3465,7 @@ function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = `toast-msg show ${type}`;
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2400);
 }
 
 function shakeScreen() {
