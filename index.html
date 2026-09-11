@@ -2268,18 +2268,14 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   state.stats.levelScore += wordScore;
   state.levelWords.push(word);
 
-  // VIZUÁLIS HYPE DICSÉRETEK
-  if(word.length >= 7) showToast(`🌟 ZSENIÁLIS! (${word} +${wordScore}P)`, "ok");
-  else if(word.length >= 5) showToast(`🔥 KIVÁLÓ SZÓ! (${word} +${wordScore}P)`, "ok");
-  else showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
-
-  // NAPI TITKOS SZÓ ELLENŐRZÉS
-  if(!dailySecretClaimed && word === currentDailySecret) {
-    dailySecretClaimed = true;
-    state.weeklyScore += 500;
-    state.storedMoves = (state.storedMoves || 0) + 2;
-    showToast(`✨ MEGOLDOTTAD A NAP SZAVÁT (${word})! +500P & +2 Lépés!`, "ok");
-    sfxFanfare();
+  // SZINTCÉL SZÁMLÁLÓ ÉS VISSZAJELZÉS JAVÍTÁSA
+  if (word.length >= state.minWordLen) {
+    state.stats.wordsMade++;
+    if(word.length >= 7) showToast(`🌟 ZSENIÁLIS! (${word} +${wordScore}P)`, "ok");
+    else if(word.length >= 5) showToast(`🔥 KIVÁLÓ SZÓ! (${word} +${wordScore}P)`, "ok");
+    else showToast(`Sikeres szó: ${word} (+${wordScore} pont)!`, 'ok');
+  } else {
+    showToast(`Sikeres szó: ${word} (+${wordScore} pont)! (A szintcélhoz min. ${state.minWordLen} betű kell)`, 'ok');
   }
 
   sfxWordSuccess();
