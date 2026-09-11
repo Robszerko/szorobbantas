@@ -128,7 +128,7 @@ html, body {
 .stat-box.rank-box .val { color: var(--emerald); }
 @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-/* QUEST DASHBOARD */
+/* KIEMELT QUEST DASHBOARD */
 .mission-strip {
   padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
   position: relative; overflow: hidden; width: 100%;
@@ -165,7 +165,7 @@ html, body {
   transition: width 0.3s ease; box-shadow: 0 0 10px rgba(6,182,212,0.6);
 }
 
-/* KÖZPONTI BOLT & ESZKÖZTÁR PANEL */
+/* KÖZPONTI BOLT & ESZKÖZTÁR */
 .central-shop-bar {
   display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; width: 100%;
   border: 1.5px solid rgba(245, 158, 11, 0.4);
@@ -186,16 +186,35 @@ html, body {
 }
 .btn-open-shop-main:active { transform: scale(0.96); }
 
-/* MOBIL GÖRGETHETŐ ESZKÖZTÁR */
+/* SEGÍTSÉG ALÁ HELYEZETT, PÁLYÁT NEM TAKARÓ VISSZASZÁMLÁLÓ CSÍK */
+.moves-warning-banner {
+  width: 100%;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.9), rgba(127, 29, 29, 0.9));
+  border: 1.5px solid #ef4444;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-align: center;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+  display: none;
+}
+.moves-warning-banner.show {
+  display: block;
+  animation: pulse 0.7s infinite alternate;
+}
+
+/* ESZKÖZTÁR GOMBOK */
 .quick-inv-row {
   display: flex; gap: 5px; overflow-x: auto; padding: 2px 0; align-items: center;
   width: 100%; min-width: 0;
 }
-
 .btn-inv-slot {
   background: #1e293b; border: 1px solid #334155; border-radius: 8px;
   padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; gap: 4px;
-  font-size: 9.5px; font-weight: 800; color: #cbd5e1; cursor: pointer;
+  font-size: 9px; font-weight: 800; color: #cbd5e1; cursor: pointer;
   white-space: nowrap; font-family: inherit; flex-shrink: 0;
 }
 .btn-inv-slot:disabled { opacity: 0.3; cursor: not-allowed; }
@@ -241,46 +260,20 @@ html, body {
 }
 .board.targeting-cursor { cursor: crosshair !important; }
 
-/* OPTIMALIZÁLT, PÁLYA FELSŐ RÉSZÉN JÓL OLVASHATÓ VISSZASZÁMLÁLÓ CSÍK */
-.board-moves-watermark {
-  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-  background: rgba(153, 27, 27, 0.95);
-  border: 2px solid #ef4444;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 1.2px;
-  padding: 6px 18px;
-  border-radius: 20px;
-  z-index: 120;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s, transform 0.25s;
-  box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), 0 4px 12px rgba(0,0,0,0.8);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.9);
-  white-space: nowrap;
-}
-.board-moves-watermark.show {
-  opacity: 1; animation: watermarkPulse 0.65s infinite alternate;
-}
-@keyframes watermarkPulse {
-  0% { transform: translateX(-50%) scale(1); filter: brightness(1); }
-  100% { transform: translateX(-50%) scale(1.06); filter: brightness(1.3); }
-}
-
 .tile {
   position: absolute; top: 0; left: 0;
   width: var(--tile-size, 44px); height: var(--tile-size, 44px);
   cursor: pointer; will-change: transform;
   display: block;
   transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-  touch-action: none;
+  touch-action: manipulation;
 }
 .tile-inner {
   position: absolute; inset: 2px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   box-shadow: inset 0 2px 4px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.6);
   font-weight: 900; color: #fff; overflow: hidden;
+  pointer-events: none;
 }
 .tile-inner::before {
   content: ''; position: absolute; top: 8%; left: 12%; width: 40%; height: 28%;
@@ -492,7 +485,6 @@ html, body {
 .btn-modal.secondary { background: #334155; color: #cbd5e1; }
 .btn-modal.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
 
-/* JÁTÉKSZABÁLYZAT KÁRTYÁK */
 .rules-container {
   display: flex; flex-direction: column; gap: 8px; text-align: left; max-height: 60vh;
   overflow-y: auto; padding-right: 4px;
@@ -632,19 +624,19 @@ html, body {
 .toast-msg.err { background: #7f1d1d; border: 1px solid var(--ruby); color: #fecaca; }
 
 /* =====================================================================
-   ASZTALI / NAGYKÉPERNYŐS ELRENDEZÉS
-   - Bal oldalon: 11 segítség (2x5 + 1 középen lent)
-   - Középen: játéktábla és felső menü
-   - Jobb oldalon: szórakó tálca (nem takar ki semmit!)
+   ASZTALI / NAGYKÉPERNYŐS KÉTOSZLOPOS ELRENDEZÉS
+   - Bal oldalon: Bolt & 11 segítség (2x5 + 1 lent középen) + Visszaszámláló sáv
+   - Középen: Játéktábla
+   - Jobb oldalon: Szórakó tálca és Betűraktár (Nincs átfedés!)
    ===================================================================== */
-@media (min-width: 900px) {
+@media (min-width: 880px) {
   body {
     padding: 12px 16px;
     align-items: center;
   }
   .app-container {
     max-width: 1140px;
-    width: 100%;
+    width: 98%;
     margin: 0 auto;
     display: grid;
     grid-template-columns: 290px minmax(360px, 440px) minmax(300px, 360px);
@@ -663,7 +655,6 @@ html, body {
     grid-column: 1 / -1;
   }
 
-  /* 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR (2 oszlopos rács, a 11. középen lent) */
   .left-shop-column {
     grid-column: 1;
     grid-row: 4;
@@ -687,15 +678,14 @@ html, body {
     padding: 6px 5px;
     width: 100%;
   }
-  /* A 11. segítség középre helyezése */
+  /* 11. tétel középre helyezése a 2 oszlopos rácsban */
   .quick-inv-row .btn-inv-slot:nth-child(11) {
     grid-column: 1 / -1;
-    max-width: 75%;
+    max-width: 80%;
     margin: 2px auto 0 auto;
     justify-content: center;
   }
 
-  /* 2. OSZLOP: KÖZÉPEN A JÁTÉKTÁBLA */
   .center-board-column {
     grid-column: 2;
     grid-row: 4;
@@ -709,7 +699,6 @@ html, body {
     margin: 0 auto;
   }
 
-  /* 3. OSZLOP: JOBB OLDALON A SZÓRAKÓ ÉS A RAKTÁR */
   .right-column {
     grid-column: 3;
     grid-row: 4;
@@ -781,7 +770,7 @@ html, body {
     </div>
   </div>
 
-  <!-- 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR (2x5 + 1 LENT KÖZÉPEN) -->
+  <!-- 1. OSZLOP: BAL OLDALI KÖZPONTI BOLT & ESZKÖZTÁR + ALÁ HELYEZETT FIGYELMEZTETŐ SÁV -->
   <div class="left-shop-column">
     <div class="central-shop-bar glass">
       <div class="central-shop-header">
@@ -792,9 +781,14 @@ html, body {
       </div>
       <div class="quick-inv-row" id="quick-inv-row"></div>
     </div>
+
+    <!-- PÁLYÁT NEM TAKARÓ, KÖZVETLENÜL A SEGÍTSÉG TÁBLA ALATTI VISSZASZÁMLÁLÓ CSÍK -->
+    <div class="moves-warning-banner glass" id="moves-warning-banner">
+      ⚠️ CSAK 5 LÉPÉS VAN HÁTRA!
+    </div>
   </div>
 
-  <!-- 2. OSZLOP: KÖZÉPSŐ OSZLOP (JÁTÉKTÁBLA ÉS CÉLZÓ SÁV) -->
+  <!-- 2. OSZLOP: KÖZÉPEN A JÁTÉKTÁBLA ÉS A CÉLZÓ SÁV -->
   <div class="center-board-column">
     <div class="targeting-banner glass" id="targeting-banner">
       <span id="targeting-msg">🎯 CÉLZÓ MÓD AKTÍV</span>
@@ -802,14 +796,11 @@ html, body {
     </div>
 
     <div class="board-container">
-      <div class="board" id="game-board">
-        <!-- VISSZASZÁMLÁLÓ AZ UTOLSÓ 5 LÉPÉSNÉL -->
-        <div class="board-moves-watermark" id="board-moves-watermark">⚠️ CSAK 5 LÉPÉS VAN HÁTRA!</div>
-      </div>
+      <div class="board" id="game-board"></div>
     </div>
   </div>
 
-  <!-- 3. OSZLOP: JOBB OLDALI OSZLOP (SZÓRAKÓ TÁLCA, BETŰRAKTÁR, TALÁLT SZAVAK) -->
+  <!-- 3. OSZLOP: JOBB OLDALON A SZÓRAKÓ TÁLCA ÉS A RAKTÁR -->
   <div class="right-column">
     <div class="builder-panel glass">
       <div class="builder-tray" id="builder-tray">
@@ -862,8 +853,8 @@ html, body {
       </div>
 
       <div class="rule-card">
-        <h4>🎁 Mesterjutalom (Hosszú szavakért) & +2 Lépés Bónusz</h4>
-        <p>Minden legalább <b>5 betűs szóért azonnal +2 extra lépést kapsz</b>, plusz felugrik a Mesterjutalom ablak, ahol egy <b>INGYENES tetszőleges betűt kérhetsz</b> a raktáradba! Ha pedig <b>a teljes raktárat kiüríted</b> (minden betűt felhasználsz), <b>további +2 extra lépés üti a markodat!</b></p>
+        <h4>🎁 Mesterjutalom & +2 Lépés Bónuszok</h4>
+        <p>Minden legalább <b>5 betűs szóért azonnal +2 extra lépést kapsz</b>, plusz egy felugró ablakban egy <b>INGYENES tetszőleges betűt kérhetsz</b> a raktáradba! Ha pedig <b>a teljes raktárat kiüríted</b> (minden betűt felhasználsz), <b>további +2 extra lépés üti a markodat!</b></p>
       </div>
 
       <div class="rule-card">
@@ -1318,10 +1309,8 @@ Object.entries(LETTER_DIST).forEach(([char, count]) => {
 
 // =====================================================================
 // ÁRUHÁZ DEFINÍCIÓ & EXPONENCIÁLIS ÁRAZÁS
-// 11 SEGÍTSÉG, KÖRÖNKÉNT 1x INGYENES KVÓTÁVAL
 // =====================================================================
 const SHOP_ITEMS = [
-  { id: 'extramoves', name: '➕ +5 Tartalék Lépés', baseCost: 160, desc: '+5 lépést tesz a hátizsákodba, amit bármikor felválthatsz.', action: () => { state.storedMoves = (state.storedMoves || 0) + 5; showToast("➕ +5 lépés a hátizsákodba került!", "ok"); } },
   { id: 'tilehammer', name: '🔨 Kalapács', baseCost: 150, desc: 'Kiválaszthatsz egyetlen csempét, amit azonnal szétzúzhatsz!', action: () => startTileTargeting('hammer') },
   { id: 'lineblaster', name: '↔️ Sorkilövő', baseCost: 240, desc: 'Kilőhetsz egy teljes vízszintes sort vagy oszlopot!', action: () => openLineBlasterChoiceModal() },
   { id: 'bomb', name: '💣 Mega Bomba', baseCost: 190, desc: 'Azonnal felrobbant egy 3x3-as területet.', action: () => triggerBomb(3, 3) },
@@ -1331,7 +1320,8 @@ const SHOP_ITEMS = [
   { id: 'goldencoupon', name: '🌟 Arany Kupon', baseCost: 260, desc: 'A következő kirakott szavadért 3x pontszám jár.', action: () => { state.activeTripleWord = true; showToast("Arany Kupon aktív! Következő szó 3x pontot ér!", "ok"); } },
   { id: 'boardshuffle', name: '🔄 Keverő', baseCost: 80, desc: 'Újrakeveri az összes csempét a táblán.', action: useBoardShuffle },
   { id: 'shield', name: '🛡️ Második Esély', baseCost: 220, desc: 'Ha elfogynának a lépéseid, automatikusan kapsz +3 lépést.', action: () => { state.hasShield = true; showToast("Pajzs aktív! Védve vagy 0 lépés esetén.", "ok"); } },
-  { id: 'clearstorage', name: '🧹 Söprögető', baseCost: 70, desc: 'Kiüríti a betűraktárt, ha túl sok felesleges betűd gyűlt össze.', action: () => { state.pool = []; renderPool(); showToast("Betűraktár kiürítve!", "ok"); } }
+  { id: 'clearstorage', name: '🧹 Söprögető', baseCost: 70, desc: 'Kiüríti a betűraktárt, ha túl sok felesleges betűd gyűlt össze.', action: () => { state.pool = []; renderPool(); showToast("Betűraktár kiürítve!", "ok"); } },
+  { id: 'extramoves', name: '➕ +5 Tartalék Lépés', baseCost: 160, desc: '+5 lépést tesz a hátizsákodba, amit bármikor felválthatsz.', action: () => { state.storedMoves = (state.storedMoves || 0) + 5; showToast("➕ +5 lépés a hátizsákodba került!", "ok"); } }
 ];
 
 function getItemCost(itemId) {
@@ -1518,14 +1508,13 @@ const poolEl = document.getElementById('pool-grid');
 let isLocked = false;
 let isClaimingDaily = false;
 
-// Képernyőmérethez igazodó, kicsúszásmentes dinamikus csempeméret számítás
 function calcTileMetrics() {
-  const isDesktop = window.innerWidth >= 861;
+  const isDesktop = window.innerWidth >= 880;
   let size;
 
   if(isDesktop) {
-    const containerW = Math.min(window.innerWidth - 40, 1040);
-    const centerColW = Math.min(440, containerW * 0.42);
+    const containerW = Math.min(window.innerWidth - 40, 1140);
+    const centerColW = Math.min(440, containerW * 0.40);
     const availH = Math.max(340, window.innerHeight - 340);
     const dimension = Math.min(centerColW, availH);
     size = Math.max(38, Math.min(52, Math.floor(dimension / GRID_SIZE)));
@@ -1542,7 +1531,6 @@ function calcTileMetrics() {
   return size;
 }
 
-// Szint indítás: készletek megmaradnak, de a körönkénti 1 ingyen kvóta újratöltődik!
 function initLevelData(lvl) {
   state.level = lvl;
   state.pool = [];
@@ -1581,9 +1569,7 @@ function getColorsForLevel(lvl) {
 
 function generateProceduralGrid(lvl) {
   if(!boardEl) return;
-  boardEl.innerHTML = `
-    <div class="board-moves-watermark" id="board-moves-watermark">⚠️ CSAK 5 LÉPÉS VAN HÁTRA!</div>
-  `;
+  boardEl.innerHTML = '';
   state.board = [];
   const colorCount = getColorsForLevel(lvl);
   const tileSize = calcTileMetrics();
@@ -1660,7 +1646,8 @@ function createTileElement(tile, size) {
   el.appendChild(inner);
 
   el.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
+    if(e.button !== undefined && e.button !== 0) return;
+    e.stopPropagation();
     if(isLocked) return;
     onTileClicked(tile);
   });
@@ -1739,31 +1726,36 @@ document.getElementById('btn-cancel-target').addEventListener('click', () => {
 async function executeHammerOnTile(tile) {
   stopTargetingMode();
   isLocked = true;
-  sfxCrack();
-  shakeScreen();
+  try {
+    sfxCrack();
+    shakeScreen();
 
-  const boardRect = boardEl.getBoundingClientRect();
-  const px = boardRect.left + (tile.c + 0.5) * (boardRect.width / GRID_SIZE);
-  const py = boardRect.top + (tile.r + 0.5) * (boardRect.height / GRID_SIZE);
-  spawnExplosion(px, py, '#ffffff');
+    const boardRect = boardEl.getBoundingClientRect();
+    const px = boardRect.left + (tile.c + 0.5) * (boardRect.width / GRID_SIZE);
+    const py = boardRect.top + (tile.r + 0.5) * (boardRect.height / GRID_SIZE);
+    spawnExplosion(px, py, '#ffffff');
 
-  if(tile.letter && state.pool.length < MAX_POOL) {
-    animateFreedLetters([{ char: tile.letter, x: px, y: py }]);
-    state.stats.lettersFreed++;
+    if(tile.letter && state.pool.length < MAX_POOL) {
+      animateFreedLetters([{ char: tile.letter, x: px, y: py }]);
+      state.stats.lettersFreed++;
+    }
+
+    tile.el.classList.add('clearing');
+    setTimeout(() => { if(tile.el && tile.el.parentNode) tile.el.parentNode.removeChild(tile.el); }, 280);
+    state.board[tile.r][tile.c] = null;
+
+    showToast("🔨 Kocka sikeresen szétzúzva!", "ok");
+    await delay(250);
+    await applyGravityAndRefill();
+    updateStats();
+    updateMovesWatermark();
+    await syncCloudState();
+  } catch(err) {
+    console.error(err);
+  } finally {
+    isLocked = false;
+    verifyGameState();
   }
-
-  tile.el.classList.add('clearing');
-  setTimeout(() => { if(tile.el && tile.el.parentNode) tile.el.parentNode.removeChild(tile.el); }, 280);
-  state.board[tile.r][tile.c] = null;
-
-  showToast("🔨 Kocka sikeresen szétzúzva!", "ok");
-  await delay(250);
-  await applyGravityAndRefill();
-  updateStats();
-  updateMovesWatermark();
-  await syncCloudState();
-  isLocked = false;
-  verifyGameState();
 }
 
 function openLineBlasterChoiceModal() {
@@ -1787,79 +1779,120 @@ document.getElementById('btn-blaster-cancel').addEventListener('click', () => {
 async function executeBlasterRow(rowIdx) {
   stopTargetingMode();
   isLocked = true;
-  sfxLaser();
-  shakeScreen();
+  try {
+    sfxLaser();
+    shakeScreen();
 
-  const boardRect = boardEl.getBoundingClientRect();
-  const freed = [];
+    const boardRect = boardEl.getBoundingClientRect();
+    const freed = [];
 
-  for(let c = 0; c < GRID_SIZE; c++) {
-    const t = state.board[rowIdx][c];
-    if(t) {
-      const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
-      const py = boardRect.top + (rowIdx + 0.5) * (boardRect.height / GRID_SIZE);
-      spawnExplosion(px, py, '#fbbf24');
+    for(let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[rowIdx][c];
+      if(t) {
+        const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
+        const py = boardRect.top + (rowIdx + 0.5) * (boardRect.height / GRID_SIZE);
+        spawnExplosion(px, py, '#fbbf24');
 
-      if(t.letter && state.pool.length < MAX_POOL) {
-        freed.push({ char: t.letter, x: px, y: py });
-        state.stats.lettersFreed++;
+        if(t.letter && state.pool.length < MAX_POOL) {
+          freed.push({ char: t.letter, x: px, y: py });
+          state.stats.lettersFreed++;
+        }
+
+        t.el.classList.add('clearing');
+        setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
+        state.board[rowIdx][c] = null;
       }
-
-      t.el.classList.add('clearing');
-      setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
-      state.board[rowIdx][c] = null;
     }
+
+    if(freed.length > 0) animateFreedLetters(freed);
+    showToast("↔️ Vízszintes sor kilőve!", "ok");
+
+    await delay(260);
+    await applyGravityAndRefill();
+    updateStats();
+    updateMovesWatermark();
+    await syncCloudState();
+  } catch(err) {
+    console.error(err);
+  } finally {
+    isLocked = false;
+    verifyGameState();
   }
-
-  if(freed.length > 0) animateFreedLetters(freed);
-  showToast("↔️ Vízszintes sor kilőve!", "ok");
-
-  await delay(260);
-  await applyGravityAndRefill();
-  updateStats();
-  updateMovesWatermark();
-  await syncCloudState();
-  isLocked = false;
-  verifyGameState();
 }
 
 async function executeBlasterCol(colIdx) {
   stopTargetingMode();
   isLocked = true;
-  sfxLaser();
-  shakeScreen();
+  try {
+    sfxLaser();
+    shakeScreen();
 
-  const boardRect = boardEl.getBoundingClientRect();
-  const freed = [];
+    const boardRect = boardEl.getBoundingClientRect();
+    const freed = [];
 
-  for(let r = 0; r < GRID_SIZE; r++) {
-    const t = state.board[r][colIdx];
-    if(t) {
-      const px = boardRect.left + (colIdx + 0.5) * (boardRect.width / GRID_SIZE);
-      const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-      spawnExplosion(px, py, '#06b6d4');
+    for(let r = 0; r < GRID_SIZE; r++) {
+      const t = state.board[r][colIdx];
+      if(t) {
+        const px = boardRect.left + (colIdx + 0.5) * (boardRect.width / GRID_SIZE);
+        const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
+        spawnExplosion(px, py, '#06b6d4');
 
-      if(t.letter && state.pool.length < MAX_POOL) {
-        freed.push({ char: t.letter, x: px, y: py });
-        state.stats.lettersFreed++;
+        if(t.letter && state.pool.length < MAX_POOL) {
+          freed.push({ char: t.letter, x: px, y: py });
+          state.stats.lettersFreed++;
+        }
+
+        t.el.classList.add('clearing');
+        setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
+        state.board[r][colIdx] = null;
       }
+    }
 
-      t.el.classList.add('clearing');
-      setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
-      state.board[r][colIdx] = null;
+    if(freed.length > 0) animateFreedLetters(freed);
+    showToast("↕️ Függőleges oszlop kilőve!", "ok");
+
+    await delay(260);
+    await applyGravityAndRefill();
+    updateStats();
+    updateMovesWatermark();
+    await syncCloudState();
+  } catch(err) {
+    console.error(err);
+  } finally {
+    isLocked = false;
+    verifyGameState();
+  }
+}
+
+function getConnectedCluster(startR, startC, color) {
+  const visited = new Set();
+  const res = [];
+  const q = [{r: startR, c: startC}];
+  visited.add(`${startR},${startC}`);
+
+  while(q.length > 0) {
+    const curr = q.pop();
+    res.push(curr);
+    const neighbors = [
+      {r: curr.r - 1, c: curr.c},
+      {r: curr.r + 1, c: curr.c},
+      {r: curr.r, c: curr.c - 1},
+      {r: curr.r, c: curr.c + 1}
+    ];
+    for(const n of neighbors) {
+      if(n.r >= 0 && n.r < GRID_SIZE && n.c >= 0 && n.c < GRID_SIZE) {
+        const key = `${n.r},${n.c}`;
+        const t = state.board[n.r][n.c];
+        const isFreeWood = (!t || !t.wood || t.wood <= 0);
+        const isFreeIce = (!t || !t.ice || t.ice <= 0);
+        if(!visited.has(key) && t && isFreeWood && isFreeIce && t.color === color) {
+          visited.add(key);
+          q.push(n);
+        }
+      }
     }
   }
-
-  if(freed.length > 0) animateFreedLetters(freed);
-  showToast("↕️ Függőleges oszlop kilőve!", "ok");
-
-  await delay(260);
-  await applyGravityAndRefill();
-  updateStats();
-  updateMovesWatermark();
-  await syncCloudState();
-  isLocked = false;
-  verifyGameState();
+  return res;
 }
 
 function triggerBomb(centerR, centerC) {
@@ -1880,64 +1913,71 @@ function triggerBomb(centerR, centerC) {
 
 async function executeClusterExplosion(tilesPos, isBomb=false) {
   isLocked = true;
-  state.moves--;
-  const matchSize = tilesPos.length;
-  state.stats.biggestMatch = Math.max(state.stats.biggestMatch, matchSize);
+  try {
+    state.moves--;
+    const matchSize = tilesPos.length;
+    state.stats.biggestMatch = Math.max(state.stats.biggestMatch, matchSize);
 
-  let earnedScore = Math.floor(Math.pow(matchSize, 1.8) * 10);
-  state.weeklyScore += earnedScore;
-  state.stats.levelScore += earnedScore;
+    let earnedScore = Math.floor(Math.pow(matchSize, 1.8) * 10);
+    state.weeklyScore += earnedScore;
+    state.stats.levelScore += earnedScore;
 
-  sfxExplode();
-  if(matchSize >= 5) shakeScreen();
+    sfxExplode();
+    if(matchSize >= 5) shakeScreen();
 
-  const boardRect = boardEl.getBoundingClientRect();
-  const newlyFreedLetters = [];
+    const boardRect = boardEl.getBoundingClientRect();
+    const newlyFreedLetters = [];
 
-  tilesPos.forEach(({r, c}) => {
-    const t = state.board[r][c];
-    if(!t) return;
+    tilesPos.forEach(({r, c}) => {
+      const t = state.board[r][c];
+      if(!t) return;
 
-    const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
-    const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-    const colHex = ['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff';
-    spawnExplosion(px, py, colHex);
+      const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
+      const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
+      const colHex = ['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff';
+      spawnExplosion(px, py, colHex);
 
-    if(t.letter && t.ice === 0 && t.wood === 0 && state.pool.length < MAX_POOL) {
-      newlyFreedLetters.push({ char: t.letter, x: px, y: py });
-      state.stats.lettersFreed++;
+      const hasNoWood = (!t.wood || t.wood <= 0);
+      const hasNoIce = (!t.ice || t.ice <= 0);
+
+      if(t.letter && hasNoWood && hasNoIce && state.pool.length < MAX_POOL) {
+        newlyFreedLetters.push({ char: t.letter, x: px, y: py });
+        state.stats.lettersFreed++;
+      }
+
+      t.el.classList.add('clearing');
+      setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
+      state.board[r][c] = null;
+
+      [-1, 1].forEach(dr => {
+        damageLayerAt(r + dr, c);
+        damageLayerAt(r, c + dr);
+      });
+    });
+
+    if(!isBomb && matchSize >= 7) {
+      const bombSpot = tilesPos[0];
+      state.board[bombSpot.r][bombSpot.c] = {
+        r: bombSpot.r, c: bombSpot.c, color: 0,
+        ice: 0, wood: 0, letter: null, bomb: true, el: null
+      };
+      createTileElement(state.board[bombSpot.r][bombSpot.c], calcTileMetrics());
     }
 
-    t.el.classList.add('clearing');
-    setTimeout(() => { if(t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); }, 280);
-    state.board[r][c] = null;
+    if(newlyFreedLetters.length > 0) animateFreedLetters(newlyFreedLetters);
+    await delay(250);
+    await applyGravityAndRefill();
 
-    [-1, 1].forEach(dr => {
-      damageLayerAt(r + dr, c);
-      damageLayerAt(r, c + dr);
-    });
-  });
-
-  if(!isBomb && matchSize >= 7) {
-    const bombSpot = tilesPos[0];
-    state.board[bombSpot.r][bombSpot.c] = {
-      r: bombSpot.r, c: bombSpot.c, color: 0,
-      ice: 0, wood: 0, letter: null, bomb: true, el: null
-    };
-    createTileElement(state.board[bombSpot.r][bombSpot.c], calcTileMetrics());
+    updateStats();
+    updateMovesWatermark();
+    checkQuestProgress();
+    await syncCloudState();
+  } catch(err) {
+    console.error(err);
+  } finally {
+    isLocked = false;
+    verifyGameState();
   }
-
-  animateFreedLetters(newlyFreedLetters);
-  await delay(250);
-  await applyGravityAndRefill();
-
-  updateStats();
-  updateMovesWatermark();
-  checkQuestProgress();
-  await syncCloudState();
-
-  isLocked = false;
-  verifyGameState();
 }
 
 function damageLayerAt(r, c) {
@@ -2286,7 +2326,6 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
   verifyGameState();
 });
 
-// Nem kitakaró Mesterjutalom modal
 function triggerFreeLetterReward(word) {
   document.getElementById('free-letter-desc').innerHTML = 
     `🎉 Gratulálunk! Készítettél egy <b>${word.length} betűs szót (${word})</b>! Kaptál <b>+2 lépést</b>, és kérhetsz egy <b>INGYENES tetszőleges betűt</b> a raktáradba!`;
@@ -2382,10 +2421,10 @@ function updateStats() {
 }
 
 function updateMovesWatermark() {
-  const wm = document.getElementById('board-moves-watermark');
+  const wm = document.getElementById('moves-warning-banner');
   if(!wm) return;
   if(state.moves <= 5 && state.moves > 0) {
-    wm.textContent = (state.moves === 1) ? '⚠️ UTOLSÓ 1 LÉPÉS!' : `⚠️ CSAK ${state.moves} LÉPÉS VAN HÁTRA!`;
+    wm.textContent = (state.moves === 1) ? '⚠️ UTOLSÓ 1 LÉPÉS VAN HÁTRA!' : `⚠️ CSAK ${state.moves} LÉPÉS VAN HÁTRA!`;
     wm.classList.add('show');
   } else {
     wm.classList.remove('show');
@@ -2423,7 +2462,6 @@ function checkQuestProgress() {
   updateMissionUI();
 }
 
-// LÉPÉSKIFOGYÁS: PÁLYÁNKÉNT MAXIMUM 2 ALKALOMMAL LEHET VISSZATÉRNI!
 function verifyGameState() {
   const mainGoalDone = state.stats.wordsMade >= state.requiredWords;
   if(mainGoalDone && state.bonusDone) {
@@ -3068,9 +3106,9 @@ function renderLeaderboardFromSnapshot(snapshot, currentWeek) {
   if(currentWeekUsers.length === 0) {
     listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;">Még senki sem szerzett pontot ezen a héten. Legyél te az első! 🚀</div>';
     return;
-  }
+}
 
-  listEl.innerHTML = '';
+listEl.innerHTML = '';
   currentWeekUsers.slice(0, 50).forEach((u, i) => {
     const item = document.createElement('div');
     item.className = 'leaderboard-item';
@@ -3194,9 +3232,7 @@ function restoreFromCloudData(data) {
   state.lastCheckInDate = data.lastCheckInDate || null;
 
   const tileSize = calcTileMetrics();
-  boardEl.innerHTML = `
-    <div class="board-moves-watermark" id="board-moves-watermark">⚠️ CSAK 5 LÉPÉS VAN HÁTRA!</div>
-  `;
+  boardEl.innerHTML = '';
   state.board = [];
   for(let r = 0; r < GRID_SIZE; r++) state.board[r] = new Array(GRID_SIZE).fill(null);
 
