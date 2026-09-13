@@ -28,28 +28,20 @@
 html, body {
   margin: 0; padding: 0;
   width: 100%; min-height: 100vh; min-height: 100dvh;
-  background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.28), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.2), transparent 50%),
-    radial-gradient(circle at 0% 50%, rgba(245, 158, 11, 0.12), transparent 45%),
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-  background-attachment: fixed;
+  background-color: #030712;
   color: #f8fafc;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden; overflow-y: auto;
   user-select: none; -webkit-user-select: none;
   display: flex; flex-direction: column; align-items: center;
 }
+#bg-cubes-canvas {
+  position: fixed; inset: 0; width: 100vw; height: 100vh;
+  pointer-events: none; z-index: 0;
+}
 #fx-canvas {
   position: fixed; inset: 0; width: 100vw; height: 100vh;
   pointer-events: none; z-index: 10000;
-}
-.cosmic-svg-bg {
-  position: fixed; inset: 0; width: 100%; height: 100%;
-  pointer-events: none; z-index: 0; opacity: 0.4;
 }
 .app-container {
   width: 100%; max-width: 480px; padding: 8px; margin: 0 auto;
@@ -804,15 +796,9 @@ html, body {
 </style>
 </head>
 <body>
+<canvas id="bg-cubes-canvas"></canvas>
 <canvas id="fx-canvas"></canvas>
 <div class="panic-vignette" id="panic-vignette"></div>
-
-<svg class="cosmic-svg-bg" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="12%" cy="18%" r="1.5" fill="#fff" opacity="0.6"/>
-  <circle cx="82%" cy="22%" r="2" fill="#fbbf24" opacity="0.8"/>
-  <circle cx="22%" cy="78%" r="2" fill="#06b6d4" opacity="0.5"/>
-  <circle cx="75%" cy="80%" r="1.5" fill="#fff" opacity="0.7"/>
-</svg>
 
 <div class="app-container" id="app-wrap">
   <div class="top-nav glass">
@@ -1609,95 +1595,103 @@ const ALL_QUEST_DATABASE = [];
 function build100Quests() {
   ALL_QUEST_DATABASE.length = 0;
   let id = 1;
-  [3, 4, 5, 6, 7].forEach(sz => {
-    [1, 2, 3].forEach(tier => {
-      const match = sz + (tier - 1);
-      ALL_QUEST_DATABASE.push({
-        id: `q_match_${id++}`, tier,
-        text: `Robbants fel legalább ${match} csempét egyszerre`,
-        check: s => s.stats.biggestMatch >= match
-      });
-    });
-  });
-  [3, 4, 5].forEach(len => {
-    [1, 2, 3, 4, 5].forEach(t => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_wordlen_${id++}`, tier: Math.min(3, Math.floor((len + t)/3)),
-        text: `Készíts legalább egy ${len} betűs szót`,
-        check: s => (s.levelWords || []).some(w => w.length >= len)
-      });
-    });
-  });
-  ['A', 'B', 'K', 'M', 'S', 'T', 'E', 'L', 'P', 'V', 'N', 'R'].forEach(letter => {
-    [1, 2].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_start_${letter}_${id++}`, tier, reqLetter: letter,
-        text: `Készíts "${letter}" betűvel kezdődő szót`,
-        check: s => (s.levelWords || []).some(w => w.startsWith(letter))
-      });
-    });
-  });
-  [1, 2, 3, 4].forEach(cnt => {
-    [1, 2, 3].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_words_${id++}`, tier,
-        text: `Készíts legalább ${cnt} érvényes szót a szinten`,
-        check: s => (s.levelWords || []).length >= cnt
-      });
-    });
-  });
-  [300, 500, 800, 1200, 1800].forEach((score, idx) => {
-    [1, 2].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_score_${id++}`, tier: idx >= 3 ? 3 : (idx >= 1 ? 2 : 1),
-        text: `Szerezz legalább ${score} szintpontot`,
-        check: s => s.stats.levelScore >= score
-      });
-    });
-  });
-  [3, 5, 7, 10].forEach(cnt => {
-    [1, 2].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_freed_${id++}`, tier,
-        text: `Szabadíts fel legalább ${cnt} betűt a tábláról`,
-        check: s => s.stats.lettersFreed >= cnt
-      });
-    });
-  });
-  [1, 2, 3].forEach(iceCnt => {
-    [1, 2].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_ice_${id++}`, tier, reqIce: iceCnt,
-        text: `Törj össze legalább ${iceCnt} jégréteget`,
-        check: s => s.stats.iceBroken >= iceCnt
-      });
-    });
-  });
-  [1, 2, 3].forEach(woodCnt => {
-    [1, 2].forEach(tier => {
-      ALL_QUEST_DATABASE.push({
-        id: `q_wood_${id++}`, tier, reqWood: woodCnt,
-        text: `Törj össze legalább ${woodCnt} faréteget`,
-        check: s => s.stats.woodBroken >= woodCnt
-      });
-    });
-  });
-  while (ALL_QUEST_DATABASE.length < 100) {
-    const i = ALL_QUEST_DATABASE.length + 1;
-    ALL_QUEST_DATABASE.push({
-      id: `q_extra_${i}`, tier: 1,
-      text: `Készíts legalább 1 db 3 betűs szót`,
-      check: s => (s.levelWords || []).some(w => w.length >= 3)
-    });
-  }
+
+  // 1. Robbantási méret (7 db)
+  [4, 5].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
+  [6, 7].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 2, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
+  [8, 9, 10].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 3, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
+
+  // 2. Szóhosszúság (6 db)
+  [3, 4].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
+  [5, 6].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 2, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
+  [7, 8].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 3, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
+
+  // 3. Kirakott szavak száma (7 db)
+  [1, 2, 3].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
+  [4, 5].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 2, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
+  [6, 7].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 3, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
+
+  // 4. Kezdőbetűs feladatok (37 db - a magyar ábécé betűi egyszer, pontosan tier-re bontva)
+  const commonLetters = ['A', 'Á', 'B', 'E', 'É', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'V'];
+  const midLetters = ['C', 'CS', 'D', 'F', 'G', 'GY', 'H', 'I', 'J', 'SZ', 'Z', 'Ó', 'Ö'];
+  const rareLettersList = ['Í', 'NY', 'Ő', 'TY', 'U', 'Ú', 'Ü', 'Ű', 'ZS'];
+
+  commonLetters.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 1, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
+  midLetters.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 2, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
+  rareLettersList.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 3, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
+
+  // 5. Szintpontszám (9 db)
+  [250, 400, 600].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 1, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+  [900, 1300, 1800].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 2, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+  [2500, 3500, 5000].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 3, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+
+  // 6. Felszabadított csempék (6 db)
+  [3, 5].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 1, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+  [8, 12].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 2, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+  [16, 20].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 3, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+
+  // 7. Jégtörés (5 db)
+  [1, 2].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 1, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
+  [3, 4].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 2, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
+  [6].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 3, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
+
+  // 8. Fatörés (5 db)
+  [1, 2].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 1, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
+  [3, 4].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 2, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
+  [6].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 3, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
+
+  // 9. Bombák felrobbantása (3 db)
+  ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 1, text: `Robbants fel legalább 1 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 1 });
+  ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 2, text: `Robbants fel legalább 2 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 3, text: `Robbants fel legalább 3 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 3 });
+
+  // 10. Különleges szóbónusz küldetések (15 db - pontosan 100-ra egészít ki)
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább egy ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].some(c => RARE_LETTERS.has(c))) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 150 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 150) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.pool || []).some(i => i && i.isGold) || (s.stats.lettersFreed >= 1) });
+
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts legalább két darab 4 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts egy szót, ami magánhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts egy szót, ami mássalhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[^AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 350 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 350) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, amiben van legalább 2 azonos betű`, check: s => (s.levelWords || []).some(w => /(.).*\1/.test(w)) });
+
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább két darab 5 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 5).length >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts egy legalább 6 betűs mesterszót`, check: s => (s.levelWords || []).some(w => w.length >= 6) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 600 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 600) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább 3 különböző szót a szinten`, check: s => (new Set(s.levelWords || [])).size >= 3 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, ami legalább 2 ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].filter(c => RARE_LETTERS.has(c)).length >= 2) });
 }
 build100Quests();
 
 function getViableQuestsForBoard(lvl) {
   let targetTier = 1;
-  if(lvl >= 12) targetTier = 3;
-  else if(lvl >= 5) targetTier = 2;
-  return ALL_QUEST_DATABASE.filter(q => q.tier <= targetTier);
+  if (lvl >= 12) targetTier = 3;
+  else if (lvl >= 5) targetTier = 2;
+
+  const isGold = isGoldenLevel(lvl);
+
+  return ALL_QUEST_DATABASE.filter(q => {
+    // 1. Nehézségi szint (tier) ellenőrzése
+    if (q.tier > targetTier) return false;
+
+    // 2. Arany csempe küldetés KIZÁRÓLAG Aranypályán (10, 20, 30...) jelenhet meg!
+    const isGoldQuest = (q.id && q.id.includes('gold')) || (q.text && q.text.toLowerCase().includes('arany'));
+    if (isGoldQuest && !isGold) return false;
+
+    // 3. Jég küldetés csak a 3. szinttől oldódik fel (onboarding védelem)
+    if (q.reqIce && lvl < 3) return false;
+
+    // 4. Fa akadály küldetés csak az 5. szinttől jelenik meg
+    if (q.reqWood && lvl < 5) return false;
+
+    // 5. Bomba küldetés csak a 6. szinttől jöhet
+    if (q.text && q.text.includes('Bomba') && lvl < 6) return false;
+
+    return true;
+  });
 }
 
 const state = {
@@ -1796,10 +1790,18 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
     else wrap.classList.remove('gold-level-active');
   }
 
+  // Pszichológiai mérföldkő-értesítések
   if(isGold) {
     state.moves = 34;
-    showToast(`👑 ${lvl}. SZINT: ARANYPÁLYA (3x pontok)!`, "ok");
+    showToast(`👑 ${lvl}. SZINT: ARANYPÁLYA (3x pontok & Arany Betűk)!`, "ok");
     sfxFanfare();
+  } else if(lvl === 3) {
+    state.moves = 28;
+    showToast(`❄️ 3. SZINT: Megjelent a Jég a táblán! Robbants mellette!`, "ok");
+    sfxIceCrack();
+  } else if(lvl === 5) {
+    state.moves = 26;
+    showToast(`🪵 5. SZINT: Megjelent a Fa akadály! Törd át a deszkákat!`, "ok");
   } else {
     const cycle = (lvl - 1) % 10;
     state.moves = Math.max(22, 28 - Math.floor(cycle * 0.6));
@@ -1815,7 +1817,17 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   if (chosenQuests && chosenQuests.length >= 3) {
     state.activeQuests = chosenQuests;
   } else {
-    state.activeQuests = [viable[0] || ALL_QUEST_DATABASE[0], viable[1] || ALL_QUEST_DATABASE[1], viable[2] || ALL_QUEST_DATABASE[2]];
+    const shuffled = [...viable].sort(() => Math.random() - 0.5);
+    const uniquePicks = [];
+    const seenTexts = new Set();
+    for (const q of shuffled) {
+      if (!seenTexts.has(q.text)) {
+        seenTexts.add(q.text);
+        uniquePicks.push(q);
+        if (uniquePicks.length >= 3) break;
+      }
+    }
+    state.activeQuests = uniquePicks.length >= 3 ? uniquePicks : viable.slice(0, 3);
   }
   state.questStatuses = new Array(state.activeQuests.length).fill(false);
 
@@ -1864,22 +1876,25 @@ function generateProceduralGrid(lvl, quests) {
   if(!boardEl) return;
   boardEl.innerHTML = '';
   state.board = [];
-  const colorCount = lvl < 5 ? 4 : (lvl < 9 ? 5 : 6);
+  const colorCount = lvl < 4 ? 4 : (lvl < 8 ? 5 : 6);
   const tileSize = calcTileMetrics();
   const isGold = isGoldenLevel(lvl);
 
   let requiredIce = 0;
   let requiredWood = 0;
+  let requiresBomb = false;
   const requiredLetters = [];
 
   quests.forEach(q => {
     if (q.reqIce) requiredIce = Math.max(requiredIce, q.reqIce);
     if (q.reqWood) requiredWood = Math.max(requiredWood, q.reqWood);
     if (q.reqLetter && !requiredLetters.includes(q.reqLetter)) requiredLetters.push(q.reqLetter);
+    if (q.text && q.text.includes('Bomba')) requiresBomb = true;
   });
 
-  const targetIceCount = requiredIce > 0 ? (requiredIce * 2 + 2) : (lvl >= 5 ? 3 : 0);
-  const targetWoodCount = requiredWood > 0 ? (requiredWood * 2 + 2) : (lvl >= 7 ? 2 : 0);
+  // Az akadályok mennyiségének intelligens, szintezett meghatározása
+  const targetIceCount = requiredIce > 0 ? (requiredIce * 2 + 2) : (lvl >= 3 ? Math.min(5, Math.floor(lvl / 2)) : 0);
+  const targetWoodCount = requiredWood > 0 ? (requiredWood * 2 + 2) : (lvl >= 5 ? Math.min(4, Math.floor((lvl - 2) / 2)) : 0);
 
   for(let r = 0; r < GRID_SIZE; r++) {
     state.board[r] = [];
@@ -1900,13 +1915,14 @@ function generateProceduralGrid(lvl, quests) {
     }
   }
 
+  // 1. KÖTELEZŐ KEZDŐBETŰK ELHELYEZÉSE (mindig legalább 2 db)
   requiredLetters.forEach(ch => {
     let placed = 0;
     while (placed < 2) {
       const rr = Math.floor(Math.random() * GRID_SIZE);
       const rc = Math.floor(Math.random() * GRID_SIZE);
       const tile = state.board[rr][rc];
-      if (tile && tile.letter !== ch) {
+      if (tile && tile.letter !== ch && !tile.bomb) {
         tile.letter = ch;
         refreshTileAppearance(tile);
         placed++;
@@ -1914,12 +1930,27 @@ function generateProceduralGrid(lvl, quests) {
     }
   });
 
+  // 2. AZONNALI KÍSÉRTÉS: Ha van Bomba küldetés, 1 Mega Bomba azonnal terem a pálya közepén!
+  if (requiresBomb) {
+    const midR = Math.floor(GRID_SIZE / 2);
+    const midC = Math.floor(GRID_SIZE / 2);
+    const bombTile = state.board[midR][midC];
+    if (bombTile) {
+      bombTile.bomb = true;
+      bombTile.ice = 0;
+      bombTile.wood = 0;
+      bombTile.letter = null;
+      refreshTileAppearance(bombTile);
+    }
+  }
+
+  // 3. JÉGKOCKÁK LERAKÁSA (csak ha szint vagy küldetés megköveteli)
   let placedIce = 0;
   while (placedIce < targetIceCount) {
     const rr = Math.floor(Math.random() * GRID_SIZE);
     const rc = Math.floor(Math.random() * GRID_SIZE);
     const tile = state.board[rr][rc];
-    if (tile && tile.ice === 0 && tile.wood === 0) {
+    if (tile && tile.ice === 0 && tile.wood === 0 && !tile.bomb) {
       tile.ice = (lvl >= 8 && Math.random() < 0.3) ? 2 : 1;
       if (!tile.letter) tile.letter = getBalancedLetter();
       refreshTileAppearance(tile);
@@ -1927,12 +1958,13 @@ function generateProceduralGrid(lvl, quests) {
     }
   }
 
+  // 4. FAKOCKÁK LERAKÁSA (csak ha szint vagy küldetés megköveteli)
   let placedWood = 0;
   while (placedWood < targetWoodCount) {
     const rr = Math.floor(Math.random() * GRID_SIZE);
     const rc = Math.floor(Math.random() * GRID_SIZE);
     const tile = state.board[rr][rc];
-    if (tile && tile.ice === 0 && tile.wood === 0) {
+    if (tile && tile.ice === 0 && tile.wood === 0 && !tile.bomb) {
       tile.wood = 1;
       if (!tile.letter) tile.letter = getBalancedLetter();
       refreshTileAppearance(tile);
@@ -2012,9 +2044,10 @@ function areTilesMatching(t1, t2) {
   if (!t1 || !t2) return false;
   if (t1.wood > 0 || t2.wood > 0 || t1.ice > 0 || t2.ice > 0) return false;
   if (t1.bomb || t2.bomb) return false;
-  if (t1.isGold && t2.isGold) return true;
-  if (t1.color === t2.color) return true;
-  return false;
+  if (t1.isGold || t2.isGold) {
+    return Boolean(t1.isGold && t2.isGold);
+  }
+  return t1.color === t2.color;
 }
 
 function onTileClicked(tile) {
@@ -2060,8 +2093,8 @@ function startTileTargeting(mode) {
   if(boardEl) boardEl.classList.add('targeting-cursor');
   if(msg) {
     if(mode === 'hammer') msg.textContent = '🔨 KATTINTS A SZÉTZÚZANDÓ KOCKÁRA!';
-    else if(mode === 'blaster-row') msg.textContent = '↔️ KATTINTS A KIVÁLASZTOTT SORRA!';
-    else if(mode === 'blaster-col') msg.textContent = '↕️ KATTINTS A KIVÁLASZTOTT OSZLOPRA!';
+    else if(mode === 'blaster-row') msg.textContent = '↔ KATTINTS A KIVÁLASZTOTT SORRA!';
+    else if(mode === 'blaster-col') msg.textContent = '↕ KATTINTS A KIVÁLASZTOTT OSZLOPRA!';
   }
 }
 
@@ -2207,8 +2240,10 @@ function getConnectedCluster(startR, startC) {
     res.push(curr);
     const currTile = state.board[curr.r][curr.c];
     const neighbors = [
-      {r: curr.r - 1, c: curr.c}, {r: curr.r + 1, c: curr.c},
-      {r: curr.r, c: curr.c - 1}, {r: curr.r + 1, c: curr.c}
+      {r: curr.r - 1, c: curr.c}, // fel
+      {r: curr.r + 1, c: curr.c}, // le
+      {r: curr.r, c: curr.c - 1}, // balra
+      {r: curr.r, c: curr.c + 1}  // jobbra
     ];
     for(const n of neighbors) {
       if(n.r >= 0 && n.r < GRID_SIZE && n.c >= 0 && n.c < GRID_SIZE) {
@@ -2957,6 +2992,8 @@ function setupStakeCardClicks() {
 }
 setupStakeCardClicks();
 
+let preselectedQuests = [];
+
 function openQuestRouletteModal(nextLvl) {
   selectedStakeMode = 'normal';
   selectedQuestCount = 3;
@@ -2965,16 +3002,11 @@ function openQuestRouletteModal(nextLvl) {
   if (normCard) normCard.classList.add('selected');
 
   rouletteViableList = getViableQuestsForBoard(nextLvl);
-  for (let i = rouletteViableList.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [rouletteViableList[i], rouletteViableList[j]] = [rouletteViableList[j], rouletteViableList[i]];
-  }
-
   buildRouletteReels(selectedQuestCount);
 
   const btn = document.getElementById('btn-dynamic-roulette');
   if (btn) {
-    btn.textContent = "▶️ START INDÍTÁS";
+    btn.textContent = "▶ START INDÍTÁS";
     btn.className = "btn-dynamic-roulette state-start";
     btn.disabled = false;
   }
@@ -3011,6 +3043,18 @@ safeOn('btn-dynamic-roulette', 'click', () => {
       return;
     }
 
+    // 100% duplikáció-mentes küldetéskiválasztás a pörgetéshez
+    preselectedQuests = [];
+    const shuffled = [...rouletteViableList].sort(() => Math.random() - 0.5);
+    const seenTexts = new Set();
+    for (const q of shuffled) {
+      if (!seenTexts.has(q.text)) {
+        seenTexts.add(q.text);
+        preselectedQuests.push(q);
+        if (preselectedQuests.length >= selectedQuestCount) break;
+      }
+    }
+
     rouletteState = 'spinning';
     btn.textContent = "⏹️ STOP MEGÁLLÍTÁS";
     btn.className = "btn-dynamic-roulette state-stop";
@@ -3023,7 +3067,7 @@ safeOn('btn-dynamic-roulette', 'click', () => {
     rouletteTimers = [];
 
     for (let i = 0; i < selectedQuestCount; i++) {
-      reelIndices[i] = Math.floor((rouletteViableList.length / selectedQuestCount) * i);
+      reelIndices[i] = Math.floor(Math.random() * rouletteViableList.length);
       reelSpeeds[i] = 50 + (i * 5);
       isReelStopping[i] = false;
 
@@ -3040,12 +3084,9 @@ safeOn('btn-dynamic-roulette', 'click', () => {
           reelSpeeds[idx] += 24;
           if (reelSpeeds[idx] >= 380 + (idx * 30)) {
             if (el) el.classList.remove('spinning');
-            let candidate = rouletteViableList[reelIndices[idx]];
-            if (chosenQuestsList.some(q => q.id === candidate.id)) {
-              candidate = rouletteViableList[(reelIndices[idx] + 2) % rouletteViableList.length];
-            }
-            chosenQuestsList[idx] = candidate;
-            if (el) el.textContent = candidate.text;
+            const targetQuest = preselectedQuests[idx];
+            chosenQuestsList[idx] = targetQuest;
+            if (el) el.textContent = targetQuest.text;
             playTone(600 + (idx * 80), 0.2, 'triangle', 0.25);
             checkAllReelsStopped();
             return;
@@ -3055,7 +3096,7 @@ safeOn('btn-dynamic-roulette', 'click', () => {
       };
 
       spinTick(i);
-      setTimeout(() => { isReelStopping[i] = true; }, 4000 + (i * 2200));
+      setTimeout(() => { isReelStopping[i] = true; }, 3500 + (i * 1200));
     }
 
   } else if (rouletteState === 'spinning') {
@@ -4508,14 +4549,98 @@ function shakeScreen() {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+function renderColorfulBackgroundCubes() {
+  const canvas = document.getElementById('bg-cubes-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Alap sötét kozmikus háttér fényekkel
+  const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+  bgGrad.addColorStop(0, '#040714');
+  bgGrad.addColorStop(0.5, '#070b1a');
+  bgGrad.addColorStop(1, '#02040a');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  const tileSize = 36; // A háttérkockák mérete (px)
+  const cols = Math.ceil(w / tileSize);
+  const rows = Math.ceil(h / tileSize);
+
+  // Nagyon gazdag színpaletta: rubin, smaragd, arany, zafír, lila, türkiz, narancs, rózsa, lime, stb.
+  const colorPalette = [
+    { r: 239, g: 68, b: 68 },   // Rubin / Piros
+    { r: 16, g: 185, b: 129 },  // Smaragd / Zöld
+    { r: 245, g: 158, b: 11 },  // Arany / Borostyán
+    { r: 59, g: 130, b: 246 },  // Zafír / Kék
+    { r: 168, g: 85, b: 247 },  // Ametiszt / Lila
+    { r: 6, g: 182, b: 212 },   // Türkiz / Cián
+    { r: 249, g: 115, b: 22 },  // Élénk Narancs
+    { r: 236, g: 72, b: 153 },  // Neon Rózsa
+    { r: 132, g: 204, b: 22 },  // Lime
+    { r: 30, g: 41, b: 59 },    // Mély sötét pala (kontrasztnak)
+    { r: 15, g: 23, b: 42 }     // Éjfekete pala (kontrasztnak)
+  ];
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * tileSize;
+      const y = r * tileSize;
+
+      const col = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+      const rand = Math.random();
+      
+      // Háromféle fényerő/átlátszóság: mély sötét, vibráló színes, és kiemelten fényes izzó kockák
+      let alpha;
+      if (rand < 0.50) {
+        alpha = 0.05 + Math.random() * 0.07; // Sötétebb, sejtelmes kockák
+      } else if (rand < 0.82) {
+        alpha = 0.16 + Math.random() * 0.14; // Közepesen világos, élénk kockák
+      } else {
+        alpha = 0.32 + Math.random() * 0.22; // Nagyon világos, izzó színes kockák
+      }
+
+      // Kocka belső kitöltése
+      ctx.fillStyle = `rgba(${col.r}, ${col.g}, ${col.b}, ${alpha})`;
+      ctx.fillRect(x + 1.5, y + 1.5, tileSize - 3, tileSize - 3);
+
+      // Kocka 3D világos pereme (bal és felső él megvilágítva)
+      ctx.strokeStyle = `rgba(255, 255, 255, ${Math.min(0.85, alpha * 1.5)})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + 1.5, y + tileSize - 1.5);
+      ctx.lineTo(x + 1.5, y + 1.5);
+      ctx.lineTo(x + tileSize - 1.5, y + 1.5);
+      ctx.stroke();
+
+      // Kocka 3D árnyékos pereme (jobb és alsó él árnyékban)
+      ctx.strokeStyle = `rgba(0, 0, 0, 0.55)`;
+      ctx.beginPath();
+      ctx.moveTo(x + tileSize - 1.5, y + 1.5);
+      ctx.lineTo(x + tileSize - 1.5, y + tileSize - 1.5);
+      ctx.lineTo(x + 1.5, y + tileSize - 1.5);
+      ctx.stroke();
+    }
+  }
+}
+
 async function main() {
   calcTileMetrics();
+  renderColorfulBackgroundCubes();
   initLevelData(1);
   loadAllDictionaries();
   renderCommunityLists();
 }
 
 window.addEventListener('resize', () => {
+  renderColorfulBackgroundCubes();
   const size = calcTileMetrics();
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
