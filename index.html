@@ -153,6 +153,60 @@ html, body {
   color: #facc15; font-size: 15px; filter: drop-shadow(0 0 6px #facc15); animation: pulse 1.2s infinite alternate;
 }
 
+.weekly-champion-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  width: 100%;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.92), rgba(15, 23, 42, 0.95));
+  border: 1.5px solid rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
+  gap: 6px;
+}
+.champ-badge-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.champ-crown-icon { font-size: 14px; line-height: 1; animation: pulse 1.2s infinite alternate; }
+.champ-label { font-size: 9px; font-weight: 900; color: #fde68a; text-transform: uppercase; letter-spacing: 0.6px; }
+.champ-winner-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.champ-winner-name { font-size: 13px; font-weight: 900; color: #facc15; }
+.champ-congrats-tag {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #a7f3d0;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+.champ-winner-score {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 900;
+  color: #6ee7b7;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .high-stakes-banner {
   display: none; width: 100%; padding: 5px 10px; border-radius: 8px;
   font-size: 11px; font-weight: 900; text-align: center; letter-spacing: 0.5px;
@@ -799,6 +853,40 @@ html, body {
   }
   .top-nav { grid-column: 1 / -1; }
   .player-hero-strip { grid-column: 1 / -1; }
+  .player-hero-strip { grid-column: 1 / -1; }
+  /* Asztali 3 szintes elegáns elrendezés */
+  .weekly-champion-strip {
+    grid-column: 1 / -1;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 10px 16px !important;
+    gap: 5px !important;
+    background: radial-gradient(circle at 50% 30%, rgba(30, 27, 75, 0.96), rgba(15, 23, 42, 0.98)) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 18px rgba(245, 158, 11, 0.25) !important;
+  }
+  .champ-badge-capsule {
+    margin: 0 auto;
+    padding: 3px 12px !important;
+  }
+  .champ-winner-info {
+    justify-content: center !important;
+    gap: 10px !important;
+  }
+  .champ-winner-name {
+    font-size: 15px !important;
+  }
+  .champ-winner-score {
+    margin-left: 0 !important;
+    font-size: 13.5px !important;
+  }
+  .champ-congrats-tag {
+    margin: 0 auto !important;
+    font-size: 11px !important;
+    padding: 3px 12px !important;
+  }
   .high-stakes-banner { grid-column: 1 / -1; }
   .stats-grid { grid-column: 1 / -1; }
   .mission-strip { grid-column: 1 / -1; }
@@ -845,6 +933,19 @@ html, body {
       <span class="player-crown-badge" id="hero-crown" style="display:none;">👑 Bajnoki Korona</span>
     </div>
     <div style="font-size:10px; font-weight:800; color:#94a3b8;" id="hero-week-label">Bajnokság aktív</div>
+  </div>
+
+ <div class="weekly-champion-strip glass" id="weekly-champion-strip">
+    <div class="champ-badge-capsule">
+      <span class="champ-crown-icon">👑</span>
+      <span class="champ-label">ELŐZŐ HÉT BAJNOKA</span>
+    </div>
+    <div class="champ-winner-info">
+      <b class="champ-winner-name" id="champ-winner-name">Keresés...</b>
+      <span style="color:#64748b; font-weight:900;">—</span>
+      <span class="champ-winner-score" id="champ-winner-score"></span>
+    </div>
+    <div class="champ-congrats-tag" id="champ-congrats-tag">Gratulálunk! 🎉</div>
   </div>
 
   <div class="high-stakes-banner" id="high-stakes-banner"></div>
@@ -1235,10 +1336,35 @@ html, body {
 </div>
 
 <div class="modal-overlay" id="modal-admin">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:460px;">
     <div class="modal-title" style="color:var(--purple);">⚡ FEJLESZTŐI VEZÉRLŐPULT</div>
-    <div class="lobby-content-scroll" id="admin-profile-list"></div>
-    <div class="modal-buttons" style="flex-direction:row; gap:8px;">
+    
+    <!-- HETI CIKLUS ÉS BAJNOK VEZÉRLŐ KÖZPONT -->
+    <div style="background:rgba(15,23,42,0.85); border:1.5px solid #a855f7; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:6px; text-align:left;">
+      <div style="font-size:11px; font-weight:900; color:#facc15; display:flex; align-items:center; gap:4px;">
+        👑 HETI BAJNOK ÉS PONTOK KEZELÉSE
+      </div>
+      <div style="font-size:10px; color:#94a3b8;">
+        Aktuális játékhét: <b id="admin-current-week-label" style="color:#38bdf8;">-</b>
+      </div>
+      
+      <div style="display:flex; gap:6px; margin-top:2px;">
+        <input type="text" class="input-pin" id="admin-champ-name" placeholder="BAJNOK NEVE" style="flex:1; font-size:12px; padding:6px; text-transform:uppercase;">
+        <input type="number" class="input-pin" id="admin-champ-score" placeholder="PONT (PL. 35000)" style="flex:1; font-size:12px; padding:6px;">
+      </div>
+      <button class="btn-modal gold" id="btn-admin-set-champ" style="padding:8px; font-size:11px;">👑 BAJNOK RÖGZÍTÉSE & KORONA KIADÁSA</button>
+
+      <hr style="border:none; border-top:1px dashed #334155; margin:4px 0;">
+
+      <button class="btn-modal danger" id="btn-admin-reset-all-scores" style="padding:8px; font-size:11px;">
+        🔄 MINDEN JÁTÉKOS HETI PONTJÁNAK NULLÁZÁSA (0 P)
+      </button>
+    </div>
+
+    <div style="font-size:10px; font-weight:800; color:#cbd5e1; text-align:left; margin-top:4px;">REGISZTRÁLT JÁTÉKOSOK:</div>
+    <div class="lobby-content-scroll" id="admin-profile-list" style="max-height:130px;"></div>
+
+    <div class="modal-buttons" style="flex-direction:row; gap:8px; margin-top:4px;">
       <button class="btn-modal purple" style="flex:1;" id="btn-admin-play-test">🎮 Ingyenes Teszt</button>
       <button class="btn-modal secondary" style="flex:1;" id="btn-admin-logout">👤 Kijelentkezés</button>
     </div>
@@ -1611,73 +1737,101 @@ function build100Quests() {
   ALL_QUEST_DATABASE.length = 0;
   let id = 1;
 
-  // 1. Robbantási méret (7 db)
-  [4, 5].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
-  [6, 7].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 2, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
-  [8, 9, 10].forEach(sz => ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 3, text: `Robbants fel legalább ${sz} csempét egyszerre`, check: s => s.stats.biggestMatch >= sz }));
+  // 1. Robbantási méret: Max. 7 csempe (a 7-es hozza létre a Mega Bombát!)
+  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább 4 csempét egyszerre`, check: s => s.stats.biggestMatch >= 4 });
+  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább 5 csempét egyszerre`, check: s => s.stats.biggestMatch >= 5 });
+  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 2, text: `Robbants fel legalább 6 csempét egyszerre`, check: s => s.stats.biggestMatch >= 6 });
+  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 3, text: `Robbants fel 7 csempét és hozz létre Mega Bombát!`, check: s => s.stats.biggestMatch >= 7 });
 
-  // 2. Szóhosszúság (6 db)
-  [3, 4].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
-  [5, 6].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 2, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
-  [7, 8].forEach(len => ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 3, text: `Készíts legalább egy ${len} betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= len) }));
+  // 2. Szóhosszúság: Reális méretek (max. 6 betűs mesterszó)
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 3 betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 4 betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= 4) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 2, text: `Készíts legalább egy 5 betűs szót (+1 lépés bónusz!)`, check: s => (s.levelWords || []).some(w => w.length >= 5) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 3, text: `Készíts egy 6 betűs mesterszót`, check: s => (s.levelWords || []).some(w => w.length >= 6) });
 
-  // 3. Kirakott szavak száma (7 db)
-  [1, 2, 3].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
-  [4, 5].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 2, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
-  [6, 7].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 3, text: `Készíts legalább ${cnt} érvényes szót a szinten`, check: s => (s.levelWords || []).length >= cnt }));
+  // 3. Kirakott szavak száma: Kényelmesen teljesíthető (max. 5 szó)
+  ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább 1 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 1 });
+  ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább 2 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább 3 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 3 });
+  ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 2, text: `Készíts legalább 4 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 4 });
+  ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 3, text: `Készíts legalább 5 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 5 });
 
-  // 4. Kezdőbetűs feladatok (37 db - a magyar ábécé betűi egyszer, pontosan tier-re bontva)
-  const commonLetters = ['A', 'Á', 'B', 'E', 'É', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'V'];
-  const midLetters = ['C', 'CS', 'D', 'F', 'G', 'GY', 'H', 'I', 'J', 'SZ', 'Z', 'Ó', 'Ö'];
-  const rareLettersList = ['Í', 'NY', 'Ő', 'TY', 'U', 'Ú', 'Ü', 'Ű', 'ZS'];
+  // 4. Kényelmes kezdőbetűk (olyan betűk, amikkel rengeteg szó képezhető) (29 db)
+  const comfortableLetters = [
+    'A', 'Á', 'B', 'C', 'CS', 'D', 'E', 'É', 'F', 'G', 'GY', 'H', 'I', 'J', 
+    'K', 'L', 'M', 'N', 'O', 'Ó', 'Ö', 'P', 'R', 'S', 'SZ', 'T', 'U', 'V', 'Z'
+  ];
+  comfortableLetters.forEach((ch, idx) => {
+    const t = idx < 12 ? 1 : (idx < 22 ? 2 : 3);
+    ALL_QUEST_DATABASE.push({ 
+      id: `q_st_${id++}`, tier: t, reqLetter: ch, 
+      text: `Készíts "${ch}" betűvel kezdődő szót`, 
+      check: s => (s.levelWords || []).some(w => w.startsWith(ch)) 
+    });
+  });
 
-  commonLetters.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 1, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
-  midLetters.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 2, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
-  rareLettersList.forEach(ch => ALL_QUEST_DATABASE.push({ id: `q_st_${id++}`, tier: 3, reqLetter: ch, text: `Készíts "${ch}" betűvel kezdődő szót`, check: s => (s.levelWords || []).some(w => w.startsWith(ch)) }));
+  // 5. Ritka betűk: NEM KÖTELEZŐ VELE KEZDŐDNIE! Elég, ha TARTALMAZZA a szó! (8 db)
+  const rareInclusionLetters = ['TY', 'NY', 'ZS', 'Ű', 'Ő', 'Í', 'Ú', 'Ü'];
+  rareInclusionLetters.forEach(ch => {
+    ALL_QUEST_DATABASE.push({
+      id: `q_inc_${id++}`, tier: 2, reqLetter: ch,
+      text: `Készíts szót, ami tartalmaz "${ch}" betűt`,
+      check: s => (s.levelWords || []).some(w => w.includes(ch))
+    });
+  });
 
-  // 5. Szintpontszám (9 db)
-  [250, 400, 600].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 1, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
-  [900, 1300, 1800].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 2, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
-  [2500, 3500, 5000].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 3, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+  // 6. Elérhető szintpontszámok (9 db)
+  [200, 350, 500].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 1, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+  [750, 1100, 1500].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 2, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
+  [2000, 2600, 3500].forEach(sc => ALL_QUEST_DATABASE.push({ id: `q_sc_${id++}`, tier: 3, text: `Szerezz legalább ${sc} szintpontot`, check: s => s.stats.levelScore >= sc }));
 
-  // 6. Felszabadított csempék (6 db)
-  [3, 5].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 1, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
-  [8, 12].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 2, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
-  [16, 20].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 3, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+  // 7. Felszabadított csempék (7 db)
+  [3, 4, 5].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 1, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+  [7, 9].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 2, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
+  [12, 15].forEach(cnt => ALL_QUEST_DATABASE.push({ id: `q_fr_${id++}`, tier: 3, text: `Szabadíts fel legalább ${cnt} betűt a tábláról`, check: s => s.stats.lettersFreed >= cnt }));
 
-  // 7. Jégtörés (5 db)
+  // 8. Jégtörés: Max. 4 jég réteg (4 db)
   [1, 2].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 1, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
   [3, 4].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 2, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
-  [6].forEach(ice => ALL_QUEST_DATABASE.push({ id: `q_ice_${id++}`, tier: 3, reqIce: ice, text: `Törj össze legalább ${ice} jégréteget`, check: s => s.stats.iceBroken >= ice }));
 
-  // 8. Fatörés (5 db)
+  // 9. Fatörés: Max. 4 fa réteg (4 db)
   [1, 2].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 1, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
   [3, 4].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 2, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
-  [6].forEach(w => ALL_QUEST_DATABASE.push({ id: `q_wood_${id++}`, tier: 3, reqWood: w, text: `Törj össze legalább ${w} faréteget`, check: s => s.stats.woodBroken >= w }));
 
-  // 9. Bombák felrobbantása (3 db)
+  // 10. Bombák felrobbantása (2 db)
   ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 1, text: `Robbants fel legalább 1 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 1 });
   ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 2, text: `Robbants fel legalább 2 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 2 });
-  ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 3, text: `Robbants fel legalább 3 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 3 });
 
-  // 10. Különleges szóbónusz küldetések (15 db - pontosan 100-ra egészít ki)
+  // 11. Szórakoztató, változatos szóbónusz küldetések (pontosan 100-ra egészít ki) (27 db)
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább egy ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].some(c => RARE_LETTERS.has(c))) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 150 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 150) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.pool || []).some(i => i && i.isGold) || (s.stats.lettersFreed >= 1) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts egy szót, ami magánhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts egy szót, ami mássalhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[^AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 100 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 100) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 180 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 180) });
 
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts legalább két darab 4 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 2 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts egy szót, ami magánhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts egy szót, ami mássalhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[^AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 350 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 350) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 300 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 300) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, amiben van legalább 2 azonos betű`, check: s => (s.levelWords || []).some(w => /(.).*\1/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.pool || []).some(i => i && i.isGold) || (s.stats.lettersFreed >= 1) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "A" vagy "E" betűre végződik`, check: s => (s.levelWords || []).some(w => /[AEÁÉ]$/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "T" vagy "K" betűre végződik`, check: s => (s.levelWords || []).some(w => /[TK]$/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "G" vagy "S" betűre végződik`, check: s => (s.levelWords || []).some(w => /[GS]$/.test(w)) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami legalább 4 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 4) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Robbants fel legalább 5 csempét kétszer a szinten`, check: s => s.stats.biggestMatch >= 5 });
 
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább két darab 5 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 5).length >= 2 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts egy legalább 6 betűs mesterszót`, check: s => (s.levelWords || []).some(w => w.length >= 6) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 600 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 600) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 450 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 450) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább 3 különböző szót a szinten`, check: s => (new Set(s.levelWords || [])).size >= 3 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, ami legalább 2 ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].filter(c => RARE_LETTERS.has(c)).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "SZ" vagy "GY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('SZ') || w.includes('GY')) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "CS" vagy "NY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('CS') || w.includes('NY')) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább három darab 4 betűs vagy hosszabb szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 3 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Szabadíts fel legalább 2 arany betűt a tábláról`, check: s => (s.pool || []).filter(i => i && i.isGold).length >= 2 || (s.stats.lettersFreed >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 650 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 650) });
 }
 build100Quests();
 
@@ -3949,56 +4103,90 @@ function startAuthCommunityListener() {
   } catch (e) {}
 }
 
+function setWeeklyChampionDisplay(name, score) {
+  currentWeekCrownWinner = name;
+  const nameEl = document.getElementById('champ-winner-name');
+  const scoreEl = document.getElementById('champ-winner-score');
+  const congratsEl = document.getElementById('champ-congrats-tag');
+
+  if (nameEl) nameEl.textContent = name;
+  // Itt írjuk ki szépen, hogy "pont" a sima "P" helyett:
+  if (scoreEl) scoreEl.textContent = (score > 0) ? `${score.toLocaleString('hu-HU')} pont` : '';
+
+  if (congratsEl) {
+    congratsEl.style.display = (name && name !== 'Keresés...' && name !== 'Még nincs adat') ? 'inline-flex' : 'none';
+  }
+
+  if (state.playerName && state.playerName.trim().toUpperCase() === name.trim().toUpperCase() && score > 0) {
+    state.isCrownHolder = true;
+    notifyCrownWinnerIfNeeded();
+  } else {
+    state.isCrownHolder = false;
+  }
+  updateHeroDisplay();
+  renderCommunityLists();
+}
+
 async function checkWeeklyResetAndCrownWinner() {
   if(!cloudConnected || !db) return;
   const currentWeek = getWeeklyKey();
   const lastWeek = getWeeklyKey(-1);
 
   try {
-    const champDoc = await db.collection('system').doc('weekly_champion').get();
+    // 1. Megnézzük a már rögzített bajnokot a megengedett 'users' gyűjteményben
+    const champDoc = await db.collection('users').doc('global_weekly_champion').get();
     if(champDoc.exists) {
       const cData = champDoc.data();
-      if(cData.weekKey === currentWeek && cData.championName) {
-        currentWeekCrownWinner = cData.championName;
-        if(state.playerName && state.playerName === currentWeekCrownWinner) {
-          state.isCrownHolder = true;
-          updateHeroDisplay();
-        }
-        renderCommunityLists();
+      if(cData.championName) {
+        setWeeklyChampionDisplay(cData.championName, cData.winningScore || 0);
         return;
       }
     }
 
-    const snap = await db.collection('users').where('weekKey', '==', lastWeek).get();
+    // 2. Ha még nincs rögzítve, megkeressük a legmagasabb pontú profilt
+    const snap = await db.collection('users').get();
     let highestScore = -1;
     let winnerName = null;
 
     snap.forEach(doc => {
+      if (doc.id === 'global_weekly_champion') return;
       const d = doc.data();
-      if(d.playerName && d.playerName !== 'TESZT') {
-        const sc = d.weeklyScore || 0;
-        if(sc > highestScore) {
-          highestScore = sc;
+      if(d.playerName && d.playerName.trim().toUpperCase() !== 'TESZT') {
+        let candidateScore = 0;
+        if(d.lastWeekScore && d.lastWeekScore > 0) {
+          candidateScore = d.lastWeekScore;
+        } else if(d.weeklyScore && d.weeklyScore > 0) {
+          candidateScore = d.weeklyScore;
+        }
+
+        if(candidateScore > highestScore) {
+          highestScore = candidateScore;
           winnerName = d.playerName.trim().toUpperCase();
         }
       }
     });
 
     if(winnerName && highestScore > 0) {
-      await db.collection('system').doc('weekly_champion').set({
+      await db.collection('users').doc('global_weekly_champion').set({
+        docId: 'global_weekly_champion',
         weekKey: currentWeek,
+        forWeek: lastWeek,
         championName: winnerName,
         winningScore: highestScore,
         determinedAt: Date.now()
-      });
-      currentWeekCrownWinner = winnerName;
-      renderCommunityLists();
+      }, { merge: true });
+
+      setWeeklyChampionDisplay(winnerName, highestScore);
+    } else {
+      setWeeklyChampionDisplay('Még nincs adat', 0);
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn("Heti bajnok lekérdezési figyelmeztetés:", e);
+  }
 }
 
 function notifyCrownWinnerIfNeeded() {
-  if(currentWeekCrownWinner && state.playerName === currentWeekCrownWinner) {
+  if(currentWeekCrownWinner && state.playerName && state.playerName.trim().toUpperCase() === currentWeekCrownWinner.trim().toUpperCase()) {
     state.isCrownHolder = true;
     updateHeroDisplay();
     const desc = document.getElementById('champ-ann-desc');
@@ -4277,6 +4465,8 @@ async function syncCloudState() {
     playerName: state.playerName,
     playerPin: state.playerPin,
     weekKey: getWeeklyKey(),
+    lastWeekKey: state.lastWeekKey || null,
+    lastWeekScore: state.lastWeekScore || 0,
     level: state.level,
     weeklyScore: isDevTestUser() ? 0 : state.weeklyScore,
     moves: state.moves,
@@ -4314,7 +4504,23 @@ function restoreFromCloudData(data) {
   state.playerName = data.playerName || state.playerName;
   state.playerPin = data.playerPin || state.playerPin;
   state.level = data.level || 1;
-  state.weeklyScore = (data.weeklyScore !== undefined) ? data.weeklyScore : (data.score || data.totalScore || 0);
+
+  // HÉTFŐI NULLÁZÁS BIZTOSÍTÁSA:
+  const currentWeek = getWeeklyKey();
+  const isOldWeek = data.weekKey && (data.weekKey !== currentWeek);
+
+  if (isOldWeek) {
+    // A múlt heti pontszámot elmentjük a bajnoki rangsorhoz, de a heti egyenleget azonnal 0-ra állítjuk!
+    state.lastWeekScore = data.weeklyScore || 0;
+    state.lastWeekKey = data.weekKey;
+    state.weeklyScore = 0;
+    showToast(`📅 Új játékhét indult! A heti pontok nullázódtak (0 P).`, "ok");
+  } else {
+    state.weeklyScore = (data.weeklyScore !== undefined) ? data.weeklyScore : (data.score || data.totalScore || 0);
+    state.lastWeekScore = data.lastWeekScore || 0;
+    state.lastWeekKey = data.lastWeekKey || null;
+  }
+
   state.moves = data.moves !== undefined ? data.moves : 28;
   state.storedMoves = data.storedMoves || 0;
   state.purchaseCounts = data.purchaseCounts || {};
@@ -4426,7 +4632,7 @@ safeOn('btn-auth-confirm', 'click', async () => {
 
       if(matchedData) {
         pendingCloudData = matchedData;
-        notifyCrownWinnerIfNeeded();
+        checkWeeklyResetAndCrownWinner();
         openResumeChoiceModal(matchedData);
         return;
       }
@@ -4439,16 +4645,20 @@ safeOn('btn-auth-confirm', 'click', async () => {
   await syncCloudState();
   updateHeroDisplay();
   startDuelInviteListener();
-  notifyCrownWinnerIfNeeded();
+  checkWeeklyResetAndCrownWinner();
   showToast(`Üdvözlünk, ${n}! Új profil elindítva.`, "ok");
 });
 
 function openResumeChoiceModal(data) {
+  const currentWeek = getWeeklyKey();
+  const isOldWeek = data.weekKey && (data.weekKey !== currentWeek);
+  const displayScore = isOldWeek ? 0 : (data.weeklyScore || 0);
+
   const lvlTxt = document.getElementById('resume-level-txt');
   const scTxt = document.getElementById('resume-score-txt');
   const mvTxt = document.getElementById('resume-moves-txt');
   if (lvlTxt) lvlTxt.textContent = `${data.level || 1}. szint`;
-  if (scTxt) scTxt.textContent = `${(data.weeklyScore || 0).toLocaleString('hu-HU')} P`;
+  if (scTxt) scTxt.textContent = `${displayScore.toLocaleString('hu-HU')} P ${isOldWeek ? '(Új hét: 0 P)' : ''}`;
   if (mvTxt) mvTxt.textContent = `${data.moves !== undefined ? data.moves : 28} lépés`;
 
   const authModal = document.getElementById('modal-auth');
@@ -4507,17 +4717,32 @@ safeOn('btn-switch-user', 'click', () => {
 
 function loadAdminDashboard() {
   const container = document.getElementById('admin-profile-list');
+  const weekLabel = document.getElementById('admin-current-week-label');
+  if (weekLabel) weekLabel.textContent = getWeeklyKey();
+
+  if (currentWeekCrownWinner) {
+    const champInput = document.getElementById('admin-champ-name');
+    if (champInput && !champInput.value) champInput.value = currentWeekCrownWinner;
+  }
+
   if(!container || !db) return;
   db.collection('users').get().then(snap => {
     container.innerHTML = snap.docs.filter(d => d.data().playerName !== 'TESZT').map(d => {
       const u = d.data();
+      const currentPts = u.weeklyScore || 0;
+      const lastPts = u.lastWeekScore || 0;
       return `
-        <div class="community-player-card">
-          <div><b>${u.playerName}</b> | PIN: <code style="color:var(--gold);">${u.playerPin}</code> | ${u.level||1}. szint</div>
-          <button class="btn-modal danger" style="padding:2px 6px; font-size:9px;" onclick="deleteUserByAdmin('${d.id}')">TÖRLÉS</button>
+        <div class="community-player-card" style="margin-bottom:4px;">
+          <div>
+            <b>${u.playerName}</b> | PIN: <code style="color:var(--gold);">${u.playerPin}</code> | ${u.level||1}. szint
+            <div style="font-size:9.5px; color:#94a3b8; margin-top:2px;">
+              Heti pont: <b style="color:var(--emerald);">${currentPts.toLocaleString('hu-HU')} P</b> (Múlt heti: ${lastPts.toLocaleString('hu-HU')} P)
+            </div>
+          </div>
+          <button class="btn-modal danger" style="padding:3px 6px; font-size:9px;" onclick="deleteUserByAdmin('${d.id}')">TÖRLÉS</button>
         </div>
       `;
-    }).join('') || '<div>Nincs profil.</div>';
+    }).join('') || '<div style="text-align:center; padding:6px; color:#94a3b8;">Nincs profil.</div>';
   });
 }
 
@@ -4529,6 +4754,94 @@ function deleteUserByAdmin(docId) {
     });
   }
 }
+
+// 👑 HETI BAJNOK KÉZI BEÁLLÍTÁSA ÉS KORONA ÁTADÁSA (Engedélyezett 'users' gyűjteménybe mentve)
+safeOn('btn-admin-set-champ', 'click', async () => {
+  const nameEl = document.getElementById('admin-champ-name');
+  const scoreEl = document.getElementById('admin-champ-score');
+  const champName = nameEl ? nameEl.value.trim().toUpperCase() : '';
+  const champScore = scoreEl ? parseInt(scoreEl.value, 10) || 0 : 0;
+
+  if (!champName) {
+    showToast("Adj meg egy játékosnevet!", "err");
+    return;
+  }
+
+  if (!cloudConnected || !db) {
+    showToast("Nincs adatbázis kapcsolat!", "err");
+    return;
+  }
+
+  const currentWeek = getWeeklyKey();
+  const lastWeek = getWeeklyKey(-1);
+
+  try {
+    // A megengedett 'users' gyűjtemény 'global_weekly_champion' azonosítójú dokumentumába mentünk:
+    await db.collection('users').doc('global_weekly_champion').set({
+      docId: 'global_weekly_champion',
+      weekKey: currentWeek,
+      forWeek: lastWeek,
+      championName: champName,
+      winningScore: champScore,
+      determinedAt: Date.now()
+    }, { merge: true });
+
+    // Ha a játékos profilja létezik, felcímkézzük a koronával
+    const userDocs = await db.collection('users').where('playerName', '==', champName).get();
+    userDocs.forEach(d => {
+      db.collection('users').doc(d.id).update({ isCrownHolder: true }).catch(() => {});
+    });
+
+    setWeeklyChampionDisplay(champName, champScore);
+    sfxFanfare();
+    showToast(`👑 Bajnok rögzítve: ${champName} (${champScore.toLocaleString('hu-HU')} P)! Korona átadva!`, "ok");
+  } catch(e) {
+    showToast("Mentési hiba: " + e.message, "err");
+  }
+});
+
+// 🔄 MINDEN JÁTÉKOS HETI PONTJÁNAK AZONNALI NULLÁZÁSA (0 P)
+safeOn('btn-admin-reset-all-scores', 'click', async () => {
+  if (!confirm("Biztosan nullázod MINDEN játékos heti pontját az új hétre? (A múlt heti pontok biztonsági mentésbe kerülnek)")) return;
+  if (!cloudConnected || !db) { showToast("Nincs kapcsolat!", "err"); return; }
+
+  showToast("Pontok nullázása folyamatban...", "ok");
+  const currentWeek = getWeeklyKey();
+  const lastWeek = getWeeklyKey(-1);
+
+  try {
+    const snap = await db.collection('users').get();
+    const batch = db.batch();
+    let count = 0;
+
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (d.playerName && d.playerName !== 'TESZT') {
+        const ref = db.collection('users').doc(doc.id);
+        const oldScore = d.weeklyScore || 0;
+        batch.update(ref, {
+          lastWeekScore: oldScore,
+          lastWeekKey: d.weekKey || lastWeek,
+          weeklyScore: 0,
+          weekKey: currentWeek
+        });
+        count++;
+      }
+    });
+
+    await batch.commit();
+
+    // Helyi adatok azonnali frissítése
+    state.weeklyScore = 0;
+    updateStats();
+    renderCommunityLists();
+    loadAdminDashboard();
+    sfxWordSuccess();
+    showToast(`✔ Sikeresen nullázva ${count} db játékos heti pontja!`, "ok");
+  } catch(e) {
+    showToast("Hiba a nullázáskor: " + e.message, "err");
+  }
+});
 
 safeOn('btn-admin-play-test', 'click', () => {
   const m = document.getElementById('modal-admin');
