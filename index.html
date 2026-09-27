@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Infinity Frost & Balanced Champion Edition</title>
+<title>SZÓROBBANTÁS PRO 2.0 - Neon Combo Edition</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -414,6 +414,22 @@ html, body {
   opacity: 0.18 !important;
   filter: blur(1.5px);
 }
+.tile.ice-3 .tile-inner {
+  background:
+    repeating-linear-gradient(125deg, rgba(255,255,255,.76) 0 2px, transparent 2px 10px),
+    radial-gradient(circle at 40% 30%, #ffffff, #7dd3fc 52%, #075985) !important;
+  border: 4px solid #f0f9ff !important;
+  box-shadow: inset 0 0 22px rgba(255,255,255,.98), 0 0 20px rgba(56,189,248,.95) !important;
+}
+.tile.ice-1 .tile-letter, .tile.ice-2 .tile-letter, .tile.ice-3 .tile-letter {
+  opacity: 0 !important;
+  filter: blur(2px);
+}
+.tile.ice-3 .layer-badge { background: rgba(3,105,161,.9); border-color: #f0f9ff; color: #fff; }
+/* Az alacsony lépésszám legyen egyértelmű, de ne sötétítse el a teljes játékteret. */
+.panic-vignette { display: none !important; }
+.mission-card { border-left: 3px solid rgba(56,189,248,.45); }
+.mission-card.is-completed { border-left-color: #6ee7b7; }
 .tile.wood-1 .tile-inner { 
   background: radial-gradient(circle at 35% 25%, #d97706, #92400e 60%, #451a03) !important;
   border: 2px solid #f59e0b !important; 
@@ -431,6 +447,21 @@ html, body {
 .tile.bomb .tile-inner::before { display: none; }
 .tile.bomb .tile-inner::after { content: '💣'; position: absolute; font-size: 16px; z-index: 5; }
 .tile.bomb .tile-inner { animation: pulse 0.5s infinite alternate; border: 2px solid #f87171; }
+.tile.prism .tile-inner {
+  background: conic-gradient(from 20deg, #fb7185, #fbbf24, #6ee7b7, #38bdf8, #c084fc, #fb7185) !important;
+  border: 2px solid rgba(255,255,255,.95) !important;
+  box-shadow: inset 0 0 12px rgba(255,255,255,.75), 0 0 20px rgba(192,132,252,.9) !important;
+  animation: prismBreath 1.4s ease-in-out infinite alternate;
+}
+.tile.prism .tile-inner::before { display: none; }
+.tile.prism .tile-inner::after {
+  content: '✦'; position: absolute; inset: 0; display: grid; place-items: center;
+  color: #fff; font-size: 23px; text-shadow: 0 2px 8px rgba(15,23,42,.9); z-index: 5;
+}
+@keyframes prismBreath { from { filter: saturate(1) brightness(1); transform: scale(1); } to { filter: saturate(1.35) brightness(1.2); transform: scale(.94); } }
+.board.combo-surge {
+  box-shadow: inset 0 0 25px rgba(0,0,0,.9), 0 8px 32px rgba(34,211,238,.58), 0 0 50px rgba(168,85,247,.32);
+}
 .tile .tile-letter {
   font-size: calc(var(--tile-size, 44px) * 0.52); font-weight: 900; z-index: 4;
   text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; position: relative;
@@ -896,6 +927,265 @@ html, body {
   .quick-inv-row { grid-template-columns: repeat(4, 1fr); }
   .pool-grid { min-height: 220px !important; max-height: 240px !important; }
 }
+
+/* =========================
+   SZÓROBBANTÁS 2.0 VISUAL PACK
+   ========================= */
+:root{
+  --neon-blue:#38bdf8;
+  --neon-pink:#f472b6;
+  --neon-violet:#a78bfa;
+  --panel-hi:rgba(20,30,55,.78);
+}
+body{
+  background:
+    radial-gradient(circle at 15% 10%, rgba(56,189,248,.10), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(167,139,250,.10), transparent 30%),
+    radial-gradient(circle at 50% 100%, rgba(16,185,129,.07), transparent 34%),
+    var(--bg-main);
+}
+.app-container{
+  position:relative;
+  isolation:isolate;
+}
+.app-container::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(115deg, transparent 0 47%, rgba(255,255,255,.025) 48%, transparent 49% 100%);
+  background-size:18px 18px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),transparent 85%);
+}
+.top-nav.glass,
+.player-hero-strip,
+.weekly-champion-strip,
+.stat-box.glass,
+.mission-strip.glass,
+.central-shop-bar.glass,
+.builder-panel.glass,
+.pool-panel.glass,
+.words-panel.glass{
+  border-color:rgba(125,211,252,.16);
+  box-shadow:
+    0 10px 35px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+}
+.board-container{
+  position:relative;
+}
+.board-container::before{
+  content:"";
+  position:absolute;
+  inset:-12px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(56,189,248,.16),transparent 55%),
+    radial-gradient(circle at 50% 100%,rgba(167,139,250,.12),transparent 60%);
+  filter:blur(10px);
+  z-index:-1;
+  animation:boardAura 3.5s ease-in-out infinite alternate;
+}
+.board{
+  border:1px solid rgba(125,211,252,.22);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.025),
+    0 0 45px rgba(56,189,248,.12),
+    inset 0 0 28px rgba(0,0,0,.30);
+}
+.tile{
+  transition:filter .16s ease, transform .16s ease;
+}
+.tile:hover .tile-inner{
+  filter:brightness(1.15) saturate(1.12);
+}
+.tile .tile-inner{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -8px 18px rgba(0,0,0,.16),
+    0 5px 12px rgba(0,0,0,.22);
+}
+.tile.has-letter .tile-inner{
+  box-shadow:
+    0 0 12px rgba(245,158,11,.45),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -8px 18px rgba(0,0,0,.16);
+}
+.char-tile{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 4px 10px rgba(0,0,0,.25);
+  transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+.char-tile:hover{
+  transform:translateY(-2px) scale(1.04);
+  filter:brightness(1.12);
+}
+.builder-tray.valid{
+  animation:validPulse .65s ease-out;
+}
+#btn-submit{
+  position:relative;
+  overflow:hidden;
+}
+#btn-submit::after{
+  content:"";
+  position:absolute;
+  top:-60%;
+  left:-30%;
+  width:35%;
+  height:220%;
+  transform:rotate(22deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:buttonSweep 3.2s ease-in-out infinite;
+}
+.s20-combo-hud{
+  position:fixed;
+  top:92px;
+  left:50%;
+  transform:translateX(-50%) scale(.94);
+  z-index:120;
+  min-width:150px;
+  padding:8px 15px 9px;
+  border:1px solid rgba(125,211,252,.35);
+  border-radius:16px;
+  background:rgba(3,7,18,.76);
+  box-shadow:0 0 28px rgba(56,189,248,.16), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(12px);
+  text-align:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease;
+}
+.s20-combo-hud.show{
+  opacity:1;
+  transform:translateX(-50%) scale(1);
+}
+.s20-combo-label{
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:2px;
+  color:#94a3b8;
+}
+.s20-combo-value{
+  font-size:25px;
+  line-height:1;
+  font-weight:1000;
+  color:#f8fafc;
+  text-shadow:0 0 16px rgba(56,189,248,.75);
+}
+.s20-combo-value.hot{
+  color:#fbbf24;
+  text-shadow:0 0 18px rgba(251,191,36,.8);
+}
+.s20-last-score{
+  margin-top:3px;
+  font-size:10px;
+  font-weight:900;
+  color:#6ee7b7;
+}
+.s20-word-pop{
+  position:fixed;
+  left:50%;
+  top:43%;
+  z-index:125;
+  transform:translate(-50%,-50%) scale(.65);
+  opacity:0;
+  pointer-events:none;
+  font-weight:1000;
+  font-size:clamp(28px,7vw,58px);
+  letter-spacing:2px;
+  color:#fff;
+  text-shadow:0 0 12px rgba(56,189,248,.9),0 0 35px rgba(167,139,250,.65);
+  white-space:nowrap;
+}
+.s20-word-pop.play{
+  animation:s20WordPop .75s cubic-bezier(.16,.8,.25,1) forwards;
+}
+.s20-level-banner{
+  position:fixed;
+  left:50%;
+  top:52%;
+  z-index:126;
+  transform:translate(-50%,-50%) scale(.7);
+  opacity:0;
+  pointer-events:none;
+  padding:12px 20px;
+  border:1px solid rgba(251,191,36,.5);
+  border-radius:18px;
+  background:rgba(15,23,42,.86);
+  box-shadow:0 0 45px rgba(251,191,36,.22);
+  color:#fde68a;
+  font-size:16px;
+  font-weight:1000;
+  letter-spacing:1px;
+}
+.s20-level-banner.play{
+  animation:s20Banner 1.25s ease-out forwards;
+}
+.s20-shockwave{
+  position:fixed;
+  left:50%;
+  top:50%;
+  width:30px;
+  height:30px;
+  border:3px solid rgba(125,211,252,.8);
+  border-radius:50%;
+  z-index:118;
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(.2);
+  opacity:0;
+}
+.s20-shockwave.play{
+  animation:s20Shock 650ms ease-out forwards;
+}
+@keyframes boardAura{
+  from{opacity:.55;transform:scale(.98)}
+  to{opacity:1;transform:scale(1.015)}
+}
+@keyframes validPulse{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.012)}
+  100%{transform:scale(1)}
+}
+@keyframes buttonSweep{
+  0%,55%{left:-40%;opacity:0}
+  65%{opacity:1}
+  82%,100%{left:120%;opacity:0}
+}
+@keyframes s20WordPop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.55) rotate(-3deg)}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(0)}
+  72%{opacity:1;transform:translate(-50%,-58%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-78%) scale(.92)}
+}
+@keyframes s20Banner{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+  18%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}
+  72%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-58%) scale(.96)}
+}
+@keyframes s20Shock{
+  0%{opacity:.9;transform:translate(-50%,-50%) scale(.2)}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(13)}
+}
+@media(max-width:700px){
+  .s20-combo-hud{top:78px;min-width:132px;padding:6px 12px 7px}
+  .s20-combo-value{font-size:21px}
+  .s20-word-pop{top:40%}
+}
+
+
+/* =========================
+   SZÓROBBANTÁS 2.1 WORLD & BOSS
+   ========================= */
+.s21-world-hud{position:fixed;left:50%;top:144px;transform:translateX(-50%);z-index:119;display:flex;gap:7px;align-items:center;padding:7px 11px;border:1px solid rgba(167,139,250,.28);border-radius:15px;background:rgba(3,7,18,.72);backdrop-filter:blur(12px);box-shadow:0 8px 28px rgba(0,0,0,.2);font-size:10px;font-weight:1000;letter-spacing:.7px;color:#e2e8f0;pointer-events:none}.s21-world-icon{font-size:17px}.s21-world-name{color:#c4b5fd}.s21-boss-hud{position:fixed;left:50%;top:181px;transform:translateX(-50%);z-index:119;width:min(330px,78vw);padding:7px 10px;border:1px solid rgba(248,113,113,.34);border-radius:14px;background:rgba(20,7,15,.78);backdrop-filter:blur(12px);box-shadow:0 0 30px rgba(248,113,113,.12);display:none;pointer-events:none}.s21-boss-hud.show{display:block}.s21-boss-row{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:1000}.s21-boss-name{color:#fda4af}.s21-boss-hp{color:#fde68a}.s21-boss-bar{height:7px;margin-top:5px;background:rgba(0,0,0,.45);border-radius:99px;overflow:hidden}.s21-boss-fill{height:100%;width:100%;background:linear-gradient(90deg,#fb7185,#f59e0b);border-radius:inherit;transition:width .35s ease}.s21-boss-note{margin-top:4px;font-size:8px;color:#94a3b8;text-align:center}.s21-power-badge{position:absolute;right:3px;bottom:3px;font-size:13px;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))}.tile.power-lightning .tile-inner{box-shadow:0 0 16px rgba(250,204,21,.65),inset 0 1px 0 rgba(255,255,255,.2)}.tile.power-meteor .tile-inner{box-shadow:0 0 18px rgba(251,113,133,.7),inset 0 1px 0 rgba(255,255,255,.2)}
+@media(max-width:700px){.s21-world-hud{top:127px}.s21-boss-hud{top:164px}.s21-world-hud{font-size:9px}.s21-boss-hud{width:min(300px,82vw)}}
+
+\n/* 2.2 Progression & Collection */\n.s22-progress-btn{position:fixed;right:16px;bottom:16px;z-index:140;border:1px solid rgba(251,191,36,.35);background:rgba(15,23,42,.82);color:#fde68a;border-radius:14px;padding:9px 12px;font-weight:1000;box-shadow:0 8px 28px rgba(0,0,0,.28);backdrop-filter:blur(12px);cursor:pointer}.s22-modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(2,6,23,.72);backdrop-filter:blur(10px)}.s22-modal.show{display:flex}.s22-card{width:min(760px,96vw);max-height:88vh;overflow:auto;border:1px solid rgba(125,211,252,.22);border-radius:24px;background:linear-gradient(145deg,rgba(15,23,42,.97),rgba(10,16,31,.97));box-shadow:0 30px 100px rgba(0,0,0,.55);padding:20px}.s22-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.s22-head h2{margin:0;font-size:22px}.s22-close{border:0;background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:7px 10px;cursor:pointer}.s22-xp{margin:16px 0;padding:13px;border-radius:16px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.16)}.s22-xp-top{display:flex;justify-content:space-between;font-weight:900}.s22-bar{height:10px;margin-top:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}.s22-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#a78bfa,#fbbf24);box-shadow:0 0 15px rgba(56,189,248,.55);transition:width .35s}.s22-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.s22-item{padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);min-height:105px}.s22-item.locked{opacity:.45;filter:grayscale(.8)}.s22-icon{font-size:28px}.s22-name{font-weight:1000;margin-top:5px}.s22-sub{font-size:11px;color:#94a3b8;margin-top:3px}.s22-statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.s22-stat{padding:10px;border-radius:13px;background:rgba(255,255,255,.04);text-align:center}.s22-stat b{display:block;font-size:18px}.s22-stat span{font-size:9px;color:#94a3b8;font-weight:900}.s22-chest{position:fixed;left:50%;top:50%;z-index:320;transform:translate(-50%,-50%) scale(.7);opacity:0;pointer-events:none;text-align:center}.s22-chest.play{animation:s22Chest 1.7s cubic-bezier(.16,.8,.25,1) forwards}.s22-chest-box{font-size:90px;filter:drop-shadow(0 0 30px rgba(251,191,36,.7))}.s22-reward{font-size:20px;font-weight:1000;color:#fde68a;text-shadow:0 0 20px rgba(251,191,36,.7)}@keyframes s22Chest{0%{opacity:0;transform:translate(-50%,-50%) scale(.45) rotate(-8deg)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(3deg)}45%{transform:translate(-50%,-50%) scale(.95) rotate(-2deg)}65%{transform:translate(-50%,-50%) scale(1.02)}100%{opacity:0;transform:translate(-50%,-62%) scale(1)}}\n
 </style>
 </head>
 <body>
@@ -949,6 +1239,18 @@ html, body {
   </div>
 
   <div class="high-stakes-banner" id="high-stakes-banner"></div>
+
+<div class="s20-combo-hud" id="s20-combo-hud">
+  <div class="s20-combo-label">COMBO</div>
+  <div class="s20-combo-value" id="s20-combo-value">x1</div>
+  <div class="s20-last-score" id="s20-last-score">Készen állsz!</div>
+</div>
+<div class="s20-word-pop" id="s20-word-pop"></div>
+<div class="s21-world-hud" id="s21-world-hud"><span class="s21-world-icon" id="s21-world-icon">❄️</span><span id="s21-world-name">FAGYOTT ERDŐ</span><span>•</span><span id="s21-world-level">1. SZINT</span></div>
+<div class="s21-boss-hud" id="s21-boss-hud"><div class="s21-boss-row"><span class="s21-boss-name" id="s21-boss-name">👑 JÉGKIRÁLY</span><span class="s21-boss-hp" id="s21-boss-hp">0 / 0</span></div><div class="s21-boss-bar"><div class="s21-boss-fill" id="s21-boss-fill"></div></div><div class="s21-boss-note" id="s21-boss-note">Szavakkal sebzed a bosst.</div></div>
+<div class="s20-level-banner" id="s20-level-banner"></div>
+<div class="s20-shockwave" id="s20-shockwave"></div>
+
 
   <div class="stats-grid">
     <div class="stat-box glass"><span class="lbl">Szint</span><span class="val" id="stat-level">1</span></div>
@@ -1243,6 +1545,8 @@ html, body {
     <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0; font-size:11px; line-height:1.45; color:#cbd5e1;">
       <div><b>🎲 Mesterfogadás (Tét & Szorzók):</b> Szintindítás előtt választhatsz: Maradsz a 3 normál questnél, vagy felraksz tétet 4-5 questre a 2x-3x pontszorzóért és bónuszokért! Vigyázz: ha elbukod a vállalást, a feltett tét elvész, és büntetőpont-levonás jár érte!</div>
       <div><b>🎯 Kiegyensúlyozott Betűeloszlás:</b> A táblán és a hulló csempéknél intelligens arányosító algoritmus működik. Bőségesen érkeznek a leggyakoribb magánhangzók és alaphangok (A, E, T, S, K, L, N), miközben a küldetésbetűkből maximum 2-3 jelenik meg egyensúlyban, elkerülve a túltelítést!</div>
+      <div><b>🧊 Réteges akadályok és biztos első lépés:</b> A fagyott csempe teljesen elrejti a betűjét; jégből 1, 2 vagy a későbbi szinteken 3 réteg is lehet. Egy szomszédos robbanás egy réteget tör le. Minden új tábla és feltöltés garantál legalább egy azonnal robbantható, kétcsempés csoportot.</div>
+      <div><b>📈 Küldetés-mérők:</b> A számszerű célok alatt élő haladási sáv látható. A pályát kizárólag egyszer jutalmazza a rendszer, így a teljesítési bónusz nem ismétlődhet UI-frissítésektől.</div>
       <div><b>✨ Nap Szava Sorozat (Streak):</b> Napi 1 alkalommal fejthető meg. Kezdőérték 30.000 P, ami minden egymást követő nap 5.000 ponttal nő egészen 100.000 pontig! Ha kimarad egy nap, a sorozat visszaesik 30.000-re!</div>
       <div><b>👑 Heti Bajnoki Korona:</b> A heti verseny Hétfő 0:00:00-tól Vasárnap 23:59:59-ig tart. A győztes a következő héten Bajnoki Koronát hord a neve mellett!</div>
     </div>
@@ -1802,6 +2106,10 @@ function build100Quests() {
   ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 1, text: `Robbants fel legalább 1 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 1 });
   ALL_QUEST_DATABASE.push({ id: `q_b_${id++}`, tier: 2, text: `Robbants fel legalább 2 Mega Bombát a pályán`, check: s => (s.stats.bombsTriggered || 0) >= 2 });
 
+  // 10/b. Prizma-kristály: közepes nagy robbanás jutalma, szín-tisztító taktikai elem
+  ALL_QUEST_DATABASE.push({ id: 'q_p_' + id++, tier: 2, text: 'Aktiválj legalább 1 Prizma-kristályt', check: s => (s.stats.prismsActivated || 0) >= 1 });
+  ALL_QUEST_DATABASE.push({ id: 'q_p_' + id++, tier: 3, text: 'Aktiválj legalább 2 Prizma-kristályt', check: s => (s.stats.prismsActivated || 0) >= 2 });
+
   // 11. Szórakoztató, változatos szóbónusz küldetések (pontosan 100-ra egészít ki) (27 db)
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább egy ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].some(c => RARE_LETTERS.has(c))) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
@@ -1858,6 +2166,8 @@ function getViableQuestsForBoard(lvl) {
 
     // 5. Bomba küldetés csak a 6. szinttől jöhet
     if (q.text && q.text.includes('Bomba') && lvl < 6) return false;
+    // A Prizma csak akkor kérhető, amikor a játékos már találkozott a nagy robbanásokkal.
+    if (q.id && q.id.startsWith('q_p_') && lvl < 6) return false;
 
     return true;
   });
@@ -1881,7 +2191,7 @@ const state = {
   inventory: {},
   scratchTickets: [],
   scratchDeck: [],
-  stats: { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, usedRareChar: false },
+  stats: { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false },
   checkInStreak: 0,
   lastCheckInDate: null,
   secretWordStreak: 0,
@@ -1894,7 +2204,14 @@ const state = {
   highStakesMode: 'normal',
   activeStakePoints: 0,
   activeStakePenalty: 0,
-  levelMultiplier: 1
+  levelMultiplier: 1,
+  levelCompleted: false,
+  combo: 0,
+  comboBest: 0,
+  comboTimeout: null,
+  worldId: 0,
+  boss: null,
+  xp: 0, playerLevel: 1, coins: 0, gems: 0, defeatedBosses: [], unlockedWorlds: [0], collection: []
 };
 
 const boardEl = document.getElementById('game-board');
@@ -1904,6 +2221,160 @@ let isLocked = false;
 let isClaimingDaily = false;
 
 function isGoldenLevel(lvl) { return lvl % 10 === 0; }
+const S21_WORLDS = [
+  {id:0,name:'FAGYOTT ERDŐ',icon:'❄️',start:1,desc:'Jég, kristály és hideg energia'},
+  {id:1,name:'KRISTÁLYBARLANG',icon:'💎',start:11,desc:'Prizmák és fényhullámok'},
+  {id:2,name:'LÁVA-BIRODALOM',icon:'🌋',start:21,desc:'Gyorsabb pálya, brutálisabb láncok'},
+  {id:3,name:'ÓCEÁN',icon:'🌊',start:31,desc:'Áradó hullámok és mélytengeri akadályok'},
+  {id:4,name:'ÁRNYÉKVILÁG',icon:'🌑',start:41,desc:'Sötét mezők és ritka jutalmak'}
+];
+const S21_BOSSES = [
+  {name:'JÉGKIRÁLY',icon:'👑',color:'#67e8f9',ability:'Minden 3. sikeres szó után jégréteget rak le.'},
+  {name:'KRISTÁLYŐR',icon:'💎',color:'#c4b5fd',ability:'Minden 3. szó után egy kristálymezőt erősít.'},
+  {name:'LÁVA TITÁN',icon:'🌋',color:'#fb7185',ability:'Minden 2. szó után egy akadály jelenik meg.'},
+  {name:'ABISSZUS KIRÁLY',icon:'🌊',color:'#60a5fa',ability:'Minden 3. szó után csökkenti a következő combo erejét.'},
+  {name:'ÁRNYÚR',icon:'🌑',color:'#a78bfa',ability:'Minden 2. szó után egy mezőt lezár egy körre.'}
+];
+function s21GetWorld(lvl){
+  let w=S21_WORLDS[0];
+  for(const x of S21_WORLDS){if(lvl>=x.start) w=x;}
+  return w;
+}
+function s21IsBossLevel(lvl){return lvl>0 && lvl%10===0;}
+function s21BossForLevel(lvl){return S21_BOSSES[Math.min(S21_BOSSES.length-1,Math.floor(lvl/10)-1)];}
+function s21UpdateWorldHUD(){
+  const w=s21GetWorld(state.level);
+  const icon=document.getElementById('s21-world-icon'), name=document.getElementById('s21-world-name'), lv=document.getElementById('s21-world-level');
+  if(icon) icon.textContent=w.icon; if(name) name.textContent=w.name; if(lv) lv.textContent=`${state.level}. SZINT`;
+  const hud=document.getElementById('s21-boss-hud');
+  if(!hud) return;
+  if(state.boss && state.boss.active){
+    hud.classList.add('show');
+    const b=S21_BOSSES[state.boss.kind]||S21_BOSSES[0];
+    const hp=document.getElementById('s21-boss-hp'), fill=document.getElementById('s21-boss-fill'), bn=document.getElementById('s21-boss-name'), note=document.getElementById('s21-boss-note');
+    const pct=Math.max(0,Math.min(100,(state.boss.hp/state.boss.maxHp)*100));
+    if(hp) hp.textContent=`${Math.max(0,state.boss.hp).toLocaleString('hu-HU')} / ${state.boss.maxHp.toLocaleString('hu-HU')}`;
+    if(fill) fill.style.width=pct+'%';
+    if(bn){bn.textContent=`${b.icon} ${b.name}`;bn.style.color=b.color;}
+    if(note) note.textContent=b.ability;
+  } else hud.classList.remove('show');
+}
+function s21InitBoss(lvl){
+  if(!s21IsBossLevel(lvl)){state.boss=null;s21UpdateWorldHUD();return;}
+  const kind=Math.min(S21_BOSSES.length-1,Math.floor(lvl/10)-1);
+  const maxHp=1800 + lvl*140;
+  state.boss={active:true,kind,maxHp,hp:maxHp,turns:0};
+  s21UpdateWorldHUD();
+  s20LevelBanner(`👑 BOSS PÁLYA • ${S21_BOSSES[kind].icon} ${S21_BOSSES[kind].name}`);
+  showToast(`👑 Boss érkezett! ${S21_BOSSES[kind].ability}`, 'ok');
+  sfxFanfare();
+}
+function s21DamageBoss(amount){
+  if(!state.boss || !state.boss.active) return;
+  state.boss.turns++;
+  const damage=Math.max(1,Math.floor(amount));
+  state.boss.hp=Math.max(0,state.boss.hp-damage);
+  s21UpdateWorldHUD();
+  if(state.boss.hp<=0){
+    state.boss.active=false;
+    state.weeklyScore += 750 + state.level*25;
+    state.storedMoves=(state.storedMoves||0)+2;
+    showToast(`🏆 BOSS LEGYŐZVE! +${(750+state.level*25).toLocaleString('hu-HU')} P +2 lépés!`,'ok');
+    s20Shockwave(); sfxFanfare();
+  } else if(state.boss.turns % (state.boss.kind===2 ? 2 : 3)===0){
+    s21BossAbility();
+  }
+}
+function s21BossAbility(){
+  if(!state.boss || !state.boss.active) return;
+  const kind=state.boss.kind;
+  const candidates=[];
+  for(let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++){
+    const t=state.board[r]?.[c];
+    if(t && !t.bomb && !t.prism) candidates.push(t);
+  }
+  const t=candidates[Math.floor(Math.random()*candidates.length)];
+  if(!t) return;
+  if(kind===0){t.ice=Math.min(2,(t.ice||0)+1);if(!t.letter)t.letter=getBalancedLetter();}
+  else if(kind===1){t.prism=true;t.letter=null;t.ice=0;t.wood=0;}
+  else if(kind===2){t.wood=1;if(!t.letter)t.letter=getBalancedLetter();}
+  else if(kind===3){t.ice=1;if(!t.letter)t.letter=getBalancedLetter();}
+  else {t.wood=1;t.ice=0;}
+  refreshTileAppearance(t);
+  showToast(`⚠️ Boss képesség: ${S21_BOSSES[kind].ability}`,'err');
+}
+function s21GrantPowerTile(){
+  if(state.level<6 || Math.random()>0.28) return;
+  const candidates=[];
+  for(let r=0;r<GRID_SIZE;r++) for(let c=0;c<GRID_SIZE;c++){
+    const t=state.board[r]?.[c]; if(t && !t.ice && !t.wood && !t.bomb && !t.prism && !t.power) candidates.push(t);
+  }
+  const t=candidates[Math.floor(Math.random()*candidates.length)];
+  if(!t)return;
+  t.power=(state.level%10===0)?'meteor':(Math.random()<.55?'lightning':'meteor');
+  t.letter=null; refreshTileAppearance(t);
+}
+function s21TriggerPower(tile){
+  if(!tile.power)return false;
+  const r=tile.r,c=tile.c;
+  if(tile.power==='lightning') executeBlasterRow(r); else executeBlasterCol(c);
+  showToast(tile.power==='lightning'?'⚡ VILLÁM! Teljes sor törölve!':'☄️ METEOR! Teljes oszlop letarolva!','ok');
+  tile.power=null;
+  return true;
+}
+
+
+function s20SetCombo(combo, score = null) {
+  const hud = document.getElementById('s20-combo-hud');
+  const value = document.getElementById('s20-combo-value');
+  const last = document.getElementById('s20-last-score');
+  if (!hud || !value || !last) return;
+  value.textContent = `x${Math.max(1, combo)}`;
+  value.classList.toggle('hot', combo >= 3);
+  if (score !== null) last.textContent = `+${Number(score).toLocaleString('hu-HU')} P`;
+  hud.classList.add('show');
+  clearTimeout(state.comboTimeout);
+  state.comboTimeout = setTimeout(() => {
+    if (state.combo <= 0) hud.classList.remove('show');
+  }, 2400);
+}
+function s20ShowWord(word, score, combo) {
+  const el = document.getElementById('s20-word-pop');
+  if (!el) return;
+  el.textContent = `${word}  •  +${Number(score).toLocaleString('hu-HU')} P  •  x${combo}`;
+  el.classList.remove('play');
+  void el.offsetWidth;
+  el.classList.add('play');
+}
+function s20Shockwave() {
+  const el = document.getElementById('s20-shockwave');
+  if (!el) return;
+  el.classList.remove('play');
+  void el.offsetWidth;
+  el.classList.add('play');
+}
+function s20LevelBanner(text) {
+  const el = document.getElementById('s20-level-banner');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove('play');
+  void el.offsetWidth;
+  el.classList.add('play');
+}
+function s20ComboOnValidWord(word, baseScore) {
+  state.combo = Math.min(9, (state.combo || 0) + 1);
+  state.comboBest = Math.max(state.comboBest || 0, state.combo);
+  const comboBonus = state.combo >= 2 ? Math.floor(baseScore * Math.min(.75, (state.combo - 1) * .15)) : 0;
+  s20SetCombo(state.combo, baseScore + comboBonus);
+  s20ShowWord(word, baseScore + comboBonus, state.combo);
+  if (state.combo >= 2) {
+    showToast(`🔥 COMBO x${state.combo}! +${comboBonus.toLocaleString('hu-HU')} bónuszpont`, 'ok');
+    spawnExplosion(window.innerWidth * .5, window.innerHeight * .42, state.combo >= 4 ? '#fbbf24' : '#38bdf8');
+    if (state.combo >= 4) s20Shockwave();
+  }
+  return comboBonus;
+}
+
 
 function calcTileMetrics() {
   const isDesktop = window.innerWidth >= 861;
@@ -1927,10 +2398,16 @@ function calcTileMetrics() {
 
 function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   state.level = lvl;
+  state.levelCompleted = false;
   state.pool = [];
   state.tray = [];
   state.levelWords = [];
   state.activeTripleWord = false;
+  state.combo = 0;
+  state.boss = null;
+  clearTimeout(state.comboTimeout);
+  const comboHud = document.getElementById('s20-combo-hud');
+  if (comboHud) comboHud.classList.remove('show');
   state.roundFreeUsed = {};
   isLocked = false;
   stopTargetingMode();
@@ -1953,6 +2430,9 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   }
 
   const isGold = isGoldenLevel(lvl);
+  s21InitBoss(lvl);
+  s21UpdateWorldHUD();
+  if (isGold) s20LevelBanner(`👑 ${lvl}. SZINT • ARANYPÁLYA`);
   const wrap = document.getElementById('app-wrap');
   if(wrap) {
     if(isGold) wrap.classList.add('gold-level-active');
@@ -1979,7 +2459,7 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   state.stats = {
     wordsMade: 0, biggestMatch: 0, iceBroken: 0,
     woodBroken: 0, lettersFreed: 0, levelScore: 0,
-    bombsTriggered: 0, usedRareChar: false
+    bombsTriggered: 0, prismsActivated: 0, usedRareChar: false
   };
 
   const viable = getViableQuestsForBoard(lvl);
@@ -2075,7 +2555,7 @@ function generateProceduralGrid(lvl, quests) {
       const t = {
         r, c, color,
         ice: 0, wood: 0,
-        letter: char, bomb: false,
+        letter: char, bomb: false, prism: false, power: null,
         isGold: isGold && (Math.random() < 0.35 || hasLetter),
         el: null
       };
@@ -2120,7 +2600,7 @@ function generateProceduralGrid(lvl, quests) {
     const rc = Math.floor(Math.random() * GRID_SIZE);
     const tile = state.board[rr][rc];
     if (tile && tile.ice === 0 && tile.wood === 0 && !tile.bomb) {
-      tile.ice = (lvl >= 8 && Math.random() < 0.3) ? 2 : 1;
+      tile.ice = (lvl >= 14 && Math.random() < 0.16) ? 3 : ((lvl >= 8 && Math.random() < 0.30) ? 2 : 1);
       if (!tile.letter) tile.letter = getBalancedLetter();
       refreshTileAppearance(tile);
       placedIce++;
@@ -2138,6 +2618,38 @@ function generateProceduralGrid(lvl, quests) {
       if (!tile.letter) tile.letter = getBalancedLetter();
       refreshTileAppearance(tile);
       placedWood++;
+    }
+  }
+
+  s21GrantPowerTile();
+  ensurePlayableBoard();
+}
+
+/* Minden új pályán legyen legalább egy azonnal elérhető robbanás.
+   Így a nehézség az akadályokból és a küldetésekből fakad, nem a véletlenből. */
+function ensurePlayableBoard() {
+  for(let r = 0; r < GRID_SIZE; r++) {
+    for(let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[r] && state.board[r][c];
+      if(t && t.ice === 0 && t.wood === 0 && !t.bomb && getConnectedCluster(r, c).length >= 2) return;
+    }
+  }
+
+  const candidates = [];
+  for(let r = 0; r < GRID_SIZE; r++) {
+    for(let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[r] && state.board[r][c];
+      if(t && t.ice === 0 && t.wood === 0 && !t.bomb && !t.isGold) candidates.push(t);
+    }
+  }
+  for(const t of candidates) {
+    const right = state.board[t.r] && state.board[t.r][t.c + 1];
+    const down = state.board[t.r + 1] && state.board[t.r + 1][t.c];
+    const neighbor = [right, down].find(n => n && n.ice === 0 && n.wood === 0 && !n.bomb && !n.isGold);
+    if(neighbor) {
+      neighbor.color = t.color;
+      refreshTileAppearance(neighbor);
+      return;
     }
   }
 }
@@ -2165,11 +2677,13 @@ function getBalancedLetter() {
 
 function createTileElement(tile, size) {
   const el = document.createElement('div');
-  el.className = `tile color-${tile.color}`;
+  el.className = `tile color-${tile.color}`; el.style.setProperty('--s20-delay', `${Math.random()*120}ms`);
   if(tile.ice > 0) el.classList.add(`ice-${tile.ice}`);
   if(tile.wood > 0) el.classList.add(`wood-${tile.wood}`);
   if(tile.letter) el.classList.add('has-letter');
   if(tile.bomb) el.classList.add('bomb');
+  if(tile.prism) el.classList.add('prism');
+  if(tile.power) el.classList.add(`power-${tile.power}`);
   if(tile.isGold) el.classList.add('is-gold');
 
   el.style.width = size + 'px';
@@ -2190,6 +2704,8 @@ function createTileElement(tile, size) {
     badge.textContent = `🪵`;
     inner.appendChild(badge);
   }
+
+  if(tile.power) { const pb=document.createElement('span'); pb.className='s21-power-badge'; pb.textContent=tile.power==='lightning'?'⚡':'☄️'; inner.appendChild(pb); }
 
   if(tile.letter) {
     const lGlyph = document.createElement('span');
@@ -2212,7 +2728,7 @@ function createTileElement(tile, size) {
 function areTilesMatching(t1, t2) {
   if (!t1 || !t2) return false;
   if (t1.wood > 0 || t2.wood > 0 || t1.ice > 0 || t2.ice > 0) return false;
-  if (t1.bomb || t2.bomb) return false;
+  if (t1.bomb || t2.bomb || t1.prism || t2.prism) return false;
   if (t1.isGold || t2.isGold) {
     return Boolean(t1.isGold && t2.isGold);
   }
@@ -2241,7 +2757,9 @@ function onTileClicked(tile) {
     sfxIceCrack(); 
     return; 
   }
+  if(tile.power) { s21TriggerPower(tile); return; }
   if(tile.bomb) { triggerBomb(startR, startC); return; }
+  if(tile.prism) { triggerPrism(startR, startC); return; }
 
   const cluster = getConnectedCluster(startR, startC);
   if(cluster.length < 2) {
@@ -2444,7 +2962,30 @@ function triggerBomb(centerR, centerC) {
   executeClusterExplosion(blastZone, true);
 }
 
-async function executeClusterExplosion(tilesPos, isBomb=false) {
+function triggerPrism(centerR, centerC) {
+  const prism = state.board[centerR][centerC];
+  if (!prism) return;
+  const targetColor = prism.color;
+  const prismWave = [{ r: centerR, c: centerC }];
+
+  for(let r = 0; r < GRID_SIZE; r++) {
+    for(let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[r][c];
+      if(!t || t === prism) continue;
+      if(t.color === targetColor && t.ice === 0 && t.wood === 0 && !t.bomb && !t.prism) {
+        prismWave.push({ r, c });
+      }
+    }
+  }
+
+  state.stats.prismsActivated = (state.stats.prismsActivated || 0) + 1;
+  sfxFanfare();
+  shakeScreen();
+  showToast(`✦ PRIZMAHULLÁM! ${prismWave.length} azonos színű kristály aktiválva.`, 'ok');
+  executeClusterExplosion(prismWave, false, true);
+}
+
+async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=false) {
   if(isLocked) return;
   isLocked = true;
   try {
@@ -2465,6 +3006,8 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
 
     const boardRect = boardEl.getBoundingClientRect();
     const newlyFreedLetters = [];
+    const specialColor = (tilesPos[0] && state.board[tilesPos[0].r] && state.board[tilesPos[0].r][tilesPos[0].c])
+      ? state.board[tilesPos[0].r][tilesPos[0].c].color : 0;
 
     tilesPos.forEach(({r, c}) => {
       const t = state.board[r][c];
@@ -2475,7 +3018,8 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
       const colHex = t.isGold ? '#fbbf24' : (['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff');
       spawnExplosion(px, py, colHex);
 
-      if(t.letter && t.ice === 0 && t.wood === 0 && state.pool.length < MAX_POOL) {
+      const occupiedPoolSlots = state.pool.filter(item => item && !item.empty).length;
+      if(t.letter && t.ice === 0 && t.wood === 0 && (occupiedPoolSlots + newlyFreedLetters.length) < MAX_POOL) {
         newlyFreedLetters.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
         state.stats.lettersFreed++;
       }
@@ -2491,13 +3035,21 @@ async function executeClusterExplosion(tilesPos, isBomb=false) {
       });
     });
 
-    if(!isBomb && matchSize >= 7) {
+    if(!isBomb && !suppressSpecial && matchSize >= 7) {
       const bombSpot = tilesPos[0];
       state.board[bombSpot.r][bombSpot.c] = {
         r: bombSpot.r, c: bombSpot.c, color: 0,
-        ice: 0, wood: 0, letter: null, bomb: true, el: null
+        ice: 0, wood: 0, letter: null, bomb: true, prism: false, el: null
       };
       createTileElement(state.board[bombSpot.r][bombSpot.c], calcTileMetrics());
+    } else if(!isBomb && !suppressSpecial && matchSize >= 5) {
+      const prismSpot = tilesPos[0];
+      state.board[prismSpot.r][prismSpot.c] = {
+        r: prismSpot.r, c: prismSpot.c, color: specialColor,
+        ice: 0, wood: 0, letter: null, bomb: false, prism: true, el: null
+      };
+      createTileElement(state.board[prismSpot.r][prismSpot.c], calcTileMetrics());
+      showToast('✦ Prizma-kristály született! Koppints rá egy szín-hullámért.', 'ok');
     }
 
     animateFreedLetters(newlyFreedLetters);
@@ -2540,6 +3092,7 @@ function refreshTileAppearance(t) {
   if(t.wood > 0) t.el.classList.add(`wood-${t.wood}`);
   if(t.letter) t.el.classList.add('has-letter');
   if(t.bomb) t.el.classList.add('bomb');
+  if(t.prism) t.el.classList.add('prism');
   if(t.isGold) t.el.classList.add('is-gold');
 
   const inner = t.el.querySelector('.tile-inner');
@@ -2623,7 +3176,7 @@ async function applyGravityAndRefill() {
       let iceLayer = 0;
       let woodLayer = 0;
       if (needsIce && Math.random() < 0.12) {
-        iceLayer = 1;
+        iceLayer = state.level >= 18 && Math.random() < 0.12 ? 3 : (state.level >= 9 && Math.random() < 0.28 ? 2 : 1);
         if (!char) char = getBalancedLetter();
       } else if (needsWood && Math.random() < 0.10) {
         woodLayer = 1;
@@ -2632,7 +3185,7 @@ async function applyGravityAndRefill() {
 
       const t = {
         r, c, color, ice: iceLayer, wood: woodLayer,
-        letter: char, bomb: false,
+      letter: char, bomb: false, prism: false, power: null,
         isGold: isGold && (Math.random() < 0.35 || hasLetter),
         el: null
       };
@@ -2642,6 +3195,8 @@ async function applyGravityAndRefill() {
       spawnOffset++;
     }
   }
+
+  ensurePlayableBoard();
 
   await delay(20);
   for(let r = 0; r < GRID_SIZE; r++) {
@@ -2824,11 +3379,15 @@ safeOn('btn-submit', 'click', async () => {
   if(state.activeTripleWord) { multiplier *= 3; state.activeTripleWord = false; }
 
   const wordScore = Math.floor(Math.pow(word.length, 2) * 18 * multiplier);
-  state.weeklyScore += wordScore;
-  state.stats.levelScore += wordScore;
+  const s20ComboBonus = s20ComboOnValidWord(word, wordScore);
+  const finalWordScore = wordScore + s20ComboBonus;
+  s22AddXP(Math.max(2, Math.floor(finalWordScore/30)));
+  s21DamageBoss(finalWordScore);
+  state.weeklyScore += finalWordScore;
+  state.stats.levelScore += finalWordScore;
   state.levelWords.push(word);
 
-  showToast(`Sikeres szó: ${word} (+${wordScore}P)!`, 'ok');
+  showToast(`Sikeres szó: ${word} (+${finalWordScore}P)!`, 'ok');
 
   const today = getTodayString();
   if (word === currentDailySecret && state.secretWordLastSolvedDate !== today) {
@@ -2998,6 +3557,26 @@ function updateMovesWatermark() {
   } else banner.classList.remove('show');
 }
 
+function getQuestProgress(q) {
+  const text = q.text || '';
+  const targetMatch = text.match(/(\d+)/);
+  const target = targetMatch ? parseInt(targetMatch[1], 10) : 1;
+  const words = state.levelWords || [];
+
+  if (q.id && q.id.startsWith('q_m_')) return { value: state.stats.biggestMatch || 0, target };
+  if (q.id && q.id.startsWith('q_wl_')) return { value: Math.max(0, ...words.map(w => w.length)), target };
+  if (q.id && q.id.startsWith('q_wc_')) return { value: words.length, target };
+  if (q.id && q.id.startsWith('q_st_')) return { value: words.some(w => w.startsWith(q.reqLetter)) ? 1 : 0, target: 1 };
+  if (q.id && q.id.startsWith('q_inc_')) return { value: words.some(w => w.includes(q.reqLetter)) ? 1 : 0, target: 1 };
+  if (q.id && q.id.startsWith('q_sc_')) return { value: state.stats.levelScore || 0, target };
+  if (q.id && q.id.startsWith('q_fr_')) return { value: state.stats.lettersFreed || 0, target };
+  if (q.id && q.id.startsWith('q_ice_')) return { value: state.stats.iceBroken || 0, target };
+  if (q.id && q.id.startsWith('q_wood_')) return { value: state.stats.woodBroken || 0, target };
+  if (q.id && q.id.startsWith('q_b_')) return { value: state.stats.bombsTriggered || 0, target };
+  if (q.id && q.id.startsWith('q_p_')) return { value: state.stats.prismsActivated || 0, target };
+  return null;
+}
+
 function updateMissionUI() {
   const container = document.getElementById('active-missions-container');
   if (!container) return;
@@ -3021,6 +3600,21 @@ function updateMissionUI() {
 
     card.appendChild(header);
     card.appendChild(txt);
+
+    const progress = getQuestProgress(q);
+    if (progress) {
+      const value = Math.min(progress.target, progress.value);
+      const progressText = document.createElement('div');
+      progressText.style.cssText = 'margin-top:6px; font-size:9px; font-weight:900; color:#94a3b8; display:flex; justify-content:space-between;';
+      progressText.innerHTML = '<span>HALADÁS</span><span style="color:var(--cyan);">' + value + ' / ' + progress.target + '</span>';
+      const progressBar = document.createElement('div');
+      progressBar.style.cssText = 'height:4px; margin-top:3px; border-radius:99px; overflow:hidden; background:rgba(0,0,0,.38);';
+      const fill = document.createElement('div');
+      fill.style.cssText = 'height:100%; width:' + Math.min(100, (value / progress.target) * 100) + '%; border-radius:inherit; background:linear-gradient(90deg,var(--cyan),var(--purple)); transition:width .25s ease;';
+      progressBar.appendChild(fill);
+      card.appendChild(progressText);
+      card.appendChild(progressBar);
+    }
     container.appendChild(card);
   });
 }
@@ -3038,8 +3632,12 @@ function checkQuestProgress() {
 
 function verifyGameState() {
   const allCompleted = state.questStatuses.length > 0 && state.questStatuses.every(Boolean);
+  const bossReady = !state.boss || !state.boss.active;
 
-  if(allCompleted) {
+  if(allCompleted && bossReady) {
+    // Egy teljesítéshez pontosan egy jutalom tartozhat, akkor is, ha több UI-frissítés érkezik.
+    if (state.levelCompleted) return;
+    state.levelCompleted = true;
     const winTitle = document.getElementById('win-modal-title');
     const winDesc = document.getElementById('win-modal-desc');
 
@@ -4456,7 +5054,7 @@ async function syncCloudState() {
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
       const t = state.board[r] ? state.board[r][c] : null;
-      if(t) flatBoard.push({ r, c, color: t.color, letter: t.letter || null, ice: t.ice || 0, wood: t.wood || 0, bomb: t.bomb || false, isGold: t.isGold || false });
+      if(t) flatBoard.push({ r, c, color: t.color, letter: t.letter || null, ice: t.ice || 0, wood: t.wood || 0, bomb: t.bomb || false, prism: t.prism || false, power: t.power || null, isGold: t.isGold || false });
     }
   }
 
@@ -4478,6 +5076,7 @@ async function syncCloudState() {
     activeStakePoints: state.activeStakePoints || 0,
     activeStakePenalty: state.activeStakePenalty || 0,
     levelMultiplier: state.levelMultiplier || 1,
+    worldId: state.worldId || s21GetWorld(state.level).id,
     stats: state.stats,
     inventory: state.inventory || {},
     scratchTickets: state.scratchTickets || [],
@@ -4532,6 +5131,7 @@ function restoreFromCloudData(data) {
   state.activeStakePoints = data.activeStakePoints || 0;
   state.activeStakePenalty = data.activeStakePenalty || 0;
   state.levelMultiplier = data.levelMultiplier || 1;
+  state.worldId = data.worldId ?? s21GetWorld(state.level).id;
 
   if (data.activeQuestIds && Array.isArray(data.activeQuestIds)) {
     state.activeQuests = data.activeQuestIds.map(qid => ALL_QUEST_DATABASE.find(q => q.id === qid) || ALL_QUEST_DATABASE[0]);
@@ -4542,7 +5142,7 @@ function restoreFromCloudData(data) {
     state.questStatuses = [false, false, false];
   }
 
-  state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, usedRareChar: false };
+  state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false };
   state.levelWords = data.levelWords || [];
   state.pool = data.pool || [];
   state.tray = data.tray || [];
@@ -4562,7 +5162,7 @@ function restoreFromCloudData(data) {
 
   if(flatTiles.length > 0) {
     flatTiles.forEach(cell => {
-      const t = { r: cell.r, c: cell.c, color: cell.color, letter: cell.letter, ice: cell.ice || 0, wood: cell.wood || 0, bomb: cell.bomb || false, isGold: cell.isGold || false, el: null };
+      const t = { r: cell.r, c: cell.c, color: cell.color, letter: cell.letter, ice: cell.ice || 0, wood: cell.wood || 0, bomb: cell.bomb || false, prism: cell.prism || false, isGold: cell.isGold || false, el: null };
       state.board[cell.r][cell.c] = t;
       createTileElement(t, tileSize);
     });
@@ -4860,6 +5460,17 @@ safeOn('btn-open-admin-nav', 'click', () => {
   loadAdminDashboard();
 });
 
+const S22_KEY='szorobbantas_pro_22';
+const S22_ITEMS=[{id:'lightning',icon:'⚡',name:'Villám Power',desc:'Teljes sor törlése'},{id:'meteor',icon:'☄️',name:'Meteor Power',desc:'Teljes oszlop törlése'},{id:'frozen-crown',icon:'👑',name:'Jégkorona',desc:'Legendás boss jutalom'},{id:'crystal-frame',icon:'💎',name:'Kristálykeret',desc:'Ritka profiljutalom'},{id:'shadow-title',icon:'🌑',name:'Árnyékvadász',desc:'Epic cím'}];
+function s22Load(){try{const raw=localStorage.getItem(S22_KEY);if(!raw)return;const data=JSON.parse(raw);if(!data||typeof data!=='object')return;state.xp=Number(data.xp)||0;state.playerLevel=Number(data.playerLevel)||1;state.coins=Number(data.coins)||0;state.gems=Number(data.gems)||0;state.defeatedBosses=Array.isArray(data.defeatedBosses)?data.defeatedBosses:[];state.unlockedWorlds=Array.isArray(data.unlockedWorlds)?data.unlockedWorlds:[0];state.collection=Array.isArray(data.collection)?data.collection:[]}catch(e){return}}
+function s22Save(){try{localStorage.setItem(S22_KEY,JSON.stringify({v:1,xp:state.xp,playerLevel:state.playerLevel,coins:state.coins,gems:state.gems,defeatedBosses:state.defeatedBosses,unlockedWorlds:state.unlockedWorlds,collection:state.collection}))}catch(e){}}
+function s22XpNeed(){return 100+(state.playerLevel-1)*65}
+function s22AddXP(n){state.xp+=Math.max(0,Math.floor(n));let up=0;while(state.xp>=s22XpNeed()){state.xp-=s22XpNeed();state.playerLevel++;up++}if(up){showToast(`⭐ JÁTÉKOSSZINT ${state.playerLevel}! +${up*25} coin`,'ok');state.coins+=up*25;s20LevelBanner(`⭐ JÁTÉKOSSZINT ${state.playerLevel}`)}s22Save();s22Render()}
+function s22Render(){const lv=document.getElementById('s22-level'),xt=document.getElementById('s22-xptext'),bar=document.getElementById('s22-xpbar');if(!lv)return;const need=s22XpNeed();lv.textContent=`Játékos LVL ${state.playerLevel}`;xt.textContent=`${state.xp} / ${need} XP`;bar.style.width=Math.min(100,state.xp/need*100)+'%';document.getElementById('s22-coins').textContent=state.coins.toLocaleString('hu-HU');document.getElementById('s22-gems').textContent=state.gems.toLocaleString('hu-HU');document.getElementById('s22-bosses').textContent=state.defeatedBosses.length;const ws=document.getElementById('s22-worlds');ws.innerHTML=S21_WORLDS.map(w=>{const unlocked=state.unlockedWorlds.includes(w.id);return `<div class="s22-item ${unlocked?'':'locked'}"><div class="s22-icon">${w.icon}</div><div class="s22-name">${w.name}</div><div class="s22-sub">${unlocked?'✓ FELFEDEZVE':'🔒 ZÁROLVA'}</div></div>`}).join('');const cs=document.getElementById('s22-collection');cs.innerHTML=S22_ITEMS.map(x=>{const has=state.collection.includes(x.id);return `<div class="s22-item ${has?'':'locked'}"><div class="s22-icon">${x.icon}</div><div class="s22-name">${x.name}</div><div class="s22-sub">${has?'MEGSZEREZVE':'Még nincs meg'}<br>${x.desc}</div></div>`}).join('')}
+function s22ChestReward(){const bossIndex=Math.max(0,Math.floor(state.level/10)-1);const rewards=[['lightning','⚡ Villám Power'],['meteor','☄️ Meteor Power'],['crystal-frame','💎 Kristálykeret'],['shadow-title','🌑 Árnyékvadász'],['frozen-crown','👑 Jégkorona']];const pool=rewards.slice(0,Math.min(rewards.length,bossIndex+2));const pick=pool[Math.floor(Math.random()*pool.length)];if(!state.collection.includes(pick[0]))state.collection.push(pick[0]);const coin=150+state.level*10;const gem=5+Math.floor(state.level/10);state.coins+=coin;state.gems+=gem;s22AddXP(120+state.level*4);s22Save();const ch=document.getElementById('s22-chest'),rw=document.getElementById('s22-reward');rw.innerHTML=`${pick[1]}<br><small>+${coin} coin • +${gem} gem • +XP</small>`;ch.classList.remove('play');void ch.offsetWidth;ch.classList.add('play');setTimeout(()=>{showToast(`🎁 Boss láda: ${pick[1]}!`,'ok');s22Render()},700)}
+function s22BossDefeated(){const id=state.level;if(state.defeatedBosses.includes(id))return;state.defeatedBosses.push(id);const nextWorld=s21GetWorld(state.level).id+1;if(nextWorld<S21_WORLDS.length&&!state.unlockedWorlds.includes(nextWorld))state.unlockedWorlds.push(nextWorld);s22ChestReward()}
+function s22Hook(){document.getElementById('s22-open')?.addEventListener('click',()=>{s22Render();document.getElementById('s22-modal').classList.add('show')});document.getElementById('s22-close')?.addEventListener('click',()=>document.getElementById('s22-modal').classList.remove('show'));document.getElementById('s22-modal')?.addEventListener('click',e=>{if(e.target.id==='s22-modal')e.currentTarget.classList.remove('show')})}
+
 function showToast(msg, type='ok') {
   const t = document.getElementById('toast');
   if (!t) return;
@@ -4988,6 +5599,9 @@ setInterval(() => {
 
 main();
 startAuthCommunityListener();
+
+try{s22Load();}catch(e){}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',s22Hook)}else{s22Hook()}
 </script>
-</body>
+\n<button class="s22-progress-btn" id="s22-open">🏆 PROFIL & GYŰJTEMÉNY</button>\n<div class="s22-modal" id="s22-modal"><div class="s22-card"><div class="s22-head"><h2>🏆 Szórobbantás profil</h2><button class="s22-close" id="s22-close">✕</button></div><div class="s22-xp"><div class="s22-xp-top"><span id="s22-level">Játékos LVL 1</span><span id="s22-xptext">0 / 100 XP</span></div><div class="s22-bar"><i id="s22-xpbar"></i></div></div><div class="s22-statrow"><div class="s22-stat"><b id="s22-coins">0</b><span>COIN</span></div><div class="s22-stat"><b id="s22-gems">0</b><span>GEM</span></div><div class="s22-stat"><b id="s22-bosses">0</b><span>BOSS</span></div></div><h3>🗺️ Világok</h3><div class="s22-grid" id="s22-worlds"></div><h3>🎒 Gyűjtemény</h3><div class="s22-grid" id="s22-collection"></div></div></div>\n<div class="s22-chest" id="s22-chest"><div class="s22-chest-box">🎁</div><div class="s22-reward" id="s22-reward"></div></div>\n</body>
 </html>
