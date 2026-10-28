@@ -232,6 +232,21 @@ html, body {
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
   animation: pulse 0.8s infinite alternate;
 }
+.high-stakes-banner.mode-ten {
+  display: block; background: linear-gradient(135deg, #581c87, #312e81);
+  color: #fef3c7; border: 1.5px solid #c084fc;
+  box-shadow: 0 0 18px rgba(192,132,252,.28);
+}
+.ten-quest-reward-status {
+  display:none; width:100%; margin-top:4px; padding:7px 10px; border-radius:8px;
+  border:1px solid rgba(192,132,252,.55); background:rgba(76,29,149,.24);
+  color:#f3e8ff; font-size:10.5px; font-weight:850; line-height:1.4;
+}
+.ten-quest-reward-status.active { display:block; }
+.stake-card.ten-quest-card { border-color:rgba(192,132,252,.6); background:linear-gradient(145deg,rgba(88,28,135,.28),#0f172a); }
+.stake-card.ten-quest-card.locked { opacity:.68; border-style:dashed; }
+.stake-card.ten-quest-card.selected { border-color:#e9d5ff; box-shadow:0 0 14px rgba(192,132,252,.32); }
+.ten-quest-cooldown { font-size:9px; font-weight:900; color:#c4b5fd; line-height:1.35; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
 .stat-box { padding: 6px 4px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
@@ -861,7 +876,7 @@ body.low-power-mode .scratch-card-wrapper { box-shadow: none; }
 .free-pick-tile:active { transform: scale(0.92); }
 
 .stake-choice-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 8px 0;
 }
 .stake-card {
   background: #0f172a; border: 1.5px solid #334155; border-radius: 10px;
@@ -1110,6 +1125,7 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
   </div>
 
   <div class="high-stakes-banner" id="high-stakes-banner"></div>
+  <div class="ten-quest-reward-status" id="ten-quest-reward-status" aria-live="polite"></div>
 
   <div class="stats-grid">
     <div class="stat-box glass"><span class="lbl">Szint</span><span class="val" id="stat-level">1</span></div>
@@ -1242,26 +1258,33 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
 <div class="modal-overlay" id="modal-quest-roulette">
   <div class="modal-box" style="border-color:var(--purple); max-width:460px;">
     <div class="modal-title" style="color:#c4b5fd;">🎰 KOCKÁZAT ÉS KÜLDETÉSEK</div>
-    <p class="modal-desc">Válassz kihívást! Minél több küldetést vállalsz, annál nagyobb a szorzó, de a bukás büntetéssel jár!</p>
+    <p class="modal-desc">Válassz legalább 4, legfeljebb 6 küldetést — vagy vállald be a 10-es rohamot! A 10-es roham saját játékosprofilonként 30 percenként indítható; mind a 10 feladat teljesítésekor 12-féle, 5 percig tartó különleges jutalom egyikét kapod.</p>
     
     <div class="stake-choice-grid">
-      <div class="stake-card selected" id="card-mode-normal" data-mode="normal" data-count="3">
+      <div class="stake-card selected" id="card-mode-normal" data-mode="normal" data-count="4">
         <div class="stake-card-title">NORMÁL</div>
-        <div class="stake-card-quests">3 QUEST</div>
-        <div class="stake-card-reward">1x SZORZÓ</div>
-        <div class="stake-card-risk" style="color:#94a3b8;">Nincs Tét</div>
+        <div class="stake-card-quests">4 KÜLDETÉS</div>
+        <div class="stake-card-reward">1× SZORZÓ</div>
+        <div class="stake-card-risk" style="color:#94a3b8;">Nincs tét</div>
       </div>
-      <div class="stake-card" id="card-mode-brave" data-mode="brave" data-count="4">
+      <div class="stake-card" id="card-mode-brave" data-mode="brave" data-count="5">
         <div class="stake-card-title">BÁTOR</div>
-        <div class="stake-card-quests">4 QUEST</div>
-        <div class="stake-card-reward">2x SZORZÓ + Sorsjegy</div>
-        <div class="stake-card-risk">-300 P TÉT (-150P)</div>
+        <div class="stake-card-quests">5 KÜLDETÉS</div>
+        <div class="stake-card-reward">2× SZORZÓ + sorsjegy</div>
+        <div class="stake-card-risk">300 P tét · bukáskor −150 P</div>
       </div>
-      <div class="stake-card" id="card-mode-legend" data-mode="legend" data-count="5">
+      <div class="stake-card" id="card-mode-legend" data-mode="legend" data-count="6">
         <div class="stake-card-title">LEGENDA</div>
-        <div class="stake-card-quests">5 QUEST</div>
-        <div class="stake-card-reward">3x SZORZÓ + JOKER</div>
-        <div class="stake-card-risk">-600 P TÉT (-300P)</div>
+        <div class="stake-card-quests">6 KÜLDETÉS</div>
+        <div class="stake-card-reward">3× SZORZÓ + Arany Joker</div>
+        <div class="stake-card-risk">600 P tét · bukáskor −300 P</div>
+      </div>
+      <div class="stake-card ten-quest-card" id="card-mode-ten" data-mode="ten" data-count="10">
+        <div class="stake-card-title">💜 10-ES ROHAM</div>
+        <div class="stake-card-quests">10 KÜLDETÉS</div>
+        <div class="stake-card-reward">12-féle, 5 perces extra jutalom</div>
+        <div class="ten-quest-cooldown" id="ten-quest-cooldown">30 percenként elérhető</div>
+        <div class="stake-card-risk">Nincs ponttét — csak komoly kihívás</div>
       </div>
     </div>
 
@@ -1410,7 +1433,7 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <button class="modal-close-x" id="btn-close-rules-x">✖</button>
     <div class="modal-title" style="color:var(--cyan); text-align:center;">📖 RÉSZLETES SZABÁLYZAT</div>
     <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0; font-size:11px; line-height:1.45; color:#cbd5e1;">
-      <div><b>🎲 Mesterfogadás (Tét & Szorzók):</b> Szintindítás előtt választhatsz: Maradsz a 3 normál questnél, vagy felraksz tétet 4-5 questre a 2x-3x pontszorzóért és bónuszokért! Vigyázz: ha elbukod a vállalást, a feltett tét elvész, és büntetőpont-levonás jár érte!</div>
+      <div><b>🎲 Küldetésválasztás és mesterfogadás:</b> Minden körben legalább 4, legfeljebb 6 küldetést vállalhatsz. Az 5 és 6 küldetéses tétmód magasabb pontszorzót ad, de bukáskor a feltett ponttét elvész. A 10-es roham különleges kihívás: játékosprofilonként 30 percenként indítható, és mind a 10 feladat teljesítése után 5 perces, véletlenszerű extra képességet ad.</div>
       <div><b>🔤 Kiegyensúlyozott betűpontok:</b> Minden betűn látszik a saját értéke. A gyakori betűk 2-3, a közepesen ritkák 4-5, a ritka magyar betűk és betűkapcsolatok 6-9 betűpontot érnek. Az arany betű duplázza a saját értékét, a hosszabb szavak hosszúsági bónuszt kapnak. Az aranypálya és a kupon szorzója megmarad, de az összesített szorzó legfeljebb 6× lehet.</div>
       <div><b>🃏 Arany Joker-ajándék:</b> Az Arany Joker betűvé alakításakor sorsjegyet és egy véletlenszerű, meglévő segítséget kapsz a következő körre. Az arany-lila ajándékslot csak abban a körben látszik, és egyszer használva elfogy; a kör végén a fel nem használt ajándék is lejár.</div>
       <div><b>🔤 Kiegyensúlyozott Betűeloszlás:</b> A táblán és a hulló csempéknél intelligens arányosító algoritmus működik. Bőségesen érkeznek a leggyakoribb magánhangzók és alaphangok (A, E, T, S, K, L, N), miközben a küldetésbetűkből maximum 2-3 jelenik meg egyensúlyban, elkerülve a túltelítést!</div>
@@ -2253,7 +2276,7 @@ function getUnfinishedStartingLetterRequirement(tray = state.tray) {
 }
 
 const ALL_QUEST_DATABASE = [];
-function build100Quests() {
+function buildQuestDatabase() {
   ALL_QUEST_DATABASE.length = 0;
   let id = 1;
 
@@ -2261,13 +2284,13 @@ function build100Quests() {
   ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább 4 csempét egyszerre`, check: s => s.stats.biggestMatch >= 4 });
   ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 1, text: `Robbants fel legalább 5 csempét egyszerre`, check: s => s.stats.biggestMatch >= 5 });
   ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 2, text: `Robbants fel legalább 6 csempét egyszerre`, check: s => s.stats.biggestMatch >= 6 });
-  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 3, text: `Robbants fel 7 csempét és hozz létre Mega Bombát!`, check: s => s.stats.biggestMatch >= 7 });
+  ALL_QUEST_DATABASE.push({ id: `q_m_${id++}`, tier: 3, text: `Robbants fel legalább 7 csempét egyszerre`, check: s => s.stats.biggestMatch >= 7 });
 
   // 2. Szóhosszúság: Reális méretek (max. 6 betűs mesterszó)
-  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 3 betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= 3) });
-  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 4 betűs szót`, check: s => (s.levelWords || []).some(w => w.length >= 4) });
-  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 2, text: `Készíts legalább egy 5 betűs szót (+1 lépés bónusz!)`, check: s => (s.levelWords || []).some(w => w.length >= 5) });
-  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 3, text: `Készíts egy 6 betűs mesterszót`, check: s => (s.levelWords || []).some(w => w.length >= 6) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 3 betűcsempés szót`, check: s => (s.levelWords || []).some((w,i) => getStoredWordTileCount(s, i, w) >= 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 1, text: `Készíts legalább egy 4 betűcsempés szót`, check: s => (s.levelWords || []).some((w,i) => getStoredWordTileCount(s, i, w) >= 4) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 2, text: `Készíts legalább egy 5 betűcsempés szót (+1 lépés bónusz!)`, check: s => (s.levelWords || []).some((w,i) => getStoredWordTileCount(s, i, w) >= 5) });
+  ALL_QUEST_DATABASE.push({ id: `q_wl_${id++}`, tier: 3, text: `Készíts egy 6 betűcsempés mesterszót`, check: s => (s.levelWords || []).some((w,i) => getStoredWordTileCount(s, i, w) >= 6) });
 
   // 3. Kirakott szavak száma: Kényelmesen teljesíthető (max. 5 szó)
   ALL_QUEST_DATABASE.push({ id: `q_wc_${id++}`, tier: 1, text: `Készíts legalább 1 érvényes szót a szinten`, check: s => (s.levelWords || []).length >= 1 });
@@ -2326,38 +2349,102 @@ function build100Quests() {
   ALL_QUEST_DATABASE.push({ id: 'q_p_' + id++, tier: 2, text: 'Aktiválj legalább 1 Prizma-kristályt', check: s => (s.stats.prismsActivated || 0) >= 1 });
   ALL_QUEST_DATABASE.push({ id: 'q_p_' + id++, tier: 3, text: 'Aktiválj legalább 2 Prizma-kristályt', check: s => (s.stats.prismsActivated || 0) >= 2 });
 
-  // 11. Szórakoztató, változatos szóbónusz küldetések (pontosan 100-ra egészít ki) (27 db)
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább egy ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].some(c => RARE_LETTERS.has(c))) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
+  // 11. Szórakoztató, változatos szóbónusz küldetések (alapkészlet)
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább egy ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).some(c => RARE_LETTERS.has(c))) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 magánhangzó-csempét tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(t => HUNGARIAN_VOWEL_TILES.has(t)).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 magánhangzó-csempét tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(t => HUNGARIAN_VOWEL_TILES.has(t)).length >= 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 mássalhangzó-csempét tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(t => !HUNGARIAN_VOWEL_TILES.has(t)).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 mássalhangzó-csempét tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(t => !HUNGARIAN_VOWEL_TILES.has(t)).length >= 3) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts legalább 3 betűcsempés szót, ami magánhangzóval kezdődik`, check: s => hasLevelWordStartingWithCategory(s, 'vowel', 3) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts legalább 3 betűcsempés szót, ami mássalhangzóval kezdődik`, check: s => hasLevelWordStartingWithCategory(s, 'consonant', 3) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 20 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 20) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 30 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 30) });
 
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts legalább két darab 4 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts legalább két darab 4 betűcsempés szót`, check: s => (s.levelWords || []).filter((w,i) => getStoredWordTileCount(s, i, w) >= 4).length >= 2 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 40 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 40) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, amiben van legalább 2 azonos betű`, check: s => (s.levelWords || []).some(w => /(.).*\1/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.pool || []).some(i => i && i.isGold) || (s.stats.lettersFreed >= 1) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "A" vagy "E" betűre végződik`, check: s => (s.levelWords || []).some(w => /[AEÁÉ]$/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "T" vagy "K" betűre végződik`, check: s => (s.levelWords || []).some(w => /[TK]$/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "G" vagy "S" betűre végződik`, check: s => (s.levelWords || []).some(w => /[GS]$/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami legalább 4 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 4) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Robbants fel legalább 5 csempét kétszer a szinten`, check: s => s.stats.biggestMatch >= 5 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, amiben van legalább 2 azonos betű`, check: s => (s.levelWords || []).some(w => { const t = tokenizeHungarianTiles(w); return t.some((ch,i) => t.indexOf(ch) !== i); }) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.stats.goldLettersFreed || 0) >= 1 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "A" vagy "E" betűre végződik`, check: s => (s.levelWords || []).some(w => ['A','E'].includes(tokenizeHungarianTiles(w).slice(-1)[0])) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "T" vagy "K" betűre végződik`, check: s => (s.levelWords || []).some(w => ['T','K'].includes(tokenizeHungarianTiles(w).slice(-1)[0])) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "G" vagy "S" betűre végződik`, check: s => (s.levelWords || []).some(w => ['G','S'].includes(tokenizeHungarianTiles(w).slice(-1)[0])) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami legalább 4 mássalhangzó-csempét tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(t => !HUNGARIAN_VOWEL_TILES.has(t)).length >= 4) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Robbants fel legalább 5 csempét kétszer a szinten`, check: s => (s.stats.matchesAtLeast5 || 0) >= 2 });
 
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább két darab 5 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 5).length >= 2 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább két darab 5 betűcsempés szót`, check: s => (s.levelWords || []).filter((w,i) => getStoredWordTileCount(s, i, w) >= 5).length >= 2 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 60 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 60) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább 3 különböző szót a szinten`, check: s => (new Set(s.levelWords || [])).size >= 3 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, ami legalább 2 ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].filter(c => RARE_LETTERS.has(c)).length >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, ami legalább 2 ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => tokenizeHungarianTiles(w).filter(c => RARE_LETTERS.has(c)).length >= 2) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "SZ" vagy "GY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('SZ') || w.includes('GY')) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "CS" vagy "NY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('CS') || w.includes('NY')) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább három darab 4 betűs vagy hosszabb szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 3 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Szabadíts fel legalább 2 arany betűt a tábláról`, check: s => (s.pool || []).filter(i => i && i.isGold).length >= 2 || (s.stats.lettersFreed >= 2) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább három darab 4 betűcsempés vagy hosszabb szót`, check: s => (s.levelWords || []).filter((w,i) => getStoredWordTileCount(s, i, w) >= 4).length >= 3 });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Szabadíts fel legalább 2 arany betűt a tábláról`, check: s => (s.stats.goldLettersFreed || 0) >= 2 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 80 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 80) });
+
+  // 12. ÚJ taktikai és nyelvi küldetések (27 új, stabil azonosítóval)
+  const words = s => Array.isArray(s.levelWords) ? s.levelWords : [];
+  const tokensFor = (s, idx) => tokenizeHungarianTiles(String(words(s)[idx] || ''));
+  const countFor = (s, idx) => getStoredWordTileCount(s, idx, words(s)[idx] || '');
+  const vowelsIn = tiles => tiles.filter(t => HUNGARIAN_VOWEL_TILES.has(t)).length;
+  const rareIn = tiles => tiles.filter(t => RARE_LETTERS.has(t)).length;
+  const firstTiles = s => words(s).map((w, i) => getStoredWordStartTile(s, i, w)).filter(Boolean);
+  const lastTiles = s => words(s).map((w, i) => tokensFor(s, i).slice(-1)[0]).filter(Boolean);
+  const distinct = list => new Set(list).size;
+  const containsConsonantRun = tiles => {
+    let run = 0;
+    for (const t of tiles) { run = HUNGARIAN_VOWEL_TILES.has(t) ? 0 : run + 1; if (run >= 3) return true; }
+    return false;
+  };
+
+  ALL_QUEST_DATABASE.push({ id:'q_new_01', tier:1, text:'Készíts legalább 4 csempés szót, benne legalább 2 magánhangzóval és 2 mássalhangzóval', check:s=>words(s).some((w,i)=>{const t=tokensFor(s,i), v=vowelsIn(t); return t.length>=4 && v>=2 && t.length-v>=2;}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_02', tier:1, text:'Készíts legalább 3 csempés szót, amely ugyanazzal a betűcsempével kezdődik és végződik', check:s=>words(s).some((w,i)=>{const t=tokensFor(s,i); return t.length>=3 && t[0]===t[t.length-1];}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_03', tier:1, text:'Készíts két szót két különböző magánhangzóval kezdve', check:s=>distinct(firstTiles(s).filter(t=>HUNGARIAN_VOWEL_TILES.has(t)))>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_04', tier:1, text:'Készíts három szót három különböző kezdőbetű-csempével', check:s=>distinct(firstTiles(s))>=3 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_05', tier:1, text:'Készíts három szót három különböző végződő betűcsempével', check:s=>distinct(lastTiles(s))>=3 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_06', tier:1, text:'Készíts két szót ugyanazzal a kezdőbetű-csempével', check:s=>{const f=firstTiles(s); return f.some((t,i)=>f.indexOf(t)!==i);} });
+  ALL_QUEST_DATABASE.push({ id:'q_new_07', tier:1, text:'Készíts egy magánhangzóval és egy mássalhangzóval kezdődő szót', check:s=>firstTiles(s).some(t=>HUNGARIAN_VOWEL_TILES.has(t)) && firstTiles(s).some(t=>!HUNGARIAN_VOWEL_TILES.has(t)) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_08', tier:2, text:'Készíts egy legalább 5 betűcsempés szót', check:s=>words(s).some((w,i)=>countFor(s,i)>=5) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_09', tier:2, text:'Készíts két legalább 4 betűcsempés szót', check:s=>words(s).filter((w,i)=>countFor(s,i)>=4).length>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_10', tier:2, text:'Készíts egy legalább 4 csempés szót, benne két ritka betűcsempével', check:s=>words(s).some((w,i)=>{const t=tokensFor(s,i); return t.length>=4 && rareIn(t)>=2;}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_11', tier:2, text:'Készíts két szót, amelyek mindegyike ritka betűcsempét tartalmaz', check:s=>words(s).filter((w,i)=>rareIn(tokensFor(s,i))>=1).length>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_12', tier:2, text:'Szerezz legalább 650 szintpontot a körben', check:s=>(s.stats.levelScore||0)>=650, progress:s=>({value:s.stats.levelScore||0,target:650}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_13', tier:3, text:'Robbants fel legalább 8 csempét egyetlen robbanással', check:s=>(s.stats.biggestMatch||0)>=8, progress:s=>({value:s.stats.biggestMatch||0,target:8}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_14', tier:3, text:'Készíts legalább 3 szót három különböző csempehosszal', check:s=>distinct(words(s).map((w,i)=>countFor(s,i)))>=3 && words(s).length>=3 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_15', tier:2, text:'Készíts legalább 5 csempés szót, benne 3 magánhangzóval és 2 mássalhangzóval', check:s=>words(s).some((w,i)=>{const t=tokensFor(s,i),v=vowelsIn(t); return t.length>=5 && v>=3 && t.length-v>=2;}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_16', tier:2, text:'Készíts olyan szót, amelyben 3 mássalhangzó-csempe követi egymást', check:s=>words(s).some((w,i)=>containsConsonantRun(tokensFor(s,i))) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_17', tier:2, text:'Készíts 3 szót, amelyek közül legalább az egyik 5 csempés vagy hosszabb', check:s=>words(s).length>=3 && words(s).some((w,i)=>countFor(s,i)>=5) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_18', tier:2, text:'Szabadíts fel legalább 8 betűt a tábláról', check:s=>(s.stats.lettersFreed||0)>=8, progress:s=>({value:s.stats.lettersFreed||0,target:8}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_19', tier:2, reqIce:2, reqWood:1, text:'Törj össze legalább 2 jégréteget és 1 faréteget', check:s=>(s.stats.iceBroken||0)>=2 && (s.stats.woodBroken||0)>=1 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_20', tier:3, text:'Robbants fel egy Mega Bombát, és készíts legalább 2 szót', check:s=>(s.stats.bombsTriggered||0)>=1 && words(s).length>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_21', tier:2, text:'Aktiválj egy Prizma-kristályt, és készíts legalább 2 szót', check:s=>(s.stats.prismsActivated||0)>=1 && words(s).length>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_22', tier:2, text:'Érj el legalább 50 pontot egyetlen szóval', check:s=>(s.levelWordScores||[]).some(sc=>sc>=50) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_23', tier:2, text:'Készíts két különböző magánhangzóval kezdődő szót; ezek egyike legyen legalább 4 csempés', check:s=>words(s).some((w,i)=>countFor(s,i)>=4 && HUNGARIAN_VOWEL_TILES.has(getStoredWordStartTile(s,i,w))) && distinct(firstTiles(s).filter(t=>HUNGARIAN_VOWEL_TILES.has(t)))>=2 });
+  ALL_QUEST_DATABASE.push({ id:'q_new_24', tier:2, text:'Készíts legalább 4 különböző érvényes szót a körben', check:s=>new Set(words(s)).size>=4, progress:s=>({value:new Set(words(s)).size,target:4}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_25', tier:2, text:'Robbants fel legalább 5 csempét két külön robbanásban', check:s=>(s.stats.matchesAtLeast5||0)>=2, progress:s=>({value:s.stats.matchesAtLeast5||0,target:2}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_26', tier:1, text:'Készíts legalább 4 csempés szót 3 mássalhangzóval és 1 magánhangzóval', check:s=>words(s).some((w,i)=>{const t=tokensFor(s,i),v=vowelsIn(t); return t.length>=4 && v>=1 && t.length-v>=3;}) });
+  ALL_QUEST_DATABASE.push({ id:'q_new_27', tier:3, text:'Készíts legalább 3 darab 4 csempés vagy hosszabb szót', check:s=>words(s).filter((w,i)=>countFor(s,i)>=4).length>=3, progress:s=>({value:words(s).filter((w,i)=>countFor(s,i)>=4).length,target:3}) });
 }
-build100Quests();
+buildQuestDatabase();
+
+// A játékos ne kaphasson két, csak másképp megfogalmazott, de azonos célt kérő küldetést.
+// A 27 új feladat mind megmarad, de a közeli rokon célok csak egy helyet foglalnak el egy körben.
+function getQuestObjectiveKey(q) {
+  const id = String(q && q.id || '');
+  const text = String(q && q.text || '').toLocaleLowerCase('hu-HU');
+  if (id === 'q_new_08' || (/^q_wl_/.test(id) && text.includes('5 betűcsempés'))) return 'word-length-5';
+  if (id === 'q_new_09' || text.includes('legalább két darab 4 betűcsempés szót')) return 'two-words-4-tiles';
+  if (id === 'q_new_27' || text.includes('legalább három darab 4 betűcsempés vagy hosszabb')) return 'three-words-4plus-tiles';
+  if (id === 'q_new_25' || text.includes('legalább 5 csempét kétszer') || text.includes('legalább 5 csempét két külön robbanásban')) return 'two-blasts-5plus';
+  return id || text;
+}
+
+function shuffleQuestList(items) {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 function getViableQuestsForBoard(lvl) {
   let targetTier = 1;
@@ -2382,8 +2469,10 @@ function getViableQuestsForBoard(lvl) {
 
     // 5. Bomba küldetés csak a 6. szinttől jöhet
     if (q.text && q.text.includes('Bomba') && lvl < 6) return false;
+    if (q.reqIce && q.reqWood && lvl < 5) return false;
     // A Prizma csak akkor kérhető, amikor a játékos már találkozott a nagy robbanásokkal.
     if (q.id && q.id.startsWith('q_p_') && lvl < 6) return false;
+    if (q.text && q.text.includes('Prizma') && lvl < 6) return false;
 
     return true;
   }).map(q => configureStartingLetterQuest(q));
@@ -2433,14 +2522,123 @@ const state = {
   activeStakePenalty: 0,
   levelMultiplier: 1,
   levelCompleted: false,
-  pendingWinModal: false
+  pendingWinModal: false,
+  tenQuestCooldownUntil: 0,
+  activeTenQuestReward: null,
+  tenQuestRewardAwardedLevel: 0,
+  tenQuestTicketAwardedLevel: 0,
+  tenQuestGuardianUsed: false,
+  tenQuestLastStartedAt: 0
 };
+
+const TEN_QUEST_COOLDOWN_MS = 30 * 60 * 1000;
+const TEN_QUEST_REWARD_DURATION_MS = 5 * 60 * 1000;
+const TEN_QUEST_REWARDS = [
+  { id:'double_word', icon:'⚡', name:'Szóduplázó', desc:'Az érvényes szavak pontja 2× értékű.' },
+  { id:'word_plus', icon:'💎', name:'Kristálybónusz', desc:'Minden érvényes szó +18 extra pontot kap.' },
+  { id:'extra_steps', icon:'👟', name:'Lépésvihar', desc:'A következő pályákon +4 kezdőlépést kapsz.' },
+  { id:'word_step', icon:'⏱️', name:'Szó-lendület', desc:'Minden érvényes szó +1 lépést ad.' },
+  { id:'shop_discount', icon:'🛍️', name:'Féláras bolt', desc:'A bolt és a betűpiac árai 50%-kal csökkennek.' },
+  { id:'golden_tiles', icon:'🌟', name:'Aranyhullám', desc:'Sokkal gyakrabban jelennek meg arany betűcsempék.' },
+  { id:'rare_letters', icon:'🧬', name:'Ritkabetű-vonzás', desc:'Nő a ritka magyar betűcsempék megjelenési esélye.' },
+  { id:'vowel_rain_plus', icon:'🌧️', name:'Vokális zápor', desc:'A Vokális Eső akár 5 betűcsempét gyűjt be a szokásos 3 helyett.' },
+  { id:'mega_blast', icon:'💥', name:'Mega-robbanás', desc:'A Mega Bomba 3×3 helyett 5×5 területet ér el.' },
+  { id:'guardian', icon:'🛡️', name:'Őrangyal', desc:'Egyszer megment a lépésvesztéstől, és +3 lépést ad.' },
+  { id:'explosion_bonus', icon:'🔥', name:'Robbanás-túltöltés', desc:'A robbantások pontjai 50%-kal nagyobbak.' },
+  { id:'lucky_ticket', icon:'🎫', name:'Sorsjegy-eső', desc:'A jutalom aktív ideje alatt minden sikeres pálya után +1 sorsjegy jár.' }
+];
+
+function getTenQuestLocalStorageKey() {
+  // Nem tároljuk a PIN-t a localStorage kulcsában: név+PIN rövid, nem visszafejthető hash-e az azonosító.
+  const raw = `${String(state.playerName || '').toUpperCase()}|${String(state.playerPin || '')}`;
+  let hash = 2166136261;
+  for (let i = 0; i < raw.length; i++) { hash ^= raw.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+  return `szorobbantas.tenquest.v1.${(hash >>> 0).toString(16)}`;
+}
+function readTenQuestLocalMeta() {
+  try { return JSON.parse(localStorage.getItem(getTenQuestLocalStorageKey()) || '{}') || {}; }
+  catch (_) { return {}; }
+}
+function persistTenQuestMeta() {
+  try {
+    localStorage.setItem(getTenQuestLocalStorageKey(), JSON.stringify({
+      cooldownUntil: Number(state.tenQuestCooldownUntil) || 0,
+      lastStartedAt: Number(state.tenQuestLastStartedAt) || 0,
+      activeReward: state.activeTenQuestReward || null,
+      rewardAwardedLevel: Number(state.tenQuestRewardAwardedLevel) || 0,
+      ticketAwardedLevel: Number(state.tenQuestTicketAwardedLevel) || 0,
+      guardianUsed: !!state.tenQuestGuardianUsed
+    }));
+  } catch (_) {}
+}
+function hydrateTenQuestMeta(cloudData = {}) {
+  const local = readTenQuestLocalMeta();
+  state.tenQuestCooldownUntil = Math.max(Number(cloudData.tenQuestCooldownUntil) || 0, Number(local.cooldownUntil) || 0);
+  state.tenQuestLastStartedAt = Math.max(Number(cloudData.tenQuestLastStartedAt) || 0, Number(local.lastStartedAt) || 0);
+  state.tenQuestRewardAwardedLevel = Math.max(Number(cloudData.tenQuestRewardAwardedLevel) || 0, Number(local.rewardAwardedLevel) || 0);
+  state.tenQuestTicketAwardedLevel = Math.max(Number(cloudData.tenQuestTicketAwardedLevel) || 0, Number(local.ticketAwardedLevel) || 0);
+  state.tenQuestGuardianUsed = !!(cloudData.tenQuestGuardianUsed || local.guardianUsed);
+  const now = Date.now();
+  const cloudReward = cloudData.activeTenQuestReward && Number(cloudData.activeTenQuestReward.expiresAt) > now ? cloudData.activeTenQuestReward : null;
+  const localReward = local.activeReward && Number(local.activeReward.expiresAt) > now ? local.activeReward : null;
+  state.activeTenQuestReward = (!cloudReward || (localReward && Number(localReward.expiresAt) > Number(cloudReward.expiresAt))) ? localReward : cloudReward;
+  if (state.activeTenQuestReward && !TEN_QUEST_REWARDS.some(r => r.id === state.activeTenQuestReward.id)) state.activeTenQuestReward = null;
+  persistTenQuestMeta();
+}
+function getActiveTenQuestReward() {
+  const reward = state.activeTenQuestReward;
+  if (!reward) return null;
+  if (Number(reward.expiresAt) <= Date.now() || !TEN_QUEST_REWARDS.some(r => r.id === reward.id)) {
+    state.activeTenQuestReward = null;
+    state.tenQuestGuardianUsed = false;
+    persistTenQuestMeta();
+    return null;
+  }
+  return reward;
+}
+function hasTenQuestEffect(id) { const reward = getActiveTenQuestReward(); return !!reward && reward.id === id; }
+function formatCountdown(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(total / 60), sec = total % 60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+function isTenQuestChallengeAvailable() { return !!(state.playerName && state.playerPin) && Date.now() >= (Number(state.tenQuestCooldownUntil) || 0); }
+function updateTenQuestStatusUI() {
+  const card = document.getElementById('card-mode-ten');
+  const cooldownEl = document.getElementById('ten-quest-cooldown');
+  const remaining = Math.max(0, (Number(state.tenQuestCooldownUntil) || 0) - Date.now());
+  if (card) card.classList.toggle('locked', remaining > 0);
+  if (cooldownEl) cooldownEl.textContent = !state.playerName ? 'Belépés után játékosonként 30 percenként' : (remaining > 0 ? `Újra elérhető: ${formatCountdown(remaining)}` : 'ELÉRHETŐ · 30 PERCENKÉNT');
+  const status = document.getElementById('ten-quest-reward-status');
+  const reward = getActiveTenQuestReward();
+  if (status && reward) {
+    status.classList.add('active');
+    status.textContent = `${reward.icon} AKTÍV EXTRA: ${reward.name} — ${reward.desc} · hátralévő idő: ${formatCountdown(Number(reward.expiresAt) - Date.now())}`;
+  } else if (status) { status.classList.remove('active'); status.textContent = ''; }
+}
+function grantTenQuestReward() {
+  const definition = TEN_QUEST_REWARDS[Math.floor(Math.random() * TEN_QUEST_REWARDS.length)];
+  state.activeTenQuestReward = { ...definition, startedAt: Date.now(), expiresAt: Date.now() + TEN_QUEST_REWARD_DURATION_MS };
+  state.tenQuestGuardianUsed = false;
+  persistTenQuestMeta();
+  updateTenQuestStatusUI();
+  showToast(`${definition.icon} 10-ES ROHAM TELJESÍTVE! Jutalmad: ${definition.name} — ${definition.desc} 5 percig!`, 'ok');
+  // A jutalom cloud mentését nem kötjük a következő játékosművelethez.
+  if (typeof syncCloudState === 'function') setTimeout(() => syncCloudState(), 0);
+}
 
 const boardEl = document.getElementById('game-board');
 const trayEl = document.getElementById('builder-tray');
 const poolEl = document.getElementById('pool-grid');
 let isLocked = false;
 let isClaimingDaily = false;
+
+function getQuestCountForMode(mode) {
+  if (mode === 'ten') return 10;
+  if (mode === 'legend') return 6;
+  if (mode === 'brave') return 5;
+  return 4;
+}
 
 function isGoldenLevel(lvl) { return lvl % 10 === 0; }
 
@@ -2545,9 +2743,11 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
     const cycle = (lvl - 1) % 10;
     state.moves = Math.max(22, 28 - Math.floor(cycle * 0.6));
   }
+  if (!sameLevelRestart && hasTenQuestEffect('extra_steps')) state.moves += 4;
+  if (!sameLevelRestart && hasTenQuestEffect('guardian')) state.hasShield = true;
 
   state.stats = {
-    wordsMade: 0, biggestMatch: 0, iceBroken: 0,
+    wordsMade: 0, biggestMatch: 0, matchesAtLeast5: 0, goldLettersFreed: 0, iceBroken: 0,
     woodBroken: 0, lettersFreed: 0, levelScore: 0,
     bombsTriggered: 0, prismsActivated: 0, usedRareChar: false
   };
@@ -2556,17 +2756,18 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
   if (chosenQuests && chosenQuests.length >= 3) {
     state.activeQuests = chosenQuests.map(q => configureStartingLetterQuest(q, q && q.reqMinTiles));
   } else {
-    const shuffled = [...viable].sort(() => Math.random() - 0.5);
+    const shuffled = shuffleQuestList(viable);
     const uniquePicks = [];
-    const seenTexts = new Set();
+    const seenObjectives = new Set();
     for (const q of shuffled) {
-      if (!seenTexts.has(q.text)) {
-        seenTexts.add(q.text);
+      const objectiveKey = getQuestObjectiveKey(q);
+      if (!seenObjectives.has(objectiveKey)) {
+        seenObjectives.add(objectiveKey);
         uniquePicks.push(q);
-        if (uniquePicks.length >= 3) break;
+        if (uniquePicks.length >= 4) break;
       }
     }
-    state.activeQuests = uniquePicks.length >= 3 ? uniquePicks : viable.slice(0, 3);
+    state.activeQuests = uniquePicks.length >= 4 ? uniquePicks : viable.slice(0, 4);
   }
   state.questStatuses = new Array(state.activeQuests.length).fill(false);
 
@@ -2599,10 +2800,13 @@ function updateHighStakesBanner() {
   if (!b) return;
   if (state.highStakesMode === 'brave') {
     b.className = 'high-stakes-banner mode-brave';
-    b.innerHTML = `🔥 BÁTOR KIHÍVÁS (4 Quest): <b>300 P tét zárolva</b> | Siker esetén <b>2x SZORZÓ + Ingyen Sorsjegy!</b> | Bukás: <b>-150 P levonás</b>`;
+    b.innerHTML = `🔥 BÁTOR KIHÍVÁS (5 küldetés): <b>300 P tét zárolva</b> | Siker esetén <b>2× SZORZÓ + ingyen sorsjegy!</b> | Bukás: <b>−150 P levonás</b>`;
   } else if (state.highStakesMode === 'legend') {
     b.className = 'high-stakes-banner mode-legend';
-    b.innerHTML = `⚡ LEGENDA KIHÍVÁS (5 Quest): <b>600 P tét zárolva</b> | Siker esetén <b>3x SZORZÓ + ARANY JOKER!</b> | Bukás: <b>-300 P levonás</b>`;
+    b.innerHTML = `⚡ LEGENDA KIHÍVÁS (6 küldetés): <b>600 P tét zárolva</b> | Siker esetén <b>3× SZORZÓ + ARANY JOKER!</b> | Bukás: <b>−300 P levonás</b>`;
+  } else if (state.highStakesMode === 'ten') {
+    b.className = 'high-stakes-banner mode-ten';
+    b.innerHTML = `💜 10-ES ROHAM: <b>10 külön küldetés</b> | Siker esetén <b>5 perces, véletlen extra képesség</b>`;
   } else {
     b.className = 'high-stakes-banner';
     b.innerHTML = '';
@@ -2657,7 +2861,7 @@ function generateProceduralGrid(lvl, quests) {
         r, c, color,
         ice: 0, wood: 0,
         letter: char, bomb: false, prism: false,
-        isGold: isGold && (Math.random() < 0.35 || hasLetter),
+        isGold: (isGold || hasTenQuestEffect('golden_tiles')) && (Math.random() < (hasTenQuestEffect('golden_tiles') ? 0.62 : 0.35) || hasLetter),
         el: null
       };
       state.board[r][c] = t;
@@ -2772,6 +2976,10 @@ function getBalancedLetter() {
     return easyVowels[Math.floor(Math.random() * easyVowels.length)];
   }
   
+  if (hasTenQuestEffect('rare_letters') && Math.random() < 0.28) {
+    const rare = [...RARE_LETTERS];
+    return rare[Math.floor(Math.random() * rare.length)];
+  }
   return BAG[Math.floor(Math.random() * BAG.length)];
 }
 
@@ -3062,8 +3270,9 @@ function getConnectedCluster(startR, startC) {
 function triggerBomb(centerR, centerC) {
   state.stats.bombsTriggered++;
   const blastZone = [];
-  for(let dr = -1; dr <= 1; dr++) {
-    for(let dc = -1; dc <= 1; dc++) {
+  const radius = hasTenQuestEffect('mega_blast') ? 2 : 1;
+  for(let dr = -radius; dr <= radius; dr++) {
+    for(let dc = -radius; dc <= radius; dc++) {
       const nr = centerR + dr, nc = centerC + dc;
       if(nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
         if(state.board[nr][nc]) blastZone.push({r: nr, c: nc});
@@ -3106,10 +3315,12 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
 
     const matchSize = tilesPos.length;
     state.stats.biggestMatch = Math.max(state.stats.biggestMatch, matchSize);
+    if (matchSize >= 5) state.stats.matchesAtLeast5 = (state.stats.matchesAtLeast5 || 0) + 1;
 
     let earnedScore = Math.floor(Math.pow(matchSize, 1.4) * 15);
     if(isGoldenLevel(state.level)) earnedScore *= 3;
     earnedScore *= (state.levelMultiplier || 1);
+    if (hasTenQuestEffect('explosion_bonus')) earnedScore = Math.floor(earnedScore * 1.5);
 
     state.weeklyScore += earnedScore;
     state.stats.levelScore += earnedScore;
@@ -3139,6 +3350,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
       if(t.letter && t.ice === 0 && t.wood === 0 && (occupiedPoolSlots + newlyFreedLetters.length) < MAX_POOL) {
         newlyFreedLetters.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
         state.stats.lettersFreed++;
+        if (t.isGold) state.stats.goldLettersFreed = (state.stats.goldLettersFreed || 0) + 1;
       }
 
       t.el.classList.add('clearing');
@@ -3306,7 +3518,7 @@ async function applyGravityAndRefill() {
       const t = {
         r, c, color, ice: iceLayer, wood: woodLayer,
       letter: char, bomb: false, prism: false,
-        isGold: isGold && (Math.random() < 0.35 || hasLetter),
+        isGold: (isGold || hasTenQuestEffect('golden_tiles')) && (Math.random() < (hasTenQuestEffect('golden_tiles') ? 0.62 : 0.35) || hasLetter),
         el: null
       };
       state.board[r][c] = t;
@@ -3519,7 +3731,9 @@ function calculateWordScore(word, items = state.tray) {
   if (couponActive) multiplier *= 3;
   multiplier = Math.min(6, multiplier);
 
-  const baseScore = Math.floor(rawScore * multiplier);
+  let baseScore = Math.floor(rawScore * multiplier);
+  if (hasTenQuestEffect('double_word')) baseScore *= 2;
+  if (hasTenQuestEffect('word_plus')) baseScore += 18;
   const today = getTodayString();
   const dailySecretBonus = word === currentDailySecret && state.secretWordLastSolvedDate !== today
     ? getDailySecretReward() : 0;
@@ -3744,6 +3958,7 @@ safeOn('btn-submit', 'click', async () => {
   state.levelWordScores.push(wordScore);
   state.levelWordTileCounts.push(submittedTileCount);
   state.levelWordStartTiles.push((state.tray[0] && state.tray[0].char) || tokenizeHungarianTiles(word)[0] || word.charAt(0));
+  if (hasTenQuestEffect('word_step')) state.moves += 1;
 
   showToast(`Sikeres szó: ${word} (+${wordScore}P)!`, 'ok');
 
@@ -3874,7 +4089,7 @@ safeOn('btn-restart-level-direct', 'click', () => {
       state.weeklyScore = Math.max(0, state.weeklyScore - state.activeStakePenalty);
       showToast(`Tét elbukva és -${state.activeStakePenalty} P büntetés levonva!`, "err");
     }
-    initLevelData(state.level, state.activeQuests, 'normal');
+    initLevelData(state.level, state.activeQuests, state.highStakesMode === 'ten' ? 'ten' : 'normal');
     syncCloudState();
     showToast(`Szint újraindítva: ${state.level}. szint!`, "ok");
   }
@@ -3945,13 +4160,14 @@ function updateMovesWatermark() {
 }
 
 function getQuestProgress(q) {
+  if (q && typeof q.progress === 'function') { try { return q.progress(state); } catch (_) {} }
   const text = q.text || '';
   const targetMatch = text.match(/(\d+)/);
   const target = targetMatch ? parseInt(targetMatch[1], 10) : 1;
   const words = state.levelWords || [];
 
   if (q.id && q.id.startsWith('q_m_')) return { value: state.stats.biggestMatch || 0, target };
-  if (q.id && q.id.startsWith('q_wl_')) return { value: Math.max(0, ...words.map(w => w.length)), target };
+  if (q.id && q.id.startsWith('q_wl_')) return { value: Math.max(0, ...words.map((w,i) => getStoredWordTileCount(state, i, w))), target };
   if (q.id && q.id.startsWith('q_wc_')) return { value: words.length, target };
   if (q.id && q.id.startsWith('q_st_')) return { value: q.check(state) ? 1 : 0, target: 1 };
   if (q.id && q.id.startsWith('q_inc_')) return { value: words.some(w => w.includes(q.reqLetter)) ? 1 : 0, target: 1 };
@@ -4024,6 +4240,18 @@ function verifyGameState() {
     // Egy teljesítéshez pontosan egy jutalom tartozhat, akkor is, ha több UI-frissítés érkezik.
     if (state.levelCompleted) return;
     state.levelCompleted = true;
+    if (state.highStakesMode === 'ten' && Number(state.tenQuestRewardAwardedLevel) !== Number(state.level)) {
+      state.tenQuestRewardAwardedLevel = Number(state.level) || 0;
+      grantTenQuestReward();
+    }
+    const activeTimedReward = getActiveTenQuestReward();
+    if (activeTimedReward && activeTimedReward.id === 'lucky_ticket' && Number(state.tenQuestTicketAwardedLevel) !== Number(state.level)) {
+      state.tenQuestTicketAwardedLevel = Number(state.level) || 0;
+      state.scratchTickets = Array.isArray(state.scratchTickets) ? state.scratchTickets : [];
+      state.scratchTickets.push(generate50ScratchVariations()[0]);
+      showToast('🎫 Sorsjegy-eső: +1 sorsjegy a sikeres pályáért!', 'ok');
+      persistTenQuestMeta();
+    }
     const winTitle = document.getElementById('win-modal-title');
     const winDesc = document.getElementById('win-modal-desc');
 
@@ -4063,6 +4291,7 @@ function verifyGameState() {
   }
 
   if(state.moves <= 0) {
+    if (!state.hasShield && hasTenQuestEffect('guardian') && !state.tenQuestGuardianUsed) { state.hasShield = true; state.tenQuestGuardianUsed = true; persistTenQuestMeta(); }
     if(state.hasShield) {
       state.hasShield = false;
       state.moves += 3;
@@ -4120,10 +4349,10 @@ safeOn('btn-rescue-restart', 'click', () => {
     showToast("Elfogytak a lépések! Szint újraindul...", "err");
   }
 
-  initLevelData(state.level, state.activeQuests, 'normal');
+  initLevelData(state.level, state.activeQuests, state.highStakesMode === 'ten' ? 'ten' : 'normal');
 });
 
-let selectedQuestCount = 3;
+let selectedQuestCount = 4;
 let selectedStakeMode = 'normal';
 let rouletteTimers = [];
 let rouletteViableList = [];
@@ -4143,6 +4372,7 @@ function setupStakeCardClicks() {
   document.querySelectorAll('.stake-card').forEach(card => {
     card.addEventListener('click', () => {
       if (rouletteState !== 'idle') return;
+      if (card.dataset.mode === 'ten' && !isTenQuestChallengeAvailable()) { updateTenQuestStatusUI(); showToast(!state.playerName ? 'A 10-es rohamhoz előbb jelentkezz be saját játékosprofiloddal.' : `A 10-es roham még nem érhető el. Hátralévő idő: ${formatCountdown((Number(state.tenQuestCooldownUntil)||0)-Date.now())}.`, 'err'); return; }
       document.querySelectorAll('.stake-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       selectedStakeMode = card.dataset.mode;
@@ -4157,13 +4387,14 @@ let preselectedQuests = [];
 
 function openQuestRouletteModal(nextLvl) {
   selectedStakeMode = 'normal';
-  selectedQuestCount = 3;
+  selectedQuestCount = 4;
   document.querySelectorAll('.stake-card').forEach(c => c.classList.remove('selected'));
   const normCard = document.getElementById('card-mode-normal');
   if (normCard) normCard.classList.add('selected');
 
   rouletteViableList = getViableQuestsForBoard(nextLvl);
   buildRouletteReels(selectedQuestCount);
+  updateTenQuestStatusUI();
 
   const btn = document.getElementById('btn-dynamic-roulette');
   if (btn) {
@@ -4193,11 +4424,12 @@ function buildRouletteReels(count) {
   }
 }
 
-safeOn('btn-dynamic-roulette', 'click', () => {
+safeOn('btn-dynamic-roulette', 'click', async () => {
   const btn = document.getElementById('btn-dynamic-roulette');
   if (!btn) return;
 
   if (rouletteState === 'idle') {
+    if (selectedStakeMode === 'ten' && !isTenQuestChallengeAvailable()) { updateTenQuestStatusUI(); showToast(!state.playerName ? 'A 10-es rohamhoz előbb jelentkezz be saját játékosprofiloddal.' : `A 10-es roham még nem érhető el. Hátralévő idő: ${formatCountdown((Number(state.tenQuestCooldownUntil)||0)-Date.now())}.`, 'err'); return; }
     const cost = selectedStakeMode === 'brave' ? 300 : (selectedStakeMode === 'legend' ? 600 : 0);
     if (cost > 0 && state.weeklyScore < cost && !isDevTestUser()) {
       showToast(`Nincs elég heti pontod a téthez (${cost} P kell)!`, "err");
@@ -4206,16 +4438,23 @@ safeOn('btn-dynamic-roulette', 'click', () => {
 
     // 100% duplikáció-mentes küldetéskiválasztás a pörgetéshez
     preselectedQuests = [];
-    const shuffled = [...rouletteViableList].sort(() => Math.random() - 0.5);
-    const seenTexts = new Set();
+    const shuffled = shuffleQuestList(rouletteViableList);
+    const seenObjectives = new Set();
     for (const q of shuffled) {
-      if (!seenTexts.has(q.text)) {
-        seenTexts.add(q.text);
+      const objectiveKey = getQuestObjectiveKey(q);
+      if (!seenObjectives.has(objectiveKey)) {
+        seenObjectives.add(objectiveKey);
         preselectedQuests.push(q);
         if (preselectedQuests.length >= selectedQuestCount) break;
       }
     }
 
+    if (preselectedQuests.length < selectedQuestCount) { showToast(`Ehhez a módhoz csak ${preselectedQuests.length} különböző küldetés érhető el ezen a szinten.`, 'err'); return; }
+    if (selectedStakeMode === 'ten') {
+      state.tenQuestLastStartedAt = Date.now();
+      state.tenQuestCooldownUntil = state.tenQuestLastStartedAt + TEN_QUEST_COOLDOWN_MS;
+      persistTenQuestMeta(); updateTenQuestStatusUI(); await syncCloudState();
+    }
     rouletteState = 'spinning';
     btn.textContent = "⏹️ STOP MEGÁLLÍTÁS";
     btn.className = "btn-dynamic-roulette state-stop";
@@ -4309,13 +4548,15 @@ function getItemCost(itemId) {
   const item = SHOP_ITEMS.find(i => i.id === itemId);
   if(!item) return 100;
   const count = (state.purchaseCounts && state.purchaseCounts[itemId]) || 0;
-  return Math.round(item.baseCost * Math.pow(1.35, count));
+  const cost = Math.round(item.baseCost * Math.pow(1.35, count));
+  return hasTenQuestEffect('shop_discount') ? Math.max(1, Math.floor(cost * 0.5)) : cost;
 }
 
 function getLetterMarketCost() {
   if(isDevTestUser()) return 0;
   const count = (state.purchaseCounts && state.purchaseCounts['letter_market']) || 0;
-  return Math.round(250 * Math.pow(1.65, count));
+  const cost = Math.round(250 * Math.pow(1.65, count));
+  return hasTenQuestEffect('shop_discount') ? Math.max(1, Math.floor(cost * 0.5)) : cost;
 }
 
 function isHelperFreeAvailable(itemId) {
@@ -4673,7 +4914,8 @@ async function useVowelRain() {
   shuffle(preferred);
   shuffle(candidates);
   const source = preferred.length >= Math.min(3, capacity) ? preferred : candidates;
-  const selected = source.slice(0, Math.min(3, capacity, source.length));
+  const targetCount = hasTenQuestEffect('vowel_rain_plus') ? 5 : 3;
+  const selected = source.slice(0, Math.min(targetCount, capacity, source.length));
   if (!selected.length) {
     showToast('Most nincs biztonságosan begyűjthető kocka.', 'err');
     return;
@@ -5865,6 +6107,12 @@ async function syncCloudState() {
     nextRoundHelpers: state.nextRoundHelpers || [],
     roundTemporaryHelpers: state.roundTemporaryHelpers || [],
     roundStartLetters: state.roundStartLetters || [],
+    tenQuestCooldownUntil: Number(state.tenQuestCooldownUntil) || 0,
+    tenQuestLastStartedAt: Number(state.tenQuestLastStartedAt) || 0,
+    activeTenQuestReward: state.activeTenQuestReward || null,
+    tenQuestRewardAwardedLevel: Number(state.tenQuestRewardAwardedLevel) || 0,
+    tenQuestTicketAwardedLevel: Number(state.tenQuestTicketAwardedLevel) || 0,
+    tenQuestGuardianUsed: !!state.tenQuestGuardianUsed,
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
     lastCheckInDate: state.lastCheckInDate || null,
@@ -5883,6 +6131,7 @@ async function syncCloudState() {
 function restoreFromCloudData(data) {
   state.playerName = data.playerName || state.playerName;
   state.playerPin = data.playerPin || state.playerPin;
+  hydrateTenQuestMeta(data || {});
   state.level = data.level || 1;
 
   // HÉTFŐI NULLÁZÁS BIZTOSÍTÁSA:
@@ -5916,18 +6165,50 @@ function restoreFromCloudData(data) {
 
   if (data.activeQuestIds && Array.isArray(data.activeQuestIds)) {
     const savedMinima = Array.isArray(data.activeQuestMinTiles) ? data.activeQuestMinTiles : [];
-    state.activeQuests = data.activeQuestIds.map((qid, index) => {
+    const savedStatuses = Array.isArray(data.questStatuses) ? data.questStatuses : [];
+    const restoredQuests = [];
+    const restoredStatuses = [];
+    const seenObjectives = new Set();
+    data.activeQuestIds.forEach((qid, index) => {
       const base = ALL_QUEST_DATABASE.find(q => q.id === qid) || ALL_QUEST_DATABASE[0];
-      return configureStartingLetterQuest(base, savedMinima[index]);
+      const quest = configureStartingLetterQuest(base, savedMinima[index]);
+      const objectiveKey = getQuestObjectiveKey(quest);
+      // Régi mentésben is kiszűrjük a két külön szöveggel mentett azonos célokat.
+      if (seenObjectives.has(objectiveKey)) return;
+      seenObjectives.add(objectiveKey);
+      restoredQuests.push(quest);
+      restoredStatuses.push(!!savedStatuses[index]);
     });
-    state.questStatuses = data.questStatuses || new Array(state.activeQuests.length).fill(false);
+    state.activeQuests = restoredQuests;
+    state.questStatuses = restoredStatuses;
   } else {
     const viable = getViableQuestsForBoard(state.level);
-    state.activeQuests = [viable[0] || ALL_QUEST_DATABASE[0], viable[1] || ALL_QUEST_DATABASE[1], viable[2] || ALL_QUEST_DATABASE[2]];
-    state.questStatuses = [false, false, false];
+    state.activeQuests = viable.slice(0, getQuestCountForMode(state.highStakesMode));
+    state.questStatuses = new Array(state.activeQuests.length).fill(false);
   }
 
-  state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false };
+  // Régi profilok migrációja: a korábban 3/4/5 feladatosan mentett kört a lehető
+  // legkíméletesebben kiegészítjük az új 4/5/6/10-es követelményre, a meglévő kész státuszok megtartásával.
+  const requiredQuestCount = getQuestCountForMode(state.highStakesMode);
+  if (state.activeQuests.length < requiredQuestCount) {
+    const existingIds = new Set(state.activeQuests.map(q => q.id));
+    const existingObjectives = new Set(state.activeQuests.map(getQuestObjectiveKey));
+    const safeCandidates = shuffleQuestList(getViableQuestsForBoard(state.level).filter(q =>
+      !existingIds.has(q.id) && !existingObjectives.has(getQuestObjectiveKey(q)) && !q.reqLetter && !q.reqIce && !q.reqWood &&
+      !/arany|bomba|prizma/i.test(q.text || '')
+    ));
+    for (const quest of safeCandidates) {
+      if (state.activeQuests.length >= requiredQuestCount) break;
+      state.activeQuests.push(quest);
+      state.questStatuses.push(false);
+      existingIds.add(quest.id);
+      existingObjectives.add(getQuestObjectiveKey(quest));
+    }
+  }
+
+  state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, matchesAtLeast5: 0, goldLettersFreed: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false };
+  state.stats.matchesAtLeast5 = Number(state.stats.matchesAtLeast5) || 0;
+  state.stats.goldLettersFreed = Number(state.stats.goldLettersFreed) || 0;
   state.levelWords = Array.isArray(data.levelWords) ? data.levelWords : [];
   state.levelWordScores = Array.isArray(data.levelWordScores) ? data.levelWordScores : [];
   state.levelWordTileCounts = Array.isArray(data.levelWordTileCounts)
@@ -5992,6 +6273,8 @@ safeOn('btn-auth-confirm', 'click', async () => {
   initAudio();
   state.playerName = n;
   state.playerPin = p;
+  hydrateTenQuestMeta({});
+  updateTenQuestStatusUI();
 
   const authModal = document.getElementById('modal-auth');
   if (authModal) authModal.classList.remove('active');
@@ -6411,6 +6694,8 @@ setInterval(() => {
 
 main();
 startAuthCommunityListener();
+updateTenQuestStatusUI();
+setInterval(updateTenQuestStatusUI, 1000);
 </script>
 </body>
 </html>
