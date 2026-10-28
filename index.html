@@ -486,6 +486,15 @@ html, body {
 }
 .builder-tray.valid { border-color: var(--emerald); box-shadow: 0 0 14px rgba(16,185,129,0.4); background: rgba(6,78,59,0.25); }
 .builder-tray.invalid { border-color: var(--ruby); box-shadow: 0 0 14px rgba(239,68,68,0.3); }
+.word-score-preview {
+  min-height: 25px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 5px 8px; border-radius: 7px; background: rgba(2,6,23,.72);
+  border: 1px solid rgba(255,255,255,.08); color: #94a3b8; font-size: 10px; font-weight: 800;
+}
+.word-score-preview.valid { color: #a7f3d0; border-color: rgba(16,185,129,.45); }
+.word-score-preview.invalid { color: #fecaca; border-color: rgba(239,68,68,.4); }
+.word-score-preview span { min-width: 0; overflow-wrap: anywhere; }
+.word-score-preview strong { color: #fde68a; font-size: 12px; white-space: nowrap; }
 .tray-hint {
   font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1.5px;
   text-transform: uppercase; pointer-events: none; position: absolute;
@@ -927,6 +936,15 @@ html, body {
   .quick-inv-row { grid-template-columns: repeat(4, 1fr); }
   .pool-grid { min-height: 220px !important; max-height: 240px !important; }
 }
+body.low-power-mode .glass { backdrop-filter: none; -webkit-backdrop-filter: none; }
+body.low-power-mode .tile-inner, body.low-power-mode .btn-dock-slot,
+body.low-power-mode .mission-strip, body.low-power-mode .board { box-shadow: none !important; }
+body.low-power-mode .tile-inner::before { display: none; }
+body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  #bg-cubes-canvas, #fx-canvas { display: none !important; }
+}
 </style>
 </head>
 <body>
@@ -1024,6 +1042,9 @@ html, body {
     <div class="builder-panel glass">
       <div class="builder-tray" id="builder-tray">
         <div class="tray-hint" id="tray-hint">HÚZD VAGY KOPPINTTS A BETŰKRE</div>
+      </div>
+      <div class="word-score-preview" id="word-score-preview" aria-live="polite">
+        <span id="word-preview-status">Állíts össze egy szót a betűkből.</span><strong id="word-preview-points">— P</strong>
       </div>
       <div class="action-row">
         <button class="btn-control btn-backspace" id="btn-back">⌫</button>
@@ -1300,7 +1321,7 @@ html, body {
 <div class="modal-overlay" id="modal-free-letter-reward">
   <div class="modal-box" style="border-color:var(--emerald); max-width:440px;">
     <div class="modal-title" style="color:var(--emerald);">🎁 MESTERJUTALOM!</div>
-    <p class="modal-desc" id="free-letter-desc">Hosszú szó bónusz! +1 lépés és kérhetsz egy betűt!</p>
+    <p class="modal-desc" id="free-letter-desc">Hosszú szó bónusz! +1 lépés és kérhetsz egy betűt, amelyet a következő szint raktárába mentünk.</p>
     <div class="current-pool-preview" id="reward-pool-preview"></div>
     <input type="text" class="input-pin" id="input-free-letter" placeholder="KÉRT BETŰ (PL. Y, K, GY)" maxlength="3" autocomplete="off">
     <div class="free-picks-row">
@@ -1596,40 +1617,62 @@ function sfxFanfare() {
 function sfxError() { playTone(140, 0.18, 'square', 0.18); }
 
 const fx = document.getElementById('fx-canvas');
-const fxCtx = fx.getContext('2d');
+const fxCtx = fx ? fx.getContext('2d') : null;
 let particles = [];
-function resizeFx() { fx.width = window.innerWidth; fx.height = window.innerHeight; }
+let fxFrame = 0;
+const motionPreference = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+const lowPowerDevice = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+  (navigator.deviceMemory && navigator.deviceMemory <= 4);
+if (lowPowerDevice || motionPreference.matches) document.body.classList.add('low-power-mode');
+function visualFxAllowed() {
+  return !!fxCtx && !document.hidden && !motionPreference.matches && !lowPowerDevice &&
+    document.body.classList.contains('low-power-mode') === false;
+}
+function resizeFx() {
+  if (!fx) return;
+  fx.width = Math.max(1, window.innerWidth);
+  fx.height = Math.max(1, window.innerHeight);
+}
 window.addEventListener('resize', resizeFx);
 resizeFx();
 
 function spawnExplosion(x, y, color) {
-  for(let i = 0; i < 16; i++) {
+  if (!visualFxAllowed()) return;
+  // Korlátozott részecskeszám: sok egyidejű robbanás sem növeli korlátlanul a terhelést.
+  const particlesToAdd = 10;
+  if (particles.length > 220) particles.splice(0, particles.length - 180);
+  for(let i = 0; i < particlesToAdd; i++) {
     const ang = Math.random() * Math.PI * 2;
-    const spd = 2 + Math.random() * 6;
+    const spd = 1.5 + Math.random() * 4.5;
     particles.push({
       x, y, vx: Math.cos(ang) * spd, vy: Math.sin(ang) * spd,
-      r: 2.5 + Math.random() * 2.5, color, alpha: 1, decay: 0.025 + Math.random() * 0.03
+      r: 2 + Math.random() * 2, color, alpha: 1, decay: 0.04 + Math.random() * 0.035
     });
   }
+  if (!fxFrame) fxFrame = requestAnimationFrame(fxLoop);
 }
 
 function fxLoop() {
+  fxFrame = 0;
+  if (!visualFxAllowed()) {
+    particles.length = 0;
+    if (fxCtx && fx) fxCtx.clearRect(0, 0, fx.width, fx.height);
+    return;
+  }
   fxCtx.clearRect(0, 0, fx.width, fx.height);
   for(let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
-    p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.alpha -= p.decay;
+    p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.alpha -= p.decay;
     if(p.alpha <= 0) { particles.splice(i, 1); continue; }
-    fxCtx.save();
     fxCtx.globalAlpha = p.alpha;
     fxCtx.fillStyle = p.color;
     fxCtx.beginPath();
     fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
     fxCtx.fill();
-    fxCtx.restore();
   }
-  requestAnimationFrame(fxLoop);
+  fxCtx.globalAlpha = 1;
+  if (particles.length) fxFrame = requestAnimationFrame(fxLoop);
 }
-requestAnimationFrame(fxLoop);
 
 const DICT_SOURCES = [
   "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/hu_HU/hu_HU.dic",
@@ -1641,6 +1684,7 @@ const DICT_SOURCES = [
 ];
 
 const DICT = new Set();
+let dictionaryReady = false;
 const NON_WORDS_BLACKLIST = new Set([
   'TY', 'SZ', 'CS', 'GY', 'NY', 'LY', 'ZS', 'DZ', 'DZS',
   'SZI', 'SZO', 'SZE', 'CSI', 'GYI', 'TYI', 'NYI', 'ZSI', 'DZI',
@@ -1652,6 +1696,14 @@ const VALID_2_LETTER_WORDS = new Set([
   "OK", "ÁR", "ŐR", "ÚT", "ÜL", "ÍZ", "ÖV", "JÓ", "HŰ", "NŐ", 
   "KÉ", "MA", "NO", "SŐ", "TI", "EH", "AH", "OH", "UH", "IK"
 ]);
+const CORE_WORDS = [
+  "IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY",
+  "SZÉP","JÓ","NAGY","KICSI","ALMA","BABA","CICA","KUTYA","KÖNYV","ANYA","LÁNY","GOLYÓ",
+  "ARANY","ILYEN","OLYAN","KÖNNYŰ","PIAC","PÁRBAJ","SORSJEGY","CSALÁD","SZERETET","VILÁG"
+];
+// Az alapszótár azonnal használható, a nagyobb szótárak betöltése csak bővíti.
+VALID_2_LETTER_WORDS.forEach(w => DICT.add(w));
+CORE_WORDS.forEach(w => DICT.add(w));
 
 function sanitizeWord(raw) {
   if(!raw) return null;
@@ -1665,11 +1717,18 @@ function sanitizeWord(raw) {
   return null;
 }
 
+function fetchWithTimeout(url, timeoutMs = 4500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
 async function loadAllDictionaries() {
   const statusTxt = document.getElementById('dict-status-txt');
   let loadedSources = 0;
+  if (statusTxt) statusTxt.textContent = `Szótár: alapszótár aktív, bővített szótár betöltése…`;
   const tasks = DICT_SOURCES.map(url =>
-    fetch(url)
+    fetchWithTimeout(url)
       .then(r => r.ok ? r.text() : Promise.reject(r.status))
       .then(text => {
         const lines = text.split(/\r?\n/);
@@ -1687,14 +1746,12 @@ async function loadAllDictionaries() {
 
   await Promise.allSettled(tasks);
   VALID_2_LETTER_WORDS.forEach(w => DICT.add(w));
-  [
-    "IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY",
-    "SZÉP","JÓ","NAGY","KICSI","ALMA","BABA","CICA","KUTYA","KÖNYV","ANYA","LÁNY","GOLYÓ",
-    "ARANY","ILYEN","OLYAN","KÖNNYŰ","PIAC","PÁRBAJ","SORSJEGY","CSALÁD","SZERETET","VILÁG"
-  ].forEach(w => DICT.add(w));
+  CORE_WORDS.forEach(w => DICT.add(w));
 
+  dictionaryReady = true;
   if (statusTxt) statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
   initDailySecretStreak();
+  renderTray();
 }
 
 const GRID_SIZE = 8;
@@ -1914,6 +1971,7 @@ const state = {
   board: [],
   pool: [],
   tray: [],
+  nextRoundLetters: [],
   levelWords: [],
   activeQuests: [],
   questStatuses: [],
@@ -1934,7 +1992,8 @@ const state = {
   activeStakePoints: 0,
   activeStakePenalty: 0,
   levelMultiplier: 1,
-  levelCompleted: false
+  levelCompleted: false,
+  pendingWinModal: false
 };
 
 const boardEl = document.getElementById('game-board');
@@ -1968,6 +2027,7 @@ function calcTileMetrics() {
 function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   state.level = lvl;
   state.levelCompleted = false;
+  state.pendingWinModal = false;
   state.pool = [];
   state.tray = [];
   state.levelWords = [];
@@ -2672,7 +2732,7 @@ function refreshTileAppearance(t) {
 function animateFreedLetters(letters) {
   const poolRect = poolEl.getBoundingClientRect();
   letters.forEach(item => {
-    state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: item.char, isGold: item.isGold });
+    if (!addLetterToPool(item.char, { isGold: item.isGold })) return;
     const ghost = document.createElement('div');
     ghost.className = 'flying-ghost';
     ghost.textContent = item.char;
@@ -2891,19 +2951,111 @@ function getTrayWord() {
   return state.tray.map(i => i.char).join('');
 }
 
+function addLetterToPool(char, options = {}) {
+  if (!char) return false;
+  const realCount = state.pool.filter(item => item && !item.empty).length;
+  // Az üres helyek a tálcán lévő betűk visszahelyezéséhez vannak fenntartva.
+  // Új jutalom ezért új helyre kerül, nem írhatja felül egy tálcás betű visszaútját.
+  const heldCount = realCount + (Array.isArray(state.tray) ? state.tray.length : 0);
+  if (heldCount >= MAX_POOL || state.pool.length >= MAX_POOL) return false;
+  state.pool.push({
+    id: options.id || Math.random().toString(36).substring(2, 9),
+    char,
+    isGold: !!options.isGold
+  });
+  return true;
+}
+
+function calculateWordScore(word, items = state.tray) {
+  if (word.length < 2 || NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
+    return { valid: false, score: 0, totalScore: 0, dailySecretBonus: 0, multiplier: 0, hasGoldTile: false, rareCount: 0 };
+  }
+  let multiplier = Number(state.levelMultiplier || 1);
+  let hasGoldTile = false;
+  let rareCount = 0;
+  (items || []).forEach(item => {
+    if (RARE_LETTERS.has(item.char)) { multiplier += 0.4; rareCount++; }
+    if (item.isGold) hasGoldTile = true;
+  });
+  if (hasGoldTile || isGoldenLevel(state.level)) multiplier *= 3;
+  if (state.activeTripleWord) multiplier *= 3;
+  const baseScore = Math.floor(Math.pow(word.length, 2) * 18 * multiplier);
+  const today = getTodayString();
+  const dailySecretBonus = word === currentDailySecret && state.secretWordLastSolvedDate !== today
+    ? getDailySecretReward() : 0;
+  return {
+    valid: true,
+    score: baseScore,
+    totalScore: baseScore + dailySecretBonus,
+    dailySecretBonus,
+    multiplier,
+    hasGoldTile,
+    rareCount
+  };
+}
+
 function validateCurrentTrayWord() {
   const w = getTrayWord();
+  const preview = document.getElementById('word-score-preview');
+  const status = document.getElementById('word-preview-status');
+  const points = document.getElementById('word-preview-points');
   trayEl.classList.remove('valid', 'invalid');
-  if(w.length >= 2) {
-    if(NON_WORDS_BLACKLIST.has(w)) trayEl.classList.add('invalid');
-    else if(DICT.has(w)) trayEl.classList.add('valid');
-    else trayEl.classList.add('invalid');
+  if (preview) preview.classList.remove('valid', 'invalid');
+
+  if (!w) {
+    if (status) status.textContent = 'Állíts össze egy szót a betűkből.';
+    if (points) points.textContent = '— P';
+    return;
   }
+  if (w.length < 2) {
+    if (trayEl) trayEl.classList.add('invalid');
+    if (preview) preview.classList.add('invalid');
+    if (status) status.textContent = 'Legalább 2 betű szükséges.';
+    if (points) points.textContent = '0 P';
+    return;
+  }
+  if (!dictionaryReady && !DICT.has(w)) {
+    if (status) status.textContent = 'A bővített szótár betöltése folyamatban…';
+    if (points) points.textContent = '…';
+    return;
+  }
+
+  const score = calculateWordScore(w, state.tray);
+  if (score.valid) {
+    trayEl.classList.add('valid');
+    if (preview) preview.classList.add('valid');
+    if (status) {
+      const bonus = [score.hasGoldTile || isGoldenLevel(state.level) ? 'ARANY ×3' : '', state.activeTripleWord ? 'KUPON ×3' : '', score.rareCount ? `RITKA +${(score.rareCount * 0.4).toFixed(1).replace('.', ',')}×` : '', score.dailySecretBonus ? `NAP SZAVA +${score.dailySecretBonus.toLocaleString('hu-HU')} P` : ''].filter(Boolean).join(' · ');
+      status.textContent = bonus ? `✓ ${w} · ${bonus}` : `✓ ${w} · beküldhető`;
+    }
+    if (points) points.textContent = `${score.totalScore.toLocaleString('hu-HU')} P`;
+  } else {
+    trayEl.classList.add('invalid');
+    if (preview) preview.classList.add('invalid');
+    if (status) status.textContent = `„${w}” nem érvényes szótári szó.`;
+    if (points) points.textContent = '0 P';
+  }
+}
+
+function applyNextRoundLetters() {
+  const pending = Array.isArray(state.nextRoundLetters) ? [...state.nextRoundLetters] : [];
+  if (!pending.length) return;
+  let added = 0;
+  const remaining = [];
+  pending.forEach(char => {
+    if (addLetterToPool(char)) added++;
+    else remaining.push(char);
+  });
+  state.nextRoundLetters = remaining;
+  renderPool();
+  if (added) showToast(`🎁 ${added} jutalombetű megérkezett a következő szint raktárába!`, 'ok');
+  if (remaining.length) showToast('Néhány jutalombetű a raktár megtelése miatt megőrződött a következő szintre.', 'err');
 }
 
 safeOn('btn-submit', 'click', async () => {
   const word = getTrayWord();
   if(word.length < 2) { showToast("Legalább 2 betűs szó szükséges!", "err"); sfxError(); return; }
+  if (!dictionaryReady && !DICT.has(word)) { showToast('A bővített szótár még töltődik — a betűid megmaradtak, próbáld újra pár pillanat múlva!', 'err'); return; }
   
   if(NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
     const errorMsg = NON_WORDS_BLACKLIST.has(word) ? `"${word}" értelmetlen betűkapcsolat!` : `"${word}" nem szerepel a szótárban!`;
@@ -2924,17 +3076,9 @@ safeOn('btn-submit', 'click', async () => {
     return;
   }
 
-  let multiplier = (state.levelMultiplier || 1);
-  let hasGoldTile = false;
-  state.tray.forEach(i => {
-    if(RARE_LETTERS.has(i.char)) multiplier += 0.4;
-    if(i.isGold) hasGoldTile = true;
-  });
-
-  if(hasGoldTile || isGoldenLevel(state.level)) multiplier *= 3;
-  if(state.activeTripleWord) { multiplier *= 3; state.activeTripleWord = false; }
-
-  const wordScore = Math.floor(Math.pow(word.length, 2) * 18 * multiplier);
+  const scoreResult = calculateWordScore(word, state.tray);
+  const wordScore = scoreResult.score;
+  if (state.activeTripleWord) state.activeTripleWord = false;
   state.weeklyScore += wordScore;
   state.stats.levelScore += wordScore;
   state.levelWords.push(word);
@@ -2973,7 +3117,7 @@ safeOn('btn-submit', 'click', async () => {
 
 function triggerFreeLetterReward(word) {
   const desc = document.getElementById('free-letter-desc');
-  if (desc) desc.innerHTML = `🎉 <b>${word.length} betűs szó (${word})</b>! Kaptál <b>+1 lépést</b> és kérhetsz egy tetszőleges betűt!`;
+  if (desc) desc.innerHTML = `🎉 <b>${word.length} betűs szó (${word})</b>! Kaptál <b>+1 lépést</b>. Válassz egy betűt, és <b>elmentjük a következő szint raktárába</b>, hogy ne vesszen el szintváltáskor.`;
   
   const previewBox = document.getElementById('reward-pool-preview');
   if (previewBox) {
@@ -3000,15 +3144,23 @@ document.querySelectorAll('.free-pick-tile').forEach(btn => {
 
 safeOn('btn-claim-free-letter', 'click', async () => {
   const inp = document.getElementById('input-free-letter');
-  let char = inp ? inp.value.trim().toUpperCase() : '';
-  const realCount = state.pool.filter(i => i && !i.empty).length;
-  if(!char || realCount >= MAX_POOL) return;
-  state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: char });
+  const char = inp ? inp.value.trim().toUpperCase() : '';
+  if (!HUNGARIAN_ALPHABET_ALL.includes(char)) {
+    showToast('Válassz egy érvényes magyar betűt vagy betűkapcsolatot!', 'err');
+    sfxError();
+    return;
+  }
+  state.nextRoundLetters = Array.isArray(state.nextRoundLetters) ? state.nextRoundLetters : [];
+  state.nextRoundLetters.push(char);
   const modal = document.getElementById('modal-free-letter-reward');
   if (modal) modal.classList.remove('active');
-  renderPool();
   await syncCloudState();
-  showToast(`🎁 "${char}" bekerült a raktáradba!`, "ok");
+  showToast(`🎁 „${char}” elmentve a következő szint raktárába!`, 'ok');
+  if (state.pendingWinModal) {
+    state.pendingWinModal = false;
+    const winModal = document.getElementById('modal-win');
+    if (winModal) winModal.classList.add('active');
+  }
 });
 
 safeOn('btn-back', 'click', () => {
@@ -3199,8 +3351,9 @@ function verifyGameState() {
         state.scratchTickets.push(generate50ScratchVariations()[0]);
         showToast("🔥 Bátor kihívás sikeres! 300P visszajárt + 1 Ingyen Sorsjegy!", "ok");
       } else if (state.highStakesMode === 'legend') {
-        state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: '🃏' });
-        showToast("⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker a raktárba!", "ok");
+        const jokerAddedNow = addLetterToPool('🃏');
+        if (!jokerAddedNow) state.nextRoundLetters.push('🃏');
+        showToast(jokerAddedNow ? "⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker a raktárba!" : "⚡ Legenda kihívás sikeres! A Joker a következő szint raktárába került.", "ok");
       }
     }
 
@@ -3213,6 +3366,12 @@ function verifyGameState() {
     } else {
       if (winTitle) winTitle.textContent = '🎉 SZINT TELJESÍTVE!';
       if (winDesc) winDesc.textContent = 'Minden kötelező és bevállalt küldetés sikeresen végrehajtva!';
+    }
+    const rewardModal = document.getElementById('modal-free-letter-reward');
+    if (rewardModal && rewardModal.classList.contains('active')) {
+      // A jutalombetűt előbb ki kell választani; a szintvégi ablak addig vár.
+      state.pendingWinModal = true;
+      return;
     }
     const winModal = document.getElementById('modal-win');
     if (winModal) winModal.classList.add('active');
@@ -3430,6 +3589,8 @@ function checkAllReelsStopped() {
       const modal = document.getElementById('modal-quest-roulette');
       if (modal) modal.classList.remove('active');
       initLevelData(state.level + 1, chosenQuestsList, selectedStakeMode);
+      applyNextRoundLetters();
+      syncCloudState();
     }, 1400);
   }
 }
@@ -3452,7 +3613,7 @@ const SHOP_ITEMS = [
   { id: 'dynamite', name: 'Dinamit', icon: '🧨', baseCost: 130, desc: 'Egy akadály megsemmisítése.', action: useDynamite },
   { id: 'superhint', name: 'Szuper Súgó', icon: '💡', baseCost: 170, desc: 'Kirakja a leghosszabb elérhető szót.', action: useSuperHint },
   { id: 'vowelrain', name: 'Vokális Eső', icon: '🅰️', baseCost: 100, desc: '3 magánhangzót ad a raktárba.', action: useVowelRain },
-  { id: 'goldencoupon', name: 'Arany Kupon', icon: '🌟', baseCost: 260, desc: 'A következő szó 3x pontot ér.', action: () => { state.activeTripleWord = true; showToast("Arany Kupon aktív (3x pont)!", "ok"); } }
+  { id: 'goldencoupon', name: 'Arany Kupon', icon: '🌟', baseCost: 260, desc: 'A következő szó 3x pontot ér.', action: () => { state.activeTripleWord = true; validateCurrentTrayWord(); showToast("Arany Kupon aktív (3x pont)!", "ok"); } }
 ];
 
 function isDevTestUser() {
@@ -3560,6 +3721,7 @@ function renderQuickInventory() {
 }
 
 function handleToolActivation(item) {
+  if (isLocked) { showToast('Várd meg a jelenlegi animáció végét!', 'err'); return; }
   if(item.id === 'extramoves') {
     if((state.storedMoves || 0) > 0) {
       state.storedMoves--;
@@ -3584,8 +3746,8 @@ function handleToolActivation(item) {
 
   if(isHelperFreeAvailable(item.id)) {
     state.roundFreeUsed[item.id] = true;
+    showToast(`${item.name} aktiválva (ingyenes kvóta)!`, 'ok');
     item.action();
-    showToast(`${item.name} aktiválva (Ingyenes kvóta)!`, "ok");
     renderQuickInventory();
     renderShop();
     syncCloudState();
@@ -3594,8 +3756,8 @@ function handleToolActivation(item) {
 
   if((state.inventory[item.id] || 0) > 0) {
     state.inventory[item.id]--;
+    showToast(`${item.name} felhasználva a hátizsákból!`, 'ok');
     item.action();
-    showToast(`${item.name} felhasználva a hátizsákból!`, "ok");
     renderQuickInventory();
     renderShop();
     syncCloudState();
@@ -3607,8 +3769,8 @@ function handleToolActivation(item) {
     state.weeklyScore -= cost;
     state.purchaseCounts[item.id] = (state.purchaseCounts[item.id] || 0) + 1;
     sfxCoinJingle();
+    showToast(`${item.name} megvásárolva és aktiválva (-${cost}P)!`, 'ok');
     item.action();
-    showToast(`${item.name} megvásárolva és aktiválva (-${cost}P)!`, "ok");
     renderQuickInventory();
     renderShop();
     syncCloudState();
@@ -3619,21 +3781,53 @@ function handleToolActivation(item) {
 }
 
 function useDynamite() {
+  if (isLocked) { showToast('Várd meg, amíg a jelenlegi robbanás befejeződik!', 'err'); return; }
   let target = null;
+  let targetLayers = -1;
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
-      const t = state.board[r][c];
-      if(t && (t.ice > 0 || t.wood > 0)) { target = t; break; }
+      const t = state.board[r] && state.board[r][c];
+      const layers = t ? (Number(t.ice) + Number(t.wood)) : 0;
+      if (t && layers > targetLayers && layers > 0) { target = t; targetLayers = layers; }
     }
-    if(target) break;
   }
-  if(target) {
-    if (target.ice > 0) sfxIceCrack();
-    else sfxRealExplode(1);
-    target.ice = 0; target.wood = 0;
-    refreshTileAppearance(target);
-    showToast("🧨 Dinamit felrobbantotta az akadályt!", "ok");
-  } else showToast("Nincs akadály a táblán!", "err");
+  if (!target) {
+    // Korai szinteken még nincs jég/fa: ilyenkor se vesszen kárba a segítség,
+    // egy biztonságos csempét robbant fel és elindítja a szokásos gravitációt.
+    let fallback = null;
+    for(let r = 0; r < GRID_SIZE && !fallback; r++) {
+      for(let c = 0; c < GRID_SIZE; c++) {
+        const t = state.board[r] && state.board[r][c];
+        if (t && !t.bomb && !t.prism) { fallback = { r, c }; break; }
+      }
+    }
+    if (fallback) {
+      showToast('🧨 Nincs akadály — a dinamit egy csempét robbant fel helyette!', 'ok');
+      sfxRealExplode(1.1);
+      executeClusterExplosion([fallback], true);
+    } else showToast('Most nincs felrobbantható csempe.', 'err');
+    return;
+  }
+
+  const iceLayers = Number(target.ice) || 0;
+  const woodLayers = Number(target.wood) || 0;
+  target.ice = 0;
+  target.wood = 0;
+  state.stats.iceBroken = (state.stats.iceBroken || 0) + iceLayers;
+  state.stats.woodBroken = (state.stats.woodBroken || 0) + woodLayers;
+  const points = Math.floor((70 + iceLayers * 35 + woodLayers * 45) * (state.levelMultiplier || 1) * (isGoldenLevel(state.level) ? 3 : 1));
+  state.weeklyScore += points;
+  state.stats.levelScore = (state.stats.levelScore || 0) + points;
+  const rect = target.el ? target.el.getBoundingClientRect() : null;
+  if (rect) spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#fb923c');
+  refreshTileAppearance(target);
+  shakeScreen();
+  sfxRealExplode(1.15);
+  showToast(`🧨 Akadály eltávolítva! +${points.toLocaleString('hu-HU')} P`, 'ok');
+  updateStats();
+  checkQuestProgress();
+  syncCloudState();
+  verifyGameState();
 }
 
 function useSuperHint() {
@@ -3653,7 +3847,7 @@ function useSuperHint() {
   }
 
   if(best) {
-    while(state.tray.length > 0) state.pool.push(state.tray.pop());
+    while(state.tray.length > 0) returnLetterToPoolSlot(state.tray.pop());
     for(const ch of best) {
       const idx = state.pool.findIndex(item => item.char === ch);
       if(idx !== -1) state.tray.push(state.pool.splice(idx, 1)[0]);
@@ -3668,15 +3862,19 @@ function useSuperHint() {
 }
 
 function useVowelRain() {
-  const vowels = ['A','E','I','O','U','Á','É'];
+  const vowels = ['A','Á','E','É','I','Í','O','Ó','Ö','Ő','U','Ú','Ü','Ű'];
+  let added = 0;
   for(let i = 0; i < 3; i++) {
-    if(state.pool.length < MAX_POOL) {
-      state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: vowels[Math.floor(Math.random() * vowels.length)] });
-    }
+    const char = vowels[Math.floor(Math.random() * vowels.length)];
+    if (addLetterToPool(char)) added++;
+    else break;
   }
-  sfxSnap();
   renderPool();
-  showToast("🅰️ 3 magánhangzó landolt a raktárban!", "ok");
+  if (added) {
+    sfxSnap();
+    showToast(`🅰️ ${added} magánhangzó a raktáradban!`, 'ok');
+    syncCloudState();
+  } else showToast('A betűraktár tele van — előbb használj fel néhány betűt!', 'err');
 }
 
 const SCRATCH_MASTER_TEMPLATE = [
@@ -3882,26 +4080,25 @@ function awardScratchPrize(ticket) {
     sfxFanfare();
     showToast(`🎉 SZUPER! +${ticket.val} Tartalék Lépés a hátizsákban!`, "ok");
   } else if (ticket.type === 'vowels' || ticket.type === 'consonants') {
-    const vowels = ['A','E','I','O','U','Á','É','Ó','Ö','Ő','Ú','Ü','Ű'];
+    const vowels = ['A','Á','E','É','I','Í','O','Ó','Ö','Ő','U','Ú','Ü','Ű'];
     const consonants = BAG.filter(c => !vowels.includes(c));
+    let added = 0;
     for (let i = 0; i < ticket.val; i++) {
-      if (state.pool.length < MAX_POOL) {
-        let ch = (ticket.type === 'vowels') 
-          ? vowels[Math.floor(Math.random() * vowels.length)] 
-          : consonants[Math.floor(Math.random() * consonants.length)];
-        state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: ch });
-      }
+      const ch = (ticket.type === 'vowels')
+        ? vowels[Math.floor(Math.random() * vowels.length)]
+        : consonants[Math.floor(Math.random() * consonants.length)];
+      if (addLetterToPool(ch)) added++;
+      else break;
     }
     renderPool();
     sfxFanfare();
-    showToast(`🎁 Betűnyeremény landolt a raktáradban!`, "ok");
+    showToast(`🎁 ${added} betűnyeremény landolt a raktáradban!`, added ? 'ok' : 'err');
   } else if (ticket.type === 'wildcard') {
-    if (state.pool.length < MAX_POOL) {
-      state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: '🃏' });
-      renderPool();
-    }
+    const added = addLetterToPool('🃏');
+    if (!added) state.nextRoundLetters.push('🃏');
+    renderPool();
     sfxFanfare();
-    showToast(`🃏 Kívánság-Joker figura került a betűid közé!`, "ok");
+    showToast(added ? `🃏 Kívánság-Joker figura került a betűid közé!` : `🃏 A Joker elmentve a következő szintre!`, 'ok');
   } else if (ticket.type === 'item') {
     state.inventory[ticket.item] = (state.inventory[ticket.item] || 0) + ticket.val;
     sfxFanfare();
@@ -3994,11 +4191,11 @@ function renderLetterMarket() {
 async function buySpecificLetter(letter) {
   const cost = getLetterMarketCost();
   if(state.weeklyScore < cost && !isDevTestUser()) { showToast("Nincs elég heti pontod!", "err"); return; }
-  if(state.pool.length >= MAX_POOL) { showToast("Tele a raktárad!", "err"); return; }
+  const realCount = state.pool.filter(item => item && !item.empty).length;
+  if(realCount >= MAX_POOL || !addLetterToPool(letter)) { showToast("Tele a raktárad!", "err"); return; }
 
   state.weeklyScore -= cost;
   state.purchaseCounts['letter_market'] = (state.purchaseCounts['letter_market'] || 0) + 1;
-  state.pool.push({ id: Math.random().toString(36).substring(2, 9), char: letter });
 
   sfxCoinJingle();
   showToast(`Megvásárolva: "${letter}" betű! (-${cost}P)`, "ok");
@@ -4634,6 +4831,7 @@ async function syncCloudState() {
     levelWords: state.levelWords,
     pool: state.pool,
     tray: state.tray,
+    nextRoundLetters: state.nextRoundLetters || [],
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
     lastCheckInDate: state.lastCheckInDate || null,
@@ -4695,6 +4893,7 @@ function restoreFromCloudData(data) {
   state.levelWords = data.levelWords || [];
   state.pool = data.pool || [];
   state.tray = data.tray || [];
+  state.nextRoundLetters = Array.isArray(data.nextRoundLetters) ? data.nextRoundLetters : [];
   state.checkInStreak = data.checkInStreak || 0;
   state.lastCheckInDate = data.lastCheckInDate || null;
   state.secretWordStreak = data.secretWordStreak || 0;
@@ -4846,6 +5045,7 @@ safeOn('btn-choice-restart-level', 'click', () => {
     state.lastCheckInDate = pendingCloudData.lastCheckInDate || null;
     state.secretWordStreak = pendingCloudData.secretWordStreak || 0;
     state.secretWordLastSolvedDate = pendingCloudData.secretWordLastSolvedDate || null;
+    state.nextRoundLetters = Array.isArray(pendingCloudData.nextRoundLetters) ? pendingCloudData.nextRoundLetters : [];
     state.scratchTickets = pendingCloudData.scratchTickets || [];
     state.scratchDeck = pendingCloudData.scratchDeck || [];
     
@@ -5030,9 +5230,10 @@ function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 const bgMotes = [];
 const TOTAL_MOTES = 32;
 
+let bgMoteFrame = 0;
 function initBgMotes() {
   const canvas = document.getElementById('bg-cubes-canvas');
-  if (!canvas) return;
+  if (!canvas || lowPowerDevice || motionPreference.matches) return;
   const w = window.innerWidth;
   const h = window.innerHeight;
   canvas.width = w;
@@ -5062,8 +5263,9 @@ function initBgMotes() {
 }
 
 function animateBgMotes() {
+  bgMoteFrame = 0;
   const canvas = document.getElementById('bg-cubes-canvas');
-  if (!canvas) return;
+  if (!canvas || lowPowerDevice || motionPreference.matches || document.hidden) return;
   const ctx = canvas.getContext('2d');
   const w = canvas.width;
   const h = canvas.height;
@@ -5089,13 +5291,19 @@ function animateBgMotes() {
     ctx.fill();
   }
 
-  requestAnimationFrame(animateBgMotes);
+  bgMoteFrame = requestAnimationFrame(animateBgMotes);
+}
+
+function startBgMotes() {
+  if (!bgMoteFrame && !lowPowerDevice && !motionPreference.matches && !document.hidden) {
+    bgMoteFrame = requestAnimationFrame(animateBgMotes);
+  }
 }
 
 async function main() {
   calcTileMetrics();
   initBgMotes();
-  requestAnimationFrame(animateBgMotes);
+  startBgMotes();
   initLevelData(1);
   loadAllDictionaries();
   renderCommunityLists();
@@ -5103,6 +5311,8 @@ async function main() {
 
 window.addEventListener('resize', () => {
   initBgMotes();
+  resizeFx();
+  startBgMotes();
   const size = calcTileMetrics();
   for(let r = 0; r < GRID_SIZE; r++) {
     for(let c = 0; c < GRID_SIZE; c++) {
@@ -5125,7 +5335,11 @@ window.addEventListener('pagehide', () => {
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    if(state.playerName && state.playerPin) syncCloudState();
+    if (state.playerName && state.playerPin) syncCloudState();
+    particles.length = 0;
+    if (fxCtx && fx) fxCtx.clearRect(0, 0, fx.width, fx.height);
+  } else {
+    startBgMotes();
   }
 });
 
