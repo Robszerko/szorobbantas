@@ -232,6 +232,26 @@ html, body {
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.7);
   animation: pulse 0.8s infinite alternate;
 }
+
+/* Körsiker utáni bónuszfarm-panel: nem takarja ki a játékteret, és statikus a gyenge gépek kedvéért. */
+.farm-mode-panel {
+  display: none; flex-direction: column; gap: 7px; width: 100%;
+  padding: 10px 12px; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(6,78,59,.96), rgba(15,23,42,.97));
+  border: 1.5px solid rgba(52,211,153,.72);
+  box-shadow: 0 3px 14px rgba(16,185,129,.12);
+}
+.farm-mode-panel.active { display: flex; }
+.farm-mode-title { font-size: 12px; font-weight: 950; color: #a7f3d0; letter-spacing: .3px; }
+.farm-mode-desc { margin: 0; color: #d1fae5; font-size: 10.5px; font-weight: 650; line-height: 1.45; }
+.farm-mode-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.farm-mode-metric { border-radius: 8px; padding: 7px 4px; background: rgba(2,6,23,.45); border: 1px solid rgba(167,243,208,.15); text-align: center; min-width: 0; }
+.farm-mode-metric strong { display: block; color: #fef08a; font-size: 15px; line-height: 1.2; font-weight: 950; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.farm-mode-metric span { display: block; color: #a7f3d0; font-size: 8px; margin-top: 3px; font-weight: 850; line-height: 1.2; }
+.farm-mode-count-detail { color: #d1d5db; font-size: 9.5px; line-height: 1.35; }
+.btn-finish-farming { background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; border: 1px solid #fcd34d; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 11px; font-weight: 950; cursor: pointer; }
+.btn-finish-farming:active { transform: translateY(1px); }
+body.low-power-mode .farm-mode-panel { box-shadow: none !important; }
 .high-stakes-banner.mode-ten {
   display: block; background: linear-gradient(135deg, #581c87, #312e81);
   color: #fef3c7; border: 1.5px solid #c084fc;
@@ -1133,6 +1153,18 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <div class="stat-box glass highlight"><span class="lbl">Heti Pont</span><span class="val" id="stat-weekly">0</span></div>
     <div class="stat-box glass rank-box"><span class="lbl">Helyezés</span><span class="val" id="stat-rank">—</span></div>
   </div>
+
+  <section class="farm-mode-panel glass" id="farm-mode-panel" aria-live="polite" aria-atomic="true">
+    <div class="farm-mode-title">🏆 MINDEN KÖTELEZŐ KÜLDETÉS TELJESÍTVE!</div>
+    <p class="farm-mode-desc" id="farm-mode-desc">A kör kötelező része kész. Folytathatod a meglévő kockák és betűk kifarmolását extra pontokért. Új kockák és betűk már nem érkeznek a táblára; a további pontgyűjtés opcionális.</p>
+    <div class="farm-mode-metrics">
+      <div class="farm-mode-metric"><strong id="farm-word-count">Számolás…</strong><span>KIRAKHATÓ SZÓLEHETŐSÉG</span></div>
+      <div class="farm-mode-metric"><strong id="farm-board-count">64</strong><span>MEGLÉVŐ TÁBLACSEMPE</span></div>
+      <div class="farm-mode-metric"><strong id="farm-letter-count">—</strong><span>ELÉRHETŐ BETŰCSEMPE</span></div>
+    </div>
+    <div class="farm-mode-count-detail" id="farm-word-count-detail">A számlálás a játék aktuális szótára alapján készül. Minden szólehetőséget egyszer számol; a beküldött szó betűi elfogynak.</div>
+    <button class="btn-finish-farming" id="btn-finish-farming">✅ Befejezem a farmolást – következő kör ➜</button>
+  </section>
 
   <div class="mission-strip glass">
     <div id="active-missions-container" style="display:flex; flex-direction:column; gap:5px; width:100%;"></div>
@@ -2083,6 +2115,7 @@ async function loadAllDictionaries() {
   if (statusTxt) statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
   initDailySecretStreak();
   renderTray();
+  if (state.levelCompleted) updateFarmModeUI({ recount: true });
 }
 
 const GRID_SIZE = 8;
@@ -2491,6 +2524,8 @@ const state = {
   pool: [],
   tray: [],
   nextRoundLetters: [],
+  // Körsiker utáni farmolás közben a megtelt betűraktár miatt átmenetileg félretett betűk.
+  farmDeferredLetters: [],
   // Arany Jokerből származó, következő körre félretett egyszeri segítségek.
   nextRoundHelpers: [],
   // Az aktuális körben elérhető Arany Joker-segítségek; használatkor elfogynak.
@@ -2692,6 +2727,8 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
   state.roundStartLetters = roundLettersToKeep;
   state.levelCompleted = false;
   state.pendingWinModal = false;
+  farmExhaustionToastLevel = -1;
+  state.farmDeferredLetters = [];
   state.pool = [];
   state.tray = [];
   state.levelWords = [];
@@ -2793,6 +2830,7 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
     reapplyRoundStartLettersToPool();
     applyNextRoundLetters();
   }
+  updateFarmModeUI({ recount: false });
 }
 
 function updateHighStakesBanner() {
@@ -3140,24 +3178,30 @@ async function executeHammerOnTile(tile) {
     const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
     spawnExplosion(px, py, '#ffffff');
 
-    if(tile.letter && state.pool.length < MAX_POOL) {
-      animateFreedLetters([{ char: tile.letter, x: px, y: py, isGold: tile.isGold }]);
-      state.stats.lettersFreed++;
-    }
+    if(tile.letter) state.stats.lettersFreed++;
 
     tile.el.classList.add('clearing');
     const elToRemove = tile.el;
     setTimeout(() => { if(elToRemove && elToRemove.parentNode) elToRemove.parentNode.removeChild(elToRemove); }, 350);
     state.board[r][c] = null;
 
+    checkQuestProgress();
+    verifyGameState();
+    if (tile.letter) animateFreedLetters([{ char: tile.letter, x: px, y: py, isGold: tile.isGold }]);
+    checkQuestProgress();
+    verifyGameState();
     showToast("🔨 Kocka szétzúzva!", "ok");
     await delay(220);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
-    await syncCloudState();
+    checkQuestProgress();
+    verifyGameState();
   } catch(err) {} finally { isLocked = false; }
+  checkQuestProgress();
   verifyGameState();
+  updateFarmModeUI({ recount: true });
+  await syncCloudState();
 }
 
 function openLineBlasterChoiceModal() {
@@ -3180,7 +3224,7 @@ async function executeBlasterRow(rowIdx) {
         const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
         const py = boardRect.top + (rowIdx + 0.5) * (boardRect.height / GRID_SIZE);
         spawnExplosion(px, py, '#fbbf24');
-        if(t.letter && state.pool.length < MAX_POOL) {
+        if(t.letter) {
           freed.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
           state.stats.lettersFreed++;
         }
@@ -3190,14 +3234,22 @@ async function executeBlasterRow(rowIdx) {
         state.board[rowIdx][c] = null;
       }
     }
+    checkQuestProgress();
+    verifyGameState();
     if(freed.length > 0) animateFreedLetters(freed);
+    checkQuestProgress();
+    verifyGameState();
     await delay(240);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
-    await syncCloudState();
+    checkQuestProgress();
+    verifyGameState();
   } catch(err) {} finally { isLocked = false; }
+  checkQuestProgress();
   verifyGameState();
+  updateFarmModeUI({ recount: true });
+  await syncCloudState();
 }
 
 async function executeBlasterCol(colIdx) {
@@ -3215,7 +3267,7 @@ async function executeBlasterCol(colIdx) {
         const px = boardRect.left + (colIdx + 0.5) * (boardRect.width / GRID_SIZE);
         const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
         spawnExplosion(px, py, '#06b6d4');
-        if(t.letter && state.pool.length < MAX_POOL) {
+        if(t.letter) {
           freed.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
           state.stats.lettersFreed++;
         }
@@ -3225,14 +3277,22 @@ async function executeBlasterCol(colIdx) {
         state.board[r][colIdx] = null;
       }
     }
+    checkQuestProgress();
+    verifyGameState();
     if(freed.length > 0) animateFreedLetters(freed);
+    checkQuestProgress();
+    verifyGameState();
     await delay(240);
     await applyGravityAndRefill();
     updateStats();
     updateMovesWatermark();
-    await syncCloudState();
+    checkQuestProgress();
+    verifyGameState();
   } catch(err) {} finally { isLocked = false; }
+  checkQuestProgress();
   verifyGameState();
+  updateFarmModeUI({ recount: true });
+  await syncCloudState();
 }
 
 function getConnectedCluster(startR, startC) {
@@ -3311,7 +3371,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
   if(isLocked) return;
   isLocked = true;
   try {
-    if(!isBomb) state.moves--;
+    if(!isBomb && !state.levelCompleted) state.moves--;
 
     const matchSize = tilesPos.length;
     state.stats.biggestMatch = Math.max(state.stats.biggestMatch, matchSize);
@@ -3346,8 +3406,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
       if (tileIndex % burstStride === 0) spawnBoardBurst(r, c, colHex, matchSize >= 9 ? 1.2 : 1);
       spawnExplosion(px, py, colHex);
 
-      const occupiedPoolSlots = state.pool.filter(item => item && !item.empty).length;
-      if(t.letter && t.ice === 0 && t.wood === 0 && (occupiedPoolSlots + newlyFreedLetters.length) < MAX_POOL) {
+      if(t.letter && t.ice === 0 && t.wood === 0) {
         newlyFreedLetters.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
         state.stats.lettersFreed++;
         if (t.isGold) state.stats.goldLettersFreed = (state.stats.goldLettersFreed || 0) + 1;
@@ -3364,14 +3423,23 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
       });
     });
 
-    if(!isBomb && !suppressSpecial && matchSize >= 7) {
+    // Először a statisztikák alapján ellenőrizzük a küldetéseket. Ha már itt teljesülnek,
+    // a most felszabaduló betűket is a farm-mód biztonságos várólistája kezeli.
+    checkQuestProgress();
+    verifyGameState();
+    animateFreedLetters(newlyFreedLetters);
+    // Néhány küldetés az épp felszabadított betű jelenlétét is figyelheti.
+    checkQuestProgress();
+    verifyGameState();
+
+    if(!state.levelCompleted && !isBomb && !suppressSpecial && matchSize >= 7) {
       const bombSpot = tilesPos[0];
       state.board[bombSpot.r][bombSpot.c] = {
         r: bombSpot.r, c: bombSpot.c, color: 0,
         ice: 0, wood: 0, letter: null, bomb: true, prism: false, el: null
       };
       createTileElement(state.board[bombSpot.r][bombSpot.c], calcTileMetrics());
-    } else if(!isBomb && !suppressSpecial && matchSize >= 5) {
+    } else if(!state.levelCompleted && !isBomb && !suppressSpecial && matchSize >= 5) {
       const prismSpot = tilesPos[0];
       state.board[prismSpot.r][prismSpot.c] = {
         r: prismSpot.r, c: prismSpot.c, color: specialColor,
@@ -3381,13 +3449,14 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
       showToast('✦ Prizma-kristály született! Koppints rá egy szín-hullámért.', 'ok');
     }
 
-    animateFreedLetters(newlyFreedLetters);
     await delay(220);
     await applyGravityAndRefill();
 
     updateStats();
     updateMovesWatermark();
     checkQuestProgress();
+    verifyGameState();
+    updateFarmModeUI({ recount: true });
     await syncCloudState();
   } catch(err) {} finally {
     isLocked = false;
@@ -3446,7 +3515,12 @@ function animateFreedLetters(letters) {
   const poolRect = poolEl.getBoundingClientRect();
   letters.forEach(item => {
     if (!addLetterToPool(item.char, { isGold: item.isGold })) {
-      queueNextRoundLetter({ char: item.char, isGold: !!item.isGold, isGoldenJoker: false });
+      if (state.levelCompleted) {
+        state.farmDeferredLetters = Array.isArray(state.farmDeferredLetters) ? state.farmDeferredLetters : [];
+        state.farmDeferredLetters.push({ char: item.char, isGold: !!item.isGold, id: createLetterRewardId() });
+      } else {
+        queueNextRoundLetter({ char: item.char, isGold: !!item.isGold, isGoldenJoker: false });
+      }
       return;
     }
     const ghost = document.createElement('div');
@@ -3498,33 +3572,37 @@ async function applyGravityAndRefill() {
       }
     }
 
-    let spawnOffset = 1;
-    for(let r = emptyRow; r >= 0; r--) {
-      const color = Math.floor(Math.random() * colorCount);
-      const dropChance = state.pool.length < 6 ? 0.28 : (state.pool.length > 14 ? 0.16 : 0.22);
-      let hasLetter = Math.random() < dropChance;
-      let char = hasLetter ? getBalancedLetter() : null;
+    // Ha a kötelező küldetések már elkészültek, a meglévő táblát le lehet farmolni,
+    // de az üres helyekre sem színes kocka, sem új betű nem kerülhet.
+    if (!state.levelCompleted) {
+      let spawnOffset = 1;
+      for(let r = emptyRow; r >= 0; r--) {
+        const color = Math.floor(Math.random() * colorCount);
+        const dropChance = state.pool.length < 6 ? 0.28 : (state.pool.length > 14 ? 0.16 : 0.22);
+        let hasLetter = Math.random() < dropChance;
+        let char = hasLetter ? getBalancedLetter() : null;
 
-      let iceLayer = 0;
-      let woodLayer = 0;
-      if (needsIce && Math.random() < 0.12) {
-        iceLayer = state.level >= 18 && Math.random() < 0.12 ? 3 : (state.level >= 9 && Math.random() < 0.28 ? 2 : 1);
-        if (!char) char = getBalancedLetter();
-      } else if (needsWood && Math.random() < 0.10) {
-        woodLayer = 1;
-        if (!char) char = getBalancedLetter();
+        let iceLayer = 0;
+        let woodLayer = 0;
+        if (needsIce && Math.random() < 0.12) {
+          iceLayer = state.level >= 18 && Math.random() < 0.12 ? 3 : (state.level >= 9 && Math.random() < 0.28 ? 2 : 1);
+          if (!char) char = getBalancedLetter();
+        } else if (needsWood && Math.random() < 0.10) {
+          woodLayer = 1;
+          if (!char) char = getBalancedLetter();
+        }
+
+        const t = {
+          r, c, color, ice: iceLayer, wood: woodLayer,
+          letter: char, bomb: false, prism: false,
+          isGold: (isGold || hasTenQuestEffect('golden_tiles')) && (Math.random() < (hasTenQuestEffect('golden_tiles') ? 0.62 : 0.35) || hasLetter),
+          el: null
+        };
+        state.board[r][c] = t;
+        createTileElement(t, tileSize);
+        t.el.style.transform = `translate3d(${c * tileSize}px, ${-spawnOffset * tileSize}px, 0)`;
+        spawnOffset++;
       }
-
-      const t = {
-        r, c, color, ice: iceLayer, wood: woodLayer,
-      letter: char, bomb: false, prism: false,
-        isGold: (isGold || hasTenQuestEffect('golden_tiles')) && (Math.random() < (hasTenQuestEffect('golden_tiles') ? 0.62 : 0.35) || hasLetter),
-        el: null
-      };
-      state.board[r][c] = t;
-      createTileElement(t, tileSize);
-      t.el.style.transform = `translate3d(${c * tileSize}px, ${-spawnOffset * tileSize}px, 0)`;
-      spawnOffset++;
     }
   }
 
@@ -3677,6 +3755,7 @@ function renderPool() {
     });
     poolEl.appendChild(el);
   });
+  scheduleFarmWordCountRefresh();
 }
 
 function getTrayWord() {
@@ -3977,6 +4056,7 @@ safeOn('btn-submit', 'click', async () => {
   sfxWordSuccess();
   state.tray = [];
   state.pool = state.pool.filter(item => item && !item.empty);
+  drainFarmDeferredLetters();
   renderTray();
   renderPool();
 
@@ -3992,6 +4072,7 @@ safeOn('btn-submit', 'click', async () => {
   // a vezérlést a böngészőnek. Így a jutalombetű soha nem kerül tévedésből
   // az aktuális körbe akkor, ha ez a hosszú szó egyben a győztes szó is.
   verifyGameState();
+  updateFarmModeUI({ recount: true });
   await syncCloudState();
 });
 
@@ -4054,11 +4135,7 @@ safeOn('btn-claim-free-letter', 'click', async () => {
   } else {
     showToast(`🎁 „${char}” elmentve; a következő kör raktárába automatikusan bekerül!`, 'ok');
   }
-  if (state.pendingWinModal) {
-    state.pendingWinModal = false;
-    const winModal = document.getElementById('modal-win');
-    if (winModal) winModal.classList.add('active');
-  }
+  if (state.levelCompleted) updateFarmModeUI({ recount: true });
 });
 
 safeOn('btn-back', 'click', () => {
@@ -4124,13 +4201,13 @@ function updateStats() {
 
   const movesBox = document.getElementById('box-moves');
   if (movesBox) {
-    if(state.moves <= 5) movesBox.classList.add('warning');
+    if(state.moves <= 5 && !state.levelCompleted) movesBox.classList.add('warning');
     else movesBox.classList.remove('warning');
   }
 
   const vig = document.getElementById('panic-vignette');
   if (vig) {
-    if(state.moves <= 3 && state.moves > 0) {
+    if(!state.levelCompleted && state.moves <= 3 && state.moves > 0) {
       vig.classList.add('active');
       playTone(60, 0.12, 'sine', 0.2);
     } else {
@@ -4153,6 +4230,7 @@ function updateStats() {
 function updateMovesWatermark() {
   const banner = document.getElementById('moves-warning-banner');
   if(!banner) return;
+  if (state.levelCompleted) { banner.classList.remove('show'); return; }
   if(state.moves <= 5 && state.moves > 0) {
     banner.textContent = `⚠️ MÁR CSAK ${state.moves} LÉPÉSED MARADT!`;
     banner.classList.add('show');
@@ -4233,60 +4311,245 @@ function checkQuestProgress() {
   updateMissionUI();
 }
 
+// A körsiker utáni farm módban a szótárból pontosan megszámoljuk azokat a különböző
+// szavakat, amelyek az aktuális készletből külön-külön kirakhatók. A számolás rövid
+// idődarabokra van bontva, hogy gyenge eszközön se fagyassza meg a játékot.
+let farmWordCountRunId = 0;
+let farmCountRefreshTimer = null;
+let farmExhaustionToastLevel = -1;
+
+// A raktár tartalma változhat (pl. joker, sorsjegy vagy elhalasztott jutalombetű).
+// Egy rövid késleltetés összevonja a gyors egymásutáni frissítéseket, hogy gyenge gépen
+// se induljon el több, egymást azonnal megszakító szótárbejárás.
+function scheduleFarmWordCountRefresh() {
+  if (!state.levelCompleted) return;
+  if (farmCountRefreshTimer !== null) clearTimeout(farmCountRefreshTimer);
+  farmCountRefreshTimer = setTimeout(() => {
+    farmCountRefreshTimer = null;
+    const panel = document.getElementById('farm-mode-panel');
+    // A kézi körlezárás után nem szabad újra megjeleníteni a farmpanelt.
+    if (state.levelCompleted && panel && panel.classList.contains('active')) {
+      updateFarmModeUI({ recount: true });
+    }
+  }, 180);
+}
+
+function getFarmTileBagSnapshot() {
+  const counts = Object.create(null);
+  let wildcards = 0;
+  let tiles = 0;
+  const add = raw => {
+    if (!raw) return;
+    const char = String(raw).trim().toUpperCase();
+    if (char === '🃏' || char === '★') { wildcards++; tiles++; return; }
+    if (!HUNGARIAN_ALPHABET_ALL.includes(char)) return;
+    counts[char] = (counts[char] || 0) + 1;
+    tiles++;
+  };
+  (state.pool || []).forEach(item => { if (item && !item.empty) add(item.char); });
+  (state.tray || []).forEach(item => { if (item) add(item.char); });
+  (state.farmDeferredLetters || []).forEach(item => { if (item) add(item.char); });
+  (state.board || []).forEach(row => (row || []).forEach(tile => { if (tile && tile.letter) add(tile.letter); }));
+
+  const tokens = HUNGARIAN_ALPHABET_ALL.filter(token => counts[token] > 0).sort((a,b) => b.length - a.length);
+  // A nyers karaktergyakoriság gyors előszűrő; a végső döntést a magyar csempe-tokenizálás adja.
+  const rawChars = Object.create(null);
+  let rawCharCount = 0;
+  Object.keys(counts).forEach(token => {
+    for (const ch of token) { rawChars[ch] = (rawChars[ch] || 0) + counts[token]; rawCharCount += counts[token]; }
+  });
+  const totalChars = rawCharCount + wildcards * 3;
+  return { counts, wildcards, tiles, tokens: HUNGARIAN_ALPHABET_ALL.slice().sort((a,b)=>b.length-a.length), rawChars, totalChars };
+}
+
+function rawWordFitsFarmBag(word, bag) {
+  if (word.length > bag.totalChars) return false;
+  if (bag.wildcards > 0) {
+    let deficit = 0;
+    const need = Object.create(null);
+    for (const ch of word) need[ch] = (need[ch] || 0) + 1;
+    Object.keys(need).forEach(ch => { deficit += Math.max(0, need[ch] - (bag.rawChars[ch] || 0)); });
+    return deficit <= bag.wildcards * 3;
+  }
+  const need = Object.create(null);
+  for (const ch of word) need[ch] = (need[ch] || 0) + 1;
+  return Object.keys(need).every(ch => need[ch] <= (bag.rawChars[ch] || 0));
+}
+
+function canSpellFarmWord(word, bag) {
+  const counts = Object.assign(Object.create(null), bag.counts);
+  const tokens = bag.tokens.filter(token => word.includes(token) && (counts[token] > 0 || bag.wildcards > 0));
+  const memo = new Set();
+  function walk(pos, usedTiles, wildLeft) {
+    if (pos === word.length) return usedTiles >= 2;
+    // A tálca legfeljebb 14 betűcsempét fogad, ezért a számláló is ezt a korlátot használja.
+    if (usedTiles >= Math.min(14, bag.tiles)) return false;
+    const countKey = tokens.map(token => counts[token] || 0).join(',');
+    const key = `${pos}|${usedTiles >= 2 ? 1 : 0}|${wildLeft}|${countKey}`;
+    if (memo.has(key)) return false;
+    for (const token of tokens) {
+      if (!word.startsWith(token, pos)) continue;
+      if ((counts[token] || 0) > 0) {
+        counts[token]--;
+        const ok = walk(pos + token.length, usedTiles + 1, wildLeft);
+        counts[token]++;
+        if (ok) return true;
+      }
+      if (wildLeft > 0) {
+        if (walk(pos + token.length, usedTiles + 1, wildLeft - 1)) return true;
+      }
+    }
+    // A joker can represent a Hungarian tile that isn't present in the ordinary counts.
+    if (wildLeft > 0) {
+      for (const token of HUNGARIAN_ALPHABET_ALL) {
+        if (!word.startsWith(token, pos) || tokens.includes(token)) continue;
+        if (walk(pos + token.length, usedTiles + 1, wildLeft - 1)) return true;
+      }
+    }
+    memo.add(key);
+    return false;
+  }
+  return walk(0, 0, bag.wildcards);
+}
+
+function requestFarmWordCount() {
+  const panel = document.getElementById('farm-mode-panel');
+  const countEl = document.getElementById('farm-word-count');
+  const detailEl = document.getElementById('farm-word-count-detail');
+  if (!state.levelCompleted || !panel || !panel.classList.contains('active')) return;
+  const runId = ++farmWordCountRunId;
+  if (!dictionaryReady) {
+    if (countEl) countEl.textContent = '…';
+    if (detailEl) detailEl.textContent = 'A szótár betöltése után kiszámoljuk a pontos szólehetőségeket.';
+    return;
+  }
+  const bag = getFarmTileBagSnapshot();
+  const dictionaryWords = Array.from(DICT);
+  let index = 0;
+  let validCount = 0;
+  if (countEl) countEl.textContent = 'Számolás…';
+  if (detailEl) detailEl.textContent = 'A játék szótárát ellenőrizzük az összes elérhető betűvel. A számolás a játékot nem állítja meg.';
+
+  const processChunk = () => {
+    if (runId !== farmWordCountRunId || !state.levelCompleted) return;
+    const start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    let checked = 0;
+    while (index < dictionaryWords.length && checked < 900) {
+      const word = dictionaryWords[index++];
+      checked++;
+      if (!word || word.length < 2 || NON_WORDS_BLACKLIST.has(word) || word.length > bag.totalChars) continue;
+      if (!rawWordFitsFarmBag(word, bag)) continue;
+      if (canSpellFarmWord(word, bag)) validCount++;
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      if (now - start >= 5) break;
+    }
+    if (index < dictionaryWords.length) {
+      setTimeout(processChunk, 0);
+      return;
+    }
+    if (runId !== farmWordCountRunId || !state.levelCompleted) return;
+    if (countEl) countEl.textContent = validCount.toLocaleString('hu-HU');
+    const boardTiles = (state.board || []).reduce((sum,row)=>sum+(row || []).filter(Boolean).length,0);
+    const availableLetters = bag.tiles;
+    const desc = document.getElementById('farm-mode-desc');
+    if (desc) {
+      if (boardTiles === 0 && validCount > 0) desc.textContent = `A tábla már üres, de a betűraktárból még gyűjthetsz pontokat: ${validCount.toLocaleString('hu-HU')} különböző szólehetőség maradt.`;
+      else if (boardTiles === 0 && validCount === 0) desc.textContent = 'Elfogytak a tábláról a kockák, és nincs több kirakható szótári szó. A következő kör bármikor elindítható.';
+      else if (validCount === 0) desc.textContent = 'Most nincs a szótár szerint kirakható szó, de a táblán még vannak kockák. Farmold tovább a meglévő mezőket, gyűjtsd be a betűket — új kockák és betűk már nem érkeznek.';
+      else desc.textContent = 'A kötelező rész sikerült. A meglévő táblakockákat és betűket még kifarmolhatod, de új kockák és betűk már nem érkeznek. A további pontgyűjtés opcionális.';
+    }
+    if (detailEl) detailEl.textContent = `A betöltött szótár alapján ${validCount.toLocaleString('hu-HU')} különböző szó állítható össze a jelenlegi betűkészletből, külön-külön. Egy szó beküldése felhasználja a hozzá tartozó betűket.`;
+    if (boardTiles === 0 && availableLetters === 0 && validCount === 0 && farmExhaustionToastLevel !== state.level) {
+      farmExhaustionToastLevel = state.level;
+      showToast('✨ Kiürült a tábla és elfogytak a kirakható szavak. A kötelező küldetések már teljesültek; indulhat a következő kör!', 'ok');
+    }
+  };
+  setTimeout(processChunk, 0);
+}
+
+function updateFarmModeUI(options = {}) {
+  const panel = document.getElementById('farm-mode-panel');
+  if (!panel) return;
+  if (!state.levelCompleted) {
+    panel.classList.remove('active');
+    farmWordCountRunId++;
+    return;
+  }
+  panel.classList.add('active');
+  const boardTiles = (state.board || []).reduce((sum,row)=>sum+(row || []).filter(Boolean).length,0);
+  const availableLetters = getFarmTileBagSnapshot().tiles;
+  const boardElCount = document.getElementById('farm-board-count');
+  const letterElCount = document.getElementById('farm-letter-count');
+  if (boardElCount) boardElCount.textContent = `${boardTiles} / ${GRID_SIZE * GRID_SIZE}`;
+  if (letterElCount) letterElCount.textContent = availableLetters.toLocaleString('hu-HU');
+  if (options.recount) requestFarmWordCount();
+}
+
+function drainFarmDeferredLetters() {
+  if (!state.levelCompleted || !Array.isArray(state.farmDeferredLetters) || !state.farmDeferredLetters.length) return 0;
+  let added = 0;
+  while (state.farmDeferredLetters.length) {
+    const item = state.farmDeferredLetters[0];
+    if (!item || !item.char) { state.farmDeferredLetters.shift(); continue; }
+    if (!addLetterToPool(item.char, { isGold: !!item.isGold, id: item.id, isReward: true })) break;
+    state.farmDeferredLetters.shift();
+    added++;
+  }
+  if (added) showToast(`🔓 ${added} korábban felszabadított betű bekerült a raktárba!`, 'ok');
+  return added;
+}
+
 function verifyGameState() {
   const allCompleted = state.questStatuses.length > 0 && state.questStatuses.every(Boolean);
 
-  if(allCompleted) {
-    // Egy teljesítéshez pontosan egy jutalom tartozhat, akkor is, ha több UI-frissítés érkezik.
-    if (state.levelCompleted) return;
-    state.levelCompleted = true;
-    if (state.highStakesMode === 'ten' && Number(state.tenQuestRewardAwardedLevel) !== Number(state.level)) {
-      state.tenQuestRewardAwardedLevel = Number(state.level) || 0;
-      grantTenQuestReward();
-    }
-    const activeTimedReward = getActiveTenQuestReward();
-    if (activeTimedReward && activeTimedReward.id === 'lucky_ticket' && Number(state.tenQuestTicketAwardedLevel) !== Number(state.level)) {
-      state.tenQuestTicketAwardedLevel = Number(state.level) || 0;
-      state.scratchTickets = Array.isArray(state.scratchTickets) ? state.scratchTickets : [];
-      state.scratchTickets.push(generate50ScratchVariations()[0]);
-      showToast('🎫 Sorsjegy-eső: +1 sorsjegy a sikeres pályáért!', 'ok');
-      persistTenQuestMeta();
-    }
-    const winTitle = document.getElementById('win-modal-title');
-    const winDesc = document.getElementById('win-modal-desc');
-
-    if (state.activeStakePoints > 0) {
-      state.weeklyScore += state.activeStakePoints;
-      if (state.highStakesMode === 'brave') {
-        state.scratchTickets = state.scratchTickets || [];
-        state.scratchTickets.push(generate50ScratchVariations()[0]);
-        showToast("🔥 Bátor kihívás sikeres! 300P visszajárt + 1 Ingyen Sorsjegy!", "ok");
-      } else if (state.highStakesMode === 'legend') {
-        const goldenJokerOptions = { id: createLetterRewardId(), char: '🃏', isGold: true, isGoldenJoker: true };
-        // Ez szintvégi jutalom, ezért mindig a következő kör sorába kerül; az aktuális pálya törlődése nem viheti el.
-        queueNextRoundLetter(goldenJokerOptions);
-        showToast("⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker elmentve a következő körre (betűválasztáskor sorsjegyet ad)!", "ok");
+  if (allCompleted) {
+    // A küldetések teljesítése lezárja a kötelező részt, de nem állítja meg a bónuszfarmolást.
+    if (!state.levelCompleted) {
+      state.levelCompleted = true;
+      state.pendingWinModal = false;
+      state.farmExhaustionNotified = false;
+      if (state.highStakesMode === 'ten' && Number(state.tenQuestRewardAwardedLevel) !== Number(state.level)) {
+        state.tenQuestRewardAwardedLevel = Number(state.level) || 0;
+        grantTenQuestReward();
       }
-    }
+      const activeTimedReward = getActiveTenQuestReward();
+      if (activeTimedReward && activeTimedReward.id === 'lucky_ticket' && Number(state.tenQuestTicketAwardedLevel) !== Number(state.level)) {
+        state.tenQuestTicketAwardedLevel = Number(state.level) || 0;
+        state.scratchTickets = Array.isArray(state.scratchTickets) ? state.scratchTickets : [];
+        state.scratchTickets.push(generate50ScratchVariations()[0]);
+        showToast('🎫 Sorsjegy-eső: +1 sorsjegy a sikeres pályáért!', 'ok');
+        persistTenQuestMeta();
+      }
 
-    if(isGoldenLevel(state.level)) {
-      if (winTitle) winTitle.innerHTML = '👑 ARANYPÁLYA TELJESÍTVE!';
-      if (winDesc) winDesc.innerHTML = 'Fantasztikus! <b>+5 Tartalék lépés</b> és <b>+1500 Heti Pont</b> jóváírva!';
-      state.storedMoves = (state.storedMoves || 0) + 5;
-      state.weeklyScore += 1500;
+      if (state.activeStakePoints > 0) {
+        state.weeklyScore += state.activeStakePoints;
+        if (state.highStakesMode === 'brave') {
+          state.scratchTickets = state.scratchTickets || [];
+          state.scratchTickets.push(generate50ScratchVariations()[0]);
+          showToast('🔥 Bátor kihívás sikeres! 300P visszajárt + 1 ingyen sorsjegy!', 'ok');
+        } else if (state.highStakesMode === 'legend') {
+          const goldenJokerOptions = { id: createLetterRewardId(), char: '🃏', isGold: true, isGoldenJoker: true };
+          queueNextRoundLetter(goldenJokerOptions);
+          showToast('⚡ Legenda kihívás sikeres! 600P visszajárt + Arany Joker elmentve a következő körre!', 'ok');
+        }
+      }
+
+      if (isGoldenLevel(state.level)) {
+        state.storedMoves = (state.storedMoves || 0) + 5;
+        state.weeklyScore += 1500;
+        sfxFanfare();
+        showToast('👑 Aranypálya teljesítve: +5 tartalék lépés és +1500 heti pont!', 'ok');
+      }
+      showToast('🏆 Minden kötelező küldetés teljesítve! Mostantól opcionálisan farmolhatsz a meglévő kockákból és betűkből. Új kockák nem érkeznek.', 'ok');
       sfxFanfare();
-    } else {
-      if (winTitle) winTitle.textContent = '🎉 SZINT TELJESÍTVE!';
-      if (winDesc) winDesc.textContent = 'Minden kötelező és bevállalt küldetés sikeresen végrehajtva!';
     }
-    const rewardModal = document.getElementById('modal-free-letter-reward');
-    if (rewardModal && rewardModal.classList.contains('active')) {
-      // A jutalombetűt előbb ki kell választani; a szintvégi ablak addig vár.
-      state.pendingWinModal = true;
-      return;
-    }
-    const winModal = document.getElementById('modal-win');
-    if (winModal) winModal.classList.add('active');
+    updateFarmModeUI({ recount: true });
+    return;
+  }
+
+  // Betöltött/mentett körnél is őrizzük meg a bónuszfarm állapotát; nincs utólagos lépéskényszer.
+  if (state.levelCompleted) {
+    updateFarmModeUI({ recount: true });
     return;
   }
 
@@ -4297,7 +4560,7 @@ function verifyGameState() {
       state.moves += 3;
       updateStats();
       updateMovesWatermark();
-      showToast("🛡️ Pajzs megvédett! +3 megmentő lépés!", "ok");
+      showToast('🛡️ Pajzs megvédett! +3 megmentő lépés!', 'ok');
       return;
     }
     const lc = document.getElementById('modal-last-chance');
@@ -4365,6 +4628,19 @@ let rouletteState = 'idle';
 safeOn('btn-next-level', 'click', () => {
   const winModal = document.getElementById('modal-win');
   if (winModal) winModal.classList.remove('active');
+  openQuestRouletteModal(state.level + 1);
+});
+
+safeOn('btn-finish-farming', 'click', async () => {
+  if (!state.levelCompleted || !state.questStatuses.length || !state.questStatuses.every(Boolean)) {
+    showToast('A következő kör előtt minden kötelező küldetést teljesíteni kell!', 'err');
+    return;
+  }
+  // A lezárt farmkör mentése előbb fejeződjön be, csak ezután induljon a következő kör választója.
+  await syncCloudState();
+  const panel = document.getElementById('farm-mode-panel');
+  if (panel) panel.classList.remove('active');
+  showToast(`Kör lezárva. A pálya összesített pontja: ${Math.max(0, Number(state.stats.levelScore) || 0).toLocaleString('hu-HU')} P.`, 'ok');
   openQuestRouletteModal(state.level + 1);
 });
 
@@ -4941,7 +5217,11 @@ async function useVowelRain() {
       state.board[r][c] = null;
     });
 
+    checkQuestProgress();
+    verifyGameState();
     animateFreedLetters(freed);
+    checkQuestProgress();
+    verifyGameState();
     sfxSnap();
     showToast(`🅰️ Vokális eső! ${selected.length} kocka betűje hullik a raktárba.`, 'ok');
     await delay(220);
@@ -4950,11 +5230,12 @@ async function useVowelRain() {
     updateStats();
     updateMovesWatermark();
     checkQuestProgress();
-    await syncCloudState();
   } finally {
     isLocked = false;
   }
   verifyGameState();
+  updateFarmModeUI({ recount: true });
+  await syncCloudState();
 }
 
 // Az új pakli pontosan 50 kaparós jegyből áll. A weight a paklin belüli darabszámot jelöli.
@@ -6081,6 +6362,8 @@ async function syncCloudState() {
     lastWeekKey: state.lastWeekKey || null,
     lastWeekScore: state.lastWeekScore || 0,
     level: state.level,
+    levelCompleted: !!state.levelCompleted,
+    farmDeferredLetters: state.farmDeferredLetters || [],
     weeklyScore: isDevTestUser() ? 0 : state.weeklyScore,
     moves: state.moves,
     storedMoves: state.storedMoves || 0,
@@ -6206,6 +6489,11 @@ function restoreFromCloudData(data) {
     }
   }
 
+  // A feladatállapot az igazság forrása: a mentett flag önmagában nem ugorhatja át a kötelező küldetéseket.
+  // Régi mentésnél ugyanígy a teljesen kipipált küldetéslista jelzi a farm módot.
+  state.levelCompleted = state.questStatuses.length > 0 && state.questStatuses.every(Boolean);
+  state.pendingWinModal = false;
+  state.farmDeferredLetters = Array.isArray(data.farmDeferredLetters) ? data.farmDeferredLetters : [];
   state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, matchesAtLeast5: 0, goldLettersFreed: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false };
   state.stats.matchesAtLeast5 = Number(state.stats.matchesAtLeast5) || 0;
   state.stats.goldLettersFreed = Number(state.stats.goldLettersFreed) || 0;
@@ -6255,6 +6543,7 @@ function restoreFromCloudData(data) {
   updateMovesWatermark();
   updateMissionUI();
   updateHeroDisplay();
+  updateFarmModeUI({ recount: true });
   initDailySecretStreak();
   startDuelInviteListener();
 }
