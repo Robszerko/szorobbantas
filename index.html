@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Magyar Szótár és Stabil Játéktábla Edition</title>
+<title>SZÓROBBANTÁS PRO - Magyar Szótár, Szójavaslatok és Ellenőrzés</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1594,6 +1594,23 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-unknown-word-review" role="dialog" aria-modal="true" aria-labelledby="unknown-word-review-title">
+  <div class="modal-box" style="max-width:420px; border-color:var(--gold);">
+    <button class="modal-close-x" id="btn-unknown-word-review-close" aria-label="Bezárás">✖</button>
+    <div class="modal-title" id="unknown-word-review-title" style="color:var(--gold);">📚 SZÓELLENŐRZÉS</div>
+    <p class="modal-desc" id="unknown-word-review-text">Ezt a szót még nem ismerem. Beküldöd Robinak ellenőrzésre?</p>
+    <div style="padding:10px; border:1px solid rgba(251,191,36,.35); border-radius:10px; background:rgba(2,6,23,.65);">
+      <div style="font-size:9px; font-weight:800; letter-spacing:1px; color:#94a3b8;">ELLENŐRIZENDŐ SZÓ</div>
+      <div id="unknown-word-review-candidate" style="font-size:24px; font-weight:1000; letter-spacing:2px; color:#fde68a; overflow-wrap:anywhere;">—</div>
+    </div>
+    <p class="modal-desc">A szó beküldése önmagában nem fogadja el a szót és nem ad pontot. A betűid a tálcán maradnak; csak a TESZT-felhasználó jóváhagyása után válik a szó használhatóvá.</p>
+    <div class="modal-buttons" style="flex-direction:row;">
+      <button class="btn-modal primary" id="btn-unknown-word-review-yes" style="flex:1;">IGEN, KÜLDÉS ROBINAK</button>
+      <button class="btn-modal secondary" id="btn-unknown-word-review-no" style="flex:1;">NEM</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-admin">
   <div class="modal-box" style="max-width:460px;">
     <div class="modal-title" style="color:var(--purple);">⚡ FEJLESZTŐI VEZÉRLŐPULT</div>
@@ -1622,6 +1639,20 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
 
     <div style="font-size:10px; font-weight:800; color:#cbd5e1; text-align:left; margin-top:4px;">REGISZTRÁLT JÁTÉKOSOK:</div>
     <div class="lobby-content-scroll" id="admin-profile-list" style="max-height:130px;"></div>
+
+    <div style="background:rgba(15,23,42,.9); border:1.5px solid var(--gold); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px; text-align:left;">
+      <div style="font-size:11px; font-weight:900; color:#fde68a;">📚 ROBI SZÓELLENŐRZÉSE – BEKÜLDÖTT SZAVAK</div>
+      <div style="font-size:10px; color:#94a3b8; line-height:1.4;">Csak az elfogadott szavak kerülnek a játék közös szótárába. Elutasításkor a szó nem lesz használható.</div>
+      <div id="admin-word-review-status" style="font-size:10px; color:#94a3b8;">Beküldések betöltése…</div>
+      <div class="lobby-content-scroll" id="admin-word-review-list" style="max-height:230px; margin-top:0;"></div>
+      <hr style="border:none; border-top:1px dashed #475569; margin:2px 0;">
+      <div style="font-size:10px; font-weight:900; color:#c4b5fd;">GOOGLE TÁBLÁZAT SZINKRON</div>
+      <div style="font-size:9px; color:#94a3b8; line-height:1.35;">Cél: <a href="https://docs.google.com/spreadsheets/d/1xwzw2eN1_sajASRA1QgCJWCxwPiX4B8qGsUejpgNS9U/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" style="color:#7dd3fc;">jóváhagyott magyar szavak táblázatának megnyitása</a>. A táblázat nyilvános megosztása nem ad írási jogot a böngészőnek. A közös Apps Script /exec végpont be van építve; a TESZT adminnak csak a Script Properties-ben beállított szinkronkulcsot kell megadnia.</div>
+      <input type="url" class="input-pin" id="admin-google-sheet-sync-url" placeholder="Apps Script webalkalmazás URL-je" style="font-size:11px; letter-spacing:0; text-transform:none;">
+      <input type="password" class="input-pin" id="admin-google-sheet-sync-token" placeholder="Szinkronkulcs (Script Properties)" autocomplete="new-password" style="font-size:11px; letter-spacing:0; text-transform:none;">
+      <button class="btn-modal secondary" id="btn-admin-save-google-sheet-config" style="padding:8px; font-size:10.5px;">SZINKRONBEÁLLÍTÁS MENTÉSE ÉS TÁBLÁZAT-SZÓLISTA BETÖLTÉSE</button>
+      <div id="admin-google-sheet-sync-status" style="font-size:10px; color:#94a3b8; line-height:1.35;">A közös /exec végpont be van építve a játékba. A TESZT-fiókban add meg a SZOROBBANTAS_SYNC_TOKEN Script Properties értékét; a kulcs csak ebben a böngészőben tárolódik.</div>
+    </div>
 
     <div class="modal-buttons" style="flex-direction:row; gap:8px; margin-top:4px;">
       <button class="btn-modal purple" style="flex:1;" id="btn-admin-play-test">🎮 Ingyenes Teszt</button>
@@ -1822,7 +1853,20 @@ let currentUserUid = null;
 let cloudConnected = false;
 let activeStreamUnsubscribe = null;
 let communityUnsubscribe = null;
+let approvedWordsUnsubscribe = null;
 let pendingCloudData = null;
+let pendingUnknownWordReview = null;
+const GOOGLE_SHEET_ID = '1xwzw2eN1_sajASRA1QgCJWCxwPiX4B8qGsUejpgNS9U';
+const GOOGLE_SHEET_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/edit?gid=0#gid=0`;
+// A felhasználó által megadott, közös Google Apps Script /exec végpont; minden játékos ugyanazt használja.
+const DEFAULT_GOOGLE_SHEET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbx6zo6JPiUq1VNZNF2DB0Ay_hgtSEuTTLojXqwEXBC-hz4IE2xl3v2Ejg6GcWLyUXOnUA/exec';
+const GOOGLE_DOC_ID = GOOGLE_SHEET_ID; // régi belső hivatkozások kompatibilitása
+const GOOGLE_DOC_URL = GOOGLE_SHEET_URL;
+const GOOGLE_DOC_SYNC_URL_KEY = 'szorobbantas.googleSheetSyncUrl.v2';
+const GOOGLE_DOC_SYNC_TOKEN_KEY = 'szorobbantas.googleSheetSyncToken.v2';
+const LOCAL_PENDING_WORDS_KEY = 'szorobbantas.pendingWordSubmissions.v1';
+const LOCAL_APPROVED_WORDS_KEY = 'szorobbantas.approvedCustomWords.v1';
+const pendingDocSyncMessages = new Map();
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -1832,11 +1876,13 @@ try {
     cloudConnected = true;
     setSyncDot('online');
     startAuthCommunityListener();
+    startApprovedWordsListener();
     checkWeeklyResetAndCrownWinner();
   }).catch(e => {
     cloudConnected = false;
     setSyncDot('offline');
   });
+  if (DEFAULT_GOOGLE_SHEET_WEBAPP_URL) setTimeout(() => importGoogleDocWordsIntoGame(), 1800);
 } catch(e) {
   cloudConnected = false;
   setSyncDot('offline');
@@ -2104,6 +2150,71 @@ const CORE_WORDS = [
 // Az alapszótár azonnal használható, a nagyobb szótárak betöltése csak bővíti.
 VALID_2_LETTER_WORDS.forEach(w => DICT.add(w));
 CORE_WORDS.forEach(w => DICT.add(w));
+
+function normalizeReviewWord(raw) {
+  const word = String(raw || '').normalize('NFC').trim().toLocaleUpperCase('hu-HU');
+  if (word.length < 2 || word.length > 16 || !/^[A-ZÁÉÍÓÖŐÚÜŰQWX]+$/.test(word)) return null;
+  if (NON_WORDS_BLACKLIST.has(word) || /(.)\1\1/.test(word)) return null;
+  // A beküldésre csak szótári találat nélküli, betűkből álló, kézzel ellenőrizhető jelölt mehet.
+  // Q/W/X-t is engedjük a kézi ellenőrzéshez (pl. meghonosodott jövevényszó), de automatikusan nem fogadjuk el.
+  if (!/[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(word)) return null;
+  return word;
+}
+
+function readLocalApprovedWords() {
+  try {
+    const words = JSON.parse(localStorage.getItem(LOCAL_APPROVED_WORDS_KEY) || '[]');
+    if (Array.isArray(words)) words.forEach(raw => {
+      const word = normalizeReviewWord(raw);
+      if (word) DICT.add(word);
+    });
+  } catch (_) {}
+}
+readLocalApprovedWords();
+
+function persistLocalApprovedWord(word) {
+  try {
+    const words = JSON.parse(localStorage.getItem(LOCAL_APPROVED_WORDS_KEY) || '[]');
+    const clean = Array.isArray(words) ? words : [];
+    if (!clean.includes(word)) clean.push(word);
+    localStorage.setItem(LOCAL_APPROVED_WORDS_KEY, JSON.stringify(clean.slice(-5000)));
+  } catch (_) {}
+}
+
+function refreshDictionaryStatusLine() {
+  const node = document.getElementById('dict-status-txt');
+  if (node && dictionaryReady) node.textContent = `Magyar szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
+}
+
+function addApprovedCustomWord(raw) {
+  const word = normalizeReviewWord(raw);
+  if (!word) return false;
+  DICT.add(word);
+  persistLocalApprovedWord(word);
+  refreshDictionaryStatusLine();
+  if (typeof getTrayWord === 'function' && getTrayWord() === word && typeof validateCurrentTrayWord === 'function') validateCurrentTrayWord();
+  if (state && state.levelCompleted) updateFarmModeUI({ recount: true });
+  return true;
+}
+
+function startApprovedWordsListener() {
+  if (!db || !cloudConnected || approvedWordsUnsubscribe) return;
+  try {
+    approvedWordsUnsubscribe = db.collection('approvedWords').onSnapshot(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data() || {};
+        if (data.status === 'approved') addApprovedCustomWord(data.word || doc.id);
+      });
+      refreshDictionaryStatusLine();
+    }, error => {
+      console.warn('Az elfogadott közös szavak szinkronja nem elérhető:', error);
+      approvedWordsUnsubscribe = null;
+    });
+  } catch (error) {
+    console.warn('Nem indítható az elfogadott szavak figyelése:', error);
+    approvedWordsUnsubscribe = null;
+  }
+}
 
 function sanitizeWord(raw) {
   if(!raw) return null;
@@ -4056,6 +4167,415 @@ function applyNextRoundLetters() {
   return added;
 }
 
+function isDevTestUser() {
+  return state.playerName === 'TESZT' && state.playerPin === '0000';
+}
+
+function getGoogleDocConfig() {
+  let url = '', token = '';
+  try {
+    url = (DEFAULT_GOOGLE_SHEET_WEBAPP_URL || localStorage.getItem(GOOGLE_DOC_SYNC_URL_KEY) || localStorage.getItem('szorobbantas.googleDocSyncUrl.v1') || '').trim();
+    token = localStorage.getItem(GOOGLE_DOC_SYNC_TOKEN_KEY) || localStorage.getItem('szorobbantas.googleDocSyncToken.v1') || '';
+  } catch (_) {}
+  return { url, token };
+}
+
+function setGoogleDocConfig(url, token) {
+  url = String(url || '').trim();
+  token = String(token || '').trim();
+  if (url && !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec(?:\?.*)?$/.test(url)) {
+    throw new Error('Érvényes Google Apps Script /exec webalkalmazás-URL-t adj meg.');
+  }
+  try {
+    if (url) localStorage.setItem(GOOGLE_DOC_SYNC_URL_KEY, url);
+    else localStorage.removeItem(GOOGLE_DOC_SYNC_URL_KEY);
+    if (token) localStorage.setItem(GOOGLE_DOC_SYNC_TOKEN_KEY, token);
+    else localStorage.removeItem(GOOGLE_DOC_SYNC_TOKEN_KEY);
+  } catch (_) {
+    throw new Error('A böngésző nem engedte elmenteni a beállítást.');
+  }
+}
+
+function showUnknownWordReviewPrompt(word) {
+  pendingUnknownWordReview = word;
+  const modal = document.getElementById('modal-unknown-word-review');
+  const wordNode = document.getElementById('unknown-word-review-candidate');
+  const textNode = document.getElementById('unknown-word-review-text');
+  if (wordNode) wordNode.textContent = word;
+  if (textNode) textNode.textContent = 'Ezt a szót még nem ismerem. Beküldöd Robinak ellenőrzésre?';
+  if (modal) modal.classList.add('active');
+}
+
+function closeUnknownWordReviewPrompt() {
+  const modal = document.getElementById('modal-unknown-word-review');
+  if (modal) modal.classList.remove('active');
+  pendingUnknownWordReview = null;
+}
+
+function readLocalPendingWords() {
+  try {
+    const list = JSON.parse(localStorage.getItem(LOCAL_PENDING_WORDS_KEY) || '[]');
+    return Array.isArray(list) ? list : [];
+  } catch (_) { return []; }
+}
+
+function saveLocalPendingWords(list) {
+  try { localStorage.setItem(LOCAL_PENDING_WORDS_KEY, JSON.stringify(list.slice(-500))); } catch (_) {}
+}
+
+// Közvetlen Google Sheets Apps Script POST: a kérés rejtett iframe-en keresztül megy, így nincs CORS-preflight.
+function callGoogleSheetApi(action, fields = {}, requiresAdminToken = false, timeoutMs = 12000) {
+  const config = getGoogleDocConfig();
+  if (!config.url) return Promise.resolve({ configured: false, success: false, message: 'Nincs Apps Script /exec URL beállítva.' });
+  if (requiresAdminToken && !config.token) return Promise.resolve({ configured: true, success: false, message: 'Hiányzik a TESZT admin szinkronkulcsa.' });
+  return new Promise(resolve => {
+    const nonce = `sheet-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    const timer = setTimeout(() => {
+      pendingDocSyncMessages.delete(nonce);
+      resolve({ configured: true, success: false, message: 'A Google Táblázat nem igazolta vissza a kérést. Ellenőrizd a /exec URL-t és a webalkalmazás-hozzáférést.' });
+    }, timeoutMs);
+    pendingDocSyncMessages.set(nonce, result => {
+      clearTimeout(timer);
+      resolve({ configured: true, ...result, success: !!result.success });
+    });
+    let frame = document.getElementById('google-sheet-sync-frame');
+    if (!frame) {
+      frame = document.createElement('iframe');
+      frame.id = 'google-sheet-sync-frame'; frame.name = 'google-sheet-sync-frame';
+      frame.title = 'Google Táblázat szinkron';
+      frame.style.cssText = 'display:none;width:0;height:0;border:0;';
+      document.body.appendChild(frame);
+    }
+    const form = document.createElement('form');
+    form.method = 'POST'; form.action = config.url; form.target = frame.name; form.style.display = 'none';
+    const input = document.createElement('input'); input.type = 'hidden'; input.name = 'payload';
+    input.value = JSON.stringify({ action, ...fields, token: requiresAdminToken ? config.token : '', nonce, spreadsheetId: GOOGLE_SHEET_ID });
+    form.appendChild(input); document.body.appendChild(form);
+    try { form.submit(); }
+    catch (error) {
+      clearTimeout(timer); pendingDocSyncMessages.delete(nonce);
+      resolve({ configured: true, success: false, message: 'A Google Táblázat-kérés nem indult el.' });
+    } finally { setTimeout(() => form.remove(), 1000); }
+  });
+}
+
+async function submitUnknownWordForReview() {
+  const word = pendingUnknownWordReview;
+  if (!word) return;
+  if (DICT.has(word)) {
+    closeUnknownWordReviewPrompt();
+    showToast(`A „${word}” már bekerült a szótárba; most már beküldheted!`, 'ok');
+    validateCurrentTrayWord();
+    return;
+  }
+  const cleanWord = normalizeReviewWord(word);
+  if (!cleanWord) {
+    closeUnknownWordReviewPrompt();
+    showToast('Ezt a betűsort nem küldjük ellenőrzésre. Csak életszerű, betűkből álló szójelölt küldhető be.', 'err');
+    return;
+  }
+  const now = Date.now();
+  const sender = String(state.playerName || 'Vendég').slice(0, 32);
+  closeUnknownWordReviewPrompt();
+  try {
+    const sheetConfig = getGoogleDocConfig();
+    if (sheetConfig.url) {
+      const sheetResult = await callGoogleSheetApi('submitWord', { word: cleanWord, sender, submittedAt: now }, false);
+      if (sheetResult.success) {
+        showToast(sheetResult.message || `„${cleanWord}” bekerült a közös ellenőrzési várólistába.`, 'ok');
+        return;
+      }
+      throw new Error(sheetResult.message || 'Google Táblázat-beküldési hiba.');
+    }
+    if (db && cloudConnected) {
+      // A jóváhagyott szavak a szótárfigyelőből bekerülnek a DICT-be, ezért nincs előzetes Firestore read,
+      // ami gyakori oka volt a permission-denied hibának.
+      if (DICT.has(cleanWord)) {
+        showToast(`„${cleanWord}” már ismert a szótárban.`, 'ok');
+        validateCurrentTrayWord();
+        return;
+      }
+      const ref = db.collection('wordSubmissions').doc(cleanWord);
+      await ref.set({
+        word: cleanWord, status: 'pending', submittedBy: sender, submittedAt: now,
+        lastSubmittedBy: sender, lastSubmittedAt: now,
+        submissionCount: firebase.firestore.FieldValue.increment(1), spreadsheetId: GOOGLE_SHEET_ID
+      }, { merge: true });
+    } else {
+      const list = readLocalPendingWords();
+      const existingIndex = list.findIndex(item => item && item.word === cleanWord && item.status === 'pending');
+      if (existingIndex >= 0) {
+        list[existingIndex].submissionCount = (Number(list[existingIndex].submissionCount) || 1) + 1;
+        list[existingIndex].lastSubmittedAt = now;
+        list[existingIndex].lastSubmittedBy = sender;
+      } else {
+        list.push({ word: cleanWord, status: 'pending', submittedBy: sender, submittedAt: now, lastSubmittedBy: sender, lastSubmittedAt: now, submissionCount: 1, spreadsheetId: GOOGLE_SHEET_ID });
+      }
+      saveLocalPendingWords(list);
+      showToast('A szó NEM jutott el Robinak. Helyben elmentettem, de a közös beküldéshez telepített Apps Script /exec URL szükséges.', 'err');
+      return;
+    }
+    showToast(`„${cleanWord}” Firebase-várólistára elküldve. A betűid a tálcán maradtak.`, 'ok');
+  } catch (error) {
+    console.error('Szóbeküldési hiba:', error);
+    // Hálózati/Firebase-hiba esetén legalább ezen a böngészőn ne vesszen el a javaslat.
+    const list = readLocalPendingWords();
+    if (!list.some(item => item && item.word === cleanWord && item.status === 'pending')) {
+      list.push({ word: cleanWord, status: 'pending', submittedBy: sender, submittedAt: now, lastSubmittedBy: sender, lastSubmittedAt: now, submissionCount: 1, spreadsheetId: GOOGLE_SHEET_ID, localOnly: true });
+      saveLocalPendingWords(list);
+    }
+    const code = String(error && error.code || error && error.message || 'ismeretlen hiba').slice(0, 110);
+    showToast(`NEM jutott el a TESZT-hez (${code}). Csak ezen a böngészőn őriztem meg; Apps Script /exec URL vagy megfelelő Firebase-szabály szükséges.`, 'err');
+  }
+}
+
+function setAdminWordReviewStatus(text, isError = false) {
+  const node = document.getElementById('admin-word-review-status');
+  if (node) { node.textContent = text; node.style.color = isError ? '#fca5a5' : '#94a3b8'; }
+}
+
+function renderAdminWordReviewItems(items) {
+  const listNode = document.getElementById('admin-word-review-list');
+  if (!listNode) return;
+  listNode.replaceChildren();
+  if (!items.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:10px;color:#94a3b8;text-align:center;padding:10px;';
+    empty.textContent = 'Nincs ellenőrzésre váró szó.';
+    listNode.appendChild(empty);
+    return;
+  }
+  items.sort((a, b) => (Number(b.lastSubmittedAt || b.submittedAt) || 0) - (Number(a.lastSubmittedAt || a.submittedAt) || 0));
+  items.forEach(item => {
+    const word = normalizeReviewWord(item.word || item.id);
+    if (!word) return;
+    const row = document.createElement('div');
+    row.className = 'community-player-card';
+    row.style.cssText = 'align-items:flex-start; gap:8px; flex-wrap:wrap; margin-bottom:5px;';
+    const details = document.createElement('div');
+    details.style.cssText = 'flex:1;min-width:130px;';
+    const title = document.createElement('b');
+    title.style.cssText = 'font-size:13px;color:#fde68a;letter-spacing:1px;';
+    title.textContent = word;
+    const info = document.createElement('div');
+    info.style.cssText = 'font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.4;';
+    const date = Number(item.lastSubmittedAt || item.submittedAt) ? new Date(Number(item.lastSubmittedAt || item.submittedAt)).toLocaleString('hu-HU') : 'ismeretlen időpont';
+    info.textContent = `Beküldő: ${item.lastSubmittedBy || item.submittedBy || 'ismeretlen'} · ${date} · ${Number(item.submissionCount) || 1} beküldés${item.localOnly ? ' · csak helyi' : ''}`;
+    details.append(title, info);
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:4px;';
+    const accept = document.createElement('button');
+    accept.className = 'btn-modal primary';
+    accept.style.cssText = 'padding:5px 7px;font-size:9px;';
+    accept.textContent = 'ELFOGADOM';
+    accept.addEventListener('click', () => approveSubmittedWord(word, !!item.localOnly, !!item.sheetOnly));
+    const reject = document.createElement('button');
+    reject.className = 'btn-modal danger';
+    reject.style.cssText = 'padding:5px 7px;font-size:9px;';
+    reject.textContent = 'ELUTASÍTOM';
+    reject.addEventListener('click', () => rejectSubmittedWord(word, !!item.localOnly, !!item.sheetOnly));
+    actions.append(accept, reject);
+    row.append(details, actions);
+    listNode.appendChild(row);
+  });
+}
+
+async function loadUnknownWordReviewQueue() {
+  if (!isDevTestUser()) return;
+  let remoteItems = [];
+  let remoteFailed = false;
+  if (db && cloudConnected) {
+    try {
+      const snap = await db.collection('wordSubmissions').where('status', '==', 'pending').limit(100).get();
+      remoteItems = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), localOnly: false }));
+    } catch (error) {
+      remoteFailed = true;
+      console.warn('A felhős szóbeküldések nem olvashatók:', error);
+    }
+  }
+  const localItems = readLocalPendingWords().filter(item => item && item.status === 'pending');
+  const sheetConfig = getGoogleDocConfig();
+  let sheetFailed = false;
+  if (sheetConfig.url && sheetConfig.token) {
+    try {
+      const result = await callGoogleSheetApi('listPending', {}, true);
+      if (result.success && Array.isArray(result.items)) result.items.forEach(item => remoteItems.push({ ...item, localOnly: false, sheetOnly: true }));
+      else sheetFailed = true;
+    } catch (_) { sheetFailed = true; }
+  }
+  const byWord = new Map();
+  remoteItems.forEach(item => {
+    const key = item.word || item.id; const prev = byWord.get(key);
+    byWord.set(key, prev ? { ...prev, ...item, sheetOnly: !!(prev.sheetOnly && item.sheetOnly) } : item);
+  });
+  localItems.forEach(item => { if (!byWord.has(item.word)) byWord.set(item.word, item); });
+  const all = [...byWord.values()];
+  const notes = [];
+  if (!cloudConnected) notes.push('Firebase nincs csatlakoztatva');
+  else if (remoteFailed) notes.push('Firebase wordSubmissions olvasás tiltva/hibás');
+  if (sheetConfig.url && sheetFailed) notes.push('Google Táblázat várólista olvasása sikertelen');
+  if (!sheetConfig.url) notes.push('Táblázatos beküldés nincs beállítva');
+  if (localItems.length) notes.push('helyi javaslat csak ezen a böngészőn látszik');
+  setAdminWordReviewStatus(`${all.length} függőben lévő szó${notes.length ? ' · ' + notes.join(' · ') : ''}`, remoteFailed || sheetFailed);
+  renderAdminWordReviewItems(all);
+}
+
+async function approveSubmittedWord(rawWord, localOnly = false, sheetOnly = false) {
+  if (!isDevTestUser()) { showToast('A szó elfogadásához a TESZT adminfiók szükséges.', 'err'); return; }
+  const word = normalizeReviewWord(rawWord);
+  if (!word) { showToast('A szó nem felel meg az ellenőrzési szabályoknak.', 'err'); return; }
+  let firestoreSaved = false, sheetSaved = false, sheetMessage = '';
+  try {
+    if (db && cloudConnected) {
+      try {
+        const batch = db.batch();
+        batch.set(db.collection('approvedWords').doc(word), { word, status: 'approved', approvedBy: 'TESZT', approvedAt: Date.now(), spreadsheetId: GOOGLE_SHEET_ID, source: 'manual-review' }, { merge: true });
+        batch.set(db.collection('wordSubmissions').doc(word), { word, status: 'approved', approvedBy: 'TESZT', reviewedAt: Date.now(), spreadsheetId: GOOGLE_SHEET_ID }, { merge: true });
+        await batch.commit(); firestoreSaved = true;
+      } catch (firebaseError) { console.warn('Firebase jóváhagyás nem mentődött, a táblázatot még megpróbáljuk:', firebaseError); }
+    }
+    const config = getGoogleDocConfig();
+    if (config.url && config.token) {
+      const result = await callGoogleSheetApi('reviewWord', { word, status: 'approved', reviewer: 'TESZT' }, true);
+      sheetSaved = !!result.success; sheetMessage = result.message || '';
+    }
+    if (!firestoreSaved && !sheetSaved) throw new Error('Sem a Firebase, sem a Google Táblázat nem igazolta vissza a jóváhagyást. ' + sheetMessage);
+    addApprovedCustomWord(word);
+    saveLocalPendingWords(readLocalPendingWords().filter(item => item && item.word !== word));
+    if (sheetSaved) {
+      googleDocSyncStatus(sheetMessage || `„${word}” jóváhagyva a Google Táblázatban.`);
+      showToast(`„${word}” elfogadva${firestoreSaved ? ' a közös játékban és a táblázatban' : ' a táblázatban'}.`, 'ok');
+    } else {
+      googleDocSyncStatus('A szó a Firebase közös szótárába bekerült, de a Google Táblázat szinkronja nincs beállítva.', true);
+      showToast(`„${word}” elfogadva a Firebase közös szótárában.`, 'ok');
+    }
+    loadUnknownWordReviewQueue();
+  } catch (error) {
+    console.error('Jóváhagyási hiba:', error);
+    setAdminWordReviewStatus(`A jóváhagyás nem igazolódott vissza: ${String(error && (error.code || error.message) || 'ismeretlen hiba')}`, true);
+    showToast('Nem sikerült biztosan elmenteni a jóváhagyást. Nézd meg az Admin üzenetét.', 'err');
+  }
+}
+
+async function rejectSubmittedWord(rawWord, localOnly = false, sheetOnly = false) {
+  if (!isDevTestUser()) { showToast('Az elutasításhoz a TESZT adminfiók szükséges.', 'err'); return; }
+  const word = normalizeReviewWord(rawWord);
+  if (!word) return;
+  let firestoreSaved = false, sheetSaved = false;
+  try {
+    if (db && cloudConnected) {
+      try {
+        await db.collection('wordSubmissions').doc(word).set({ word, status: 'rejected', rejectedBy: 'TESZT', reviewedAt: Date.now() }, { merge: true });
+        firestoreSaved = true;
+      } catch (firebaseError) { console.warn('Firebase elutasítás nem mentődött, a táblázatot még megpróbáljuk:', firebaseError); }
+    }
+    const config = getGoogleDocConfig();
+    if (config.url && config.token) {
+      const result = await callGoogleSheetApi('reviewWord', { word, status: 'rejected', reviewer: 'TESZT' }, true);
+      sheetSaved = !!result.success;
+    }
+    saveLocalPendingWords(readLocalPendingWords().filter(item => item && item.word !== word));
+    if (!firestoreSaved && !sheetSaved && !localOnly) throw new Error('A Firebase és a Google Táblázat sem mentette el az elutasítást.');
+    showToast(`„${word}” elutasítva${sheetSaved || firestoreSaved ? '; a közös várólistán frissítve.' : '; csak a helyi listából eltávolítva.'}`, (sheetSaved || firestoreSaved) ? 'ok' : 'err');
+    loadUnknownWordReviewQueue();
+  } catch (error) {
+    console.error('Elutasítási hiba:', error);
+    showToast(`Az elutasítást nem sikerült elmenteni (${String(error && (error.code || error.message) || 'hiba')}).`, 'err');
+  }
+}
+
+function googleDocSyncStatus(message, isError = false) {
+  const node = document.getElementById('admin-google-sheet-sync-status');
+  if (node) { node.textContent = message; node.style.color = isError ? '#fca5a5' : '#94a3b8'; }
+}
+
+function sendApprovedWordToGoogleDoc(word) {
+  const config = getGoogleDocConfig();
+  if (!config.url || !config.token) return Promise.resolve({ configured: false, success: false, message: 'Google Táblázat szinkronja nincs beállítva.' });
+  return callGoogleSheetApi('reviewWord', { word, status: 'approved', reviewer: 'TESZT' }, true)
+    .then(result => ({ configured: true, success: !!result.success, message: result.message || '' }));
+}
+
+let googleDocJsonpCounter = 0;
+function importGoogleDocWordsIntoGame() {
+  const config = getGoogleDocConfig();
+  if (!config.url) {
+    googleDocSyncStatus('Előbb telepítsd a mellékelt Google Táblázat Apps Scriptet, majd mentsd el a /exec URL-t és a szinkronkulcsot.', true);
+    return;
+  }
+  googleDocSyncStatus('A Google Táblázat jóváhagyott szólistájának betöltése…');
+  const callbackName = `__szorobbantasDocWords${Date.now()}${++googleDocJsonpCounter}`;
+  const script = document.createElement('script');
+  let finished = false;
+  const timer = setTimeout(() => finish(new Error('A Google Táblázat szólistája időtúllépés miatt nem érhető el.')), 12000);
+  function finish(error, payload) {
+    if (finished) return;
+    finished = true; clearTimeout(timer);
+    try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+    script.remove();
+    if (error) { googleDocSyncStatus(error.message, true); return; }
+    const words = [...new Set((payload && Array.isArray(payload.words) ? payload.words : []).map(normalizeReviewWord).filter(Boolean))];
+    let added = 0;
+    words.forEach(word => { if (!DICT.has(word)) added++; addApprovedCustomWord(word); });
+    if (cloudConnected && db && words.length) {
+      const chunks = [];
+      for (let i = 0; i < words.length; i += 400) chunks.push(words.slice(i, i + 400));
+      (async () => {
+        for (const chunk of chunks) {
+          const batch = db.batch();
+          chunk.forEach(word => batch.set(db.collection('approvedWords').doc(word), {
+            word, status: 'approved', approvedBy: 'GOOGLE-TÁBLÁZAT', spreadsheetId: GOOGLE_SHEET_ID,
+            source: 'google-sheet-import', importedAt: Date.now()
+          }, { merge: true }));
+          await batch.commit();
+        }
+        googleDocSyncStatus(`${words.length} táblázatbeli szó feldolgozva; ${added} új szó hozzáadva a játékhoz és a közös szótárhoz.`);
+      })().catch(error2 => {
+        console.error('Google-táblázatos szavak közösítése sikertelen:', error2);
+        googleDocSyncStatus(`${words.length} szó helyben betöltődött, de a közös szótár frissítése nem sikerült.`, true);
+      });
+    } else {
+      googleDocSyncStatus(`${words.length} táblázatbeli szó betöltve; ${added} új szó hozzáadva ehhez a böngészőhöz. Felhőkapcsolat nélkül más játékosokhoz nem szinkronizálható.`);
+    }
+    refreshDictionaryStatusLine();
+  }
+  window[callbackName] = payload => finish(null, payload);
+  script.onerror = () => finish(new Error('A Google Apps Script nem érhető el. Ellenőrizd a webalkalmazás-URL-t és a hozzáférést.'));
+  const separator = config.url.includes('?') ? '&' : '?';
+  script.src = `${config.url}${separator}action=list&callback=${encodeURIComponent(callbackName)}&ts=${Date.now()}`;
+  document.head.appendChild(script);
+}
+
+window.addEventListener('message', event => {
+  const data = event && event.data;
+  if (!data || data.type !== 'SZOROBBANTAS_GOOGLE_SHEET_SYNC' || !data.nonce) return;
+  const resolve = pendingDocSyncMessages.get(data.nonce);
+  if (!resolve) return;
+  pendingDocSyncMessages.delete(data.nonce);
+  resolve({ ...data, success: !!data.success, message: String(data.message || '') });
+});
+
+safeOn('btn-unknown-word-review-yes', 'click', submitUnknownWordForReview);
+safeOn('btn-unknown-word-review-no', 'click', () => {
+  const word = pendingUnknownWordReview;
+  closeUnknownWordReviewPrompt();
+  if (word) showToast('Nem küldtük be ellenőrzésre. A betűid a tálcán maradtak, szerkesztheted vagy törölheted a szót.', 'ok');
+});
+safeOn('btn-unknown-word-review-close', 'click', () => {
+  closeUnknownWordReviewPrompt();
+  showToast('A szó nem lett beküldve; a betűid a tálcán maradtak.', 'ok');
+});
+safeOn('btn-admin-save-google-sheet-config', 'click', () => {
+  if (!isDevTestUser()) { showToast('A Google-táblázat beállításához a TESZT adminfiók szükséges.', 'err'); return; }
+  const url = document.getElementById('admin-google-sheet-sync-url')?.value || '';
+  const token = document.getElementById('admin-google-sheet-sync-token')?.value || '';
+  try {
+    setGoogleDocConfig(url, token);
+    googleDocSyncStatus(url && token ? 'Beállítás elmentve. A táblázat szólistáját most betöltöm…' : 'Beállítás elmentve; URL és szinkronkulcs szükséges az automatikus szinkronhoz.');
+    if (url && token) importGoogleDocWordsIntoGame();
+  } catch (error) { googleDocSyncStatus(error.message, true); }
+});
+
 safeOn('btn-submit', 'click', async () => {
   const word = getTrayWord();
   // A magyar többjegyű betűk (GY, SZ, DZS stb.) egyetlen csempének számítanak.
@@ -4071,22 +4591,24 @@ safeOn('btn-submit', 'click', async () => {
   if(submittedTileCount < 2) { showToast("Legalább 2 betűcsempe szükséges!", "err"); sfxError(); return; }
   if (!dictionaryReady && !DICT.has(word)) { showToast('A magyar helyesírási szótár még töltődik — a betűid megmaradtak, próbáld újra pár pillanat múlva!', 'err'); return; }
   
-  if(NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
-    const errorMsg = NON_WORDS_BLACKLIST.has(word) ? `"${word}" értelmetlen betűkapcsolat!` : `"${word}" nem szerepel a szótárban!`;
-    showToast(errorMsg, "err");
+  if (NON_WORDS_BLACKLIST.has(word)) {
+    showToast(`„${word}” nem küldhető be: tiltott, ismétlődő vagy zajos betűsor.`, 'err');
     sfxError();
     trayEl.classList.add('invalid');
-
-    setTimeout(() => {
-      while(state.tray.length > 0) {
-        const item = state.tray.pop();
-        returnLetterToPoolSlot(item);
-      }
-      trayEl.classList.remove('invalid');
-      renderTray();
-      renderPool();
-      syncCloudState();
-    }, 450);
+    return;
+  }
+  if (!DICT.has(word)) {
+    const candidate = normalizeReviewWord(word);
+    if (candidate) {
+      showUnknownWordReviewPrompt(candidate);
+      sfxError();
+      trayEl.classList.add('invalid');
+    } else {
+      showToast(`„${word}” nem szerepel a magyar szótárban, és nem küldhető ellenőrzésre.`, 'err');
+      sfxError();
+      trayEl.classList.add('invalid');
+    }
+    // A tálcán hagyjuk a betűket: az ismeretlen szó beküldése nem fogyasztja el őket.
     return;
   }
 
@@ -5219,10 +5741,6 @@ const SHOP_ITEMS = [
   { id: 'vowelrain', name: 'Vokális Eső', icon: '🅰️', baseCost: 100, desc: 'Három kockát kiszed, a betűit a raktárba hullatja; az üres kockából magánhangzó lesz.', action: useVowelRain },
   { id: 'goldencoupon', name: 'Arany Kupon', icon: '🌟', baseCost: 260, desc: 'A következő szó 3x pontot ér.', action: () => { state.activeTripleWord = true; validateCurrentTrayWord(); showToast("Arany Kupon aktív (3x pont)!", "ok"); } }
 ];
-
-function isDevTestUser() {
-  return state.playerName === 'TESZT' && state.playerPin === '0000';
-}
 
 function getItemCost(itemId) {
   if(isDevTestUser()) return 0;
@@ -7159,6 +7677,18 @@ function loadAdminDashboard() {
     const champInput = document.getElementById('admin-champ-name');
     if (champInput && !champInput.value) champInput.value = currentWeekCrownWinner;
   }
+  const docConfig = getGoogleDocConfig();
+  const docUrlInput = document.getElementById('admin-google-sheet-sync-url');
+  const docTokenInput = document.getElementById('admin-google-sheet-sync-token');
+  if (docUrlInput) docUrlInput.value = docConfig.url;
+  if (docTokenInput) docTokenInput.value = docConfig.token;
+  if (docConfig.url && docConfig.token) {
+    googleDocSyncStatus('Google Táblázat szinkron be van állítva.');
+    importGoogleDocWordsIntoGame();
+  } else {
+    googleDocSyncStatus(docConfig.url ? 'A közös /exec végpont be van építve. Add meg a SZOROBBANTAS_SYNC_TOKEN Script Properties értékét a szinkronkulcs mezőben, majd mentsd a beállítást.' : 'Még nincs beállítva az Apps Script webalkalmazás URL-je és szinkronkulcsa.');
+  }
+  loadUnknownWordReviewQueue();
 
   if(!container || !db) return;
   db.collection('users').get().then(snap => {
@@ -7211,7 +7741,7 @@ safeOn('btn-admin-set-champ', 'click', async () => {
   const lastWeek = getWeeklyKey(-1);
 
   try {
-    // A megengedett 'users' gyűjtemény 'global_weekly_champion' azonosítójú dokumentumába mentünk:
+    // A megengedett 'users' gyűjtemény 'global_weekly_champion' azonosítójú táblázatába mentünk:
     await db.collection('users').doc('global_weekly_champion').set({
       docId: 'global_weekly_champion',
       weekKey: currentWeek,
