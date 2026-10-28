@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Infinity Frost & Balanced Champion Edition</title>
+<title>SZÓROBBANTÁS PRO - Balanced Letter Score Edition</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -363,7 +363,7 @@ html, body {
 .board-container { width: 100%; display: flex; justify-content: center; position: relative; margin: 2px auto; }
 .board {
   position: relative; border-radius: 14px; overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #111827, #030712);
+  background: radial-gradient(circle at 50% 42%, rgba(30,58,138,.34), transparent 55%), radial-gradient(circle at 85% 82%, rgba(126,34,206,.16), transparent 42%), linear-gradient(145deg, #0b1223, #030712 72%);
   box-shadow: inset 0 0 25px rgba(0,0,0,0.9), 0 8px 30px rgba(0,0,0,0.7);
   border: 2px solid rgba(255,255,255,0.08);
   touch-action: none; width: calc(var(--tile-size, 44px) * 8); height: calc(var(--tile-size, 44px) * 8);
@@ -377,7 +377,7 @@ html, body {
   transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
   touch-action: none; pointer-events: auto;
 }
-.tile.clearing { pointer-events: none !important; animation: tileClear 0.25s cubic-bezier(0.4,0,1,1) forwards; }
+.tile.clearing { z-index: 60; pointer-events: none !important; animation: tileClear 0.34s cubic-bezier(0.2,0.75,0.25,1) forwards; }
 .tile-inner {
   position: absolute; inset: 2px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -389,12 +389,13 @@ html, body {
   border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.85), transparent 70%);
   pointer-events: none; z-index: 3;
 }
-.tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, #f87171, #dc2626 55%, #7f1d1d); }
-.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #60a5fa, #1d4ed8 55%, #172554); }
-.tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, #34d399, #059669 55%, #064e3b); }
-.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, #fde047, #ca8a04 55%, #713f12); color:#422006; }
-.tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, #c084fc, #9333ea 55%, #581c87); }
-.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #fb923c, #ea580c 55%, #7c2d12); }
+/* Hat jól elkülönülő alapszín: a sárga/arany nincs többé összekeverhetően a normál csempékkel. */
+.tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, #ff7b86, #e11d48 55%, #881337); }
+.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #7dd3fc, #2563eb 55%, #172554); }
+.tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, #86efac, #16a34a 55%, #14532d); }
+.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, #a5f3fc, #0891b2 55%, #164e63); }
+.tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, #d8b4fe, #9333ea 55%, #4c1d95); }
+.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #fdba74, #ea580c 55%, #7c2d12); }
 .tile.is-gold .tile-inner {
   background: radial-gradient(circle at 35% 25%, #fffbeb, #f59e0b 55%, #78350f) !important;
   border: 2px solid #fef08a !important; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8) !important;
@@ -466,13 +467,45 @@ html, body {
   font-size: calc(var(--tile-size, 44px) * 0.52); font-weight: 900; z-index: 4;
   text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; position: relative;
 }
-.tile.color-3 .tile-letter { color: #261602; text-shadow: 0 1px 2px rgba(255,255,255,0.6); }
+.tile.color-3 .tile-letter { color: #082f49; text-shadow: 0 1px 2px rgba(255,255,255,0.65); }
 .tile.has-letter .tile-inner { border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(245,158,11,0.65); }
 .tile.highlight .tile-inner { filter: brightness(1.6); transform: scale(0.96); box-shadow: 0 0 14px #fff; }
 @keyframes tileClear {
-  0% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(0) rotate(20deg); opacity: 0; }
+  /* Az egyedi scale/rotate tulajdonságok megőrzik a csempe inline translate3d pozícióját. */
+  0% { opacity: 1; filter: brightness(1); scale: 1; rotate: 0deg; }
+  18% { opacity: 1; filter: brightness(1.9) saturate(1.3); scale: 1.18; }
+  38% { scale: 1.22; rotate: -3deg; opacity: .96; }
+  100% { scale: .08; rotate: 24deg; opacity: 0; filter: brightness(1.55); }
 }
+/* Nagyobb, látványosabb táblarobbanás: könnyű CSS-réteg, nem sok száz részecske. */
+.board-burst {
+  --burst-size: 144px;
+  --burst-color: #38bdf8;
+  position: absolute;
+  left: var(--burst-x, 50%); top: var(--burst-y, 50%);
+  width: var(--burst-size); height: var(--burst-size);
+  margin-left: calc(var(--burst-size) / -2); margin-top: calc(var(--burst-size) / -2);
+  z-index: 80; pointer-events: none; border-radius: 50%;
+  border: 2px solid var(--burst-color);
+  background: radial-gradient(circle, rgba(255,255,255,.96) 0 4%, var(--burst-color) 9%, rgba(255,255,255,.48) 18%, transparent 70%);
+  box-shadow: 0 0 16px var(--burst-color);
+  animation: boardBurst .42s cubic-bezier(.12,.72,.2,1) forwards;
+}
+.board-burst::after {
+  content: ''; position: absolute; inset: 18%; border: 2px solid rgba(255,255,255,.82);
+  border-radius: 50%; animation: boardBurstRing .42s ease-out forwards;
+}
+@keyframes boardBurst {
+  0% { transform: scale(.12); opacity: 0; }
+  15% { opacity: .98; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+@keyframes boardBurstRing {
+  0% { transform: scale(.25); opacity: .9; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+body.low-power-mode .board-burst { box-shadow: none; animation-duration: .30s; }
+body.low-power-mode .board-burst::after { animation-duration: .30s; }
 
 .builder-panel {
   padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; width: 100%;
@@ -561,6 +594,9 @@ html, body {
 .char-tile:active { transform: scale(0.94); }
 .char-tile.rare { background: linear-gradient(135deg, #fbcfe8, #f43f5e); color: #fff; box-shadow: 0 2px 0 #9f1239; }
 .char-tile.rare::after { content: '★'; position: absolute; top: 1px; right: 2px; font-size: 8px; }
+.char-tile.gold-letter { background: linear-gradient(135deg, #fff7c2, #fbbf24 55%, #d97706); color: #451a03; border: 1.5px solid #fef08a; box-shadow: 0 0 8px rgba(251,191,36,.55), 0 2px 0 #92400e; }
+.letter-point-badge { position: absolute; right: 1px; bottom: 1px; z-index: 7; min-width: 12px; height: 11px; padding: 0 2px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.5); border-radius: 4px; background: rgba(15,23,42,.88); color: #fff; font-size: 8px; line-height: 9px; font-weight: 900; font-variant-numeric: tabular-nums; pointer-events: none; }
+.char-tile.gold-letter .letter-point-badge { background: #451a03; color: #fef08a; border-color: #fff7c2; }
 
 .char-tile.wildcard {
   background: linear-gradient(135deg, #7c3aed, #ec4899 50%, #f59e0b) !important;
@@ -633,28 +669,45 @@ html, body {
 
 .scratch-card-wrapper {
   position: relative;
-  width: 300px;
-  height: 165px;
+  width: min(300px, 100%);
+  height: auto;
+  aspect-ratio: 300 / 165;
   margin: 10px auto;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.8), 0 0 15px rgba(244, 63, 94, 0.4);
-  border: 2px solid #f43f5e;
+  isolation: isolate;
+  border: 2px solid transparent;
+  background: linear-gradient(#0b1023, #0b1023) padding-box,
+              linear-gradient(135deg, #fb7185, #fbbf24 38%, #c084fc 70%, #38bdf8) border-box;
+  box-shadow: 0 7px 18px rgba(0,0,0,0.48), 0 0 12px rgba(244, 63, 94, 0.2);
 }
 .scratch-prize-layer {
-  position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 50%, #1e1b4b, #0f172a);
+  position: absolute; inset: 0; z-index: 1;
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(251,191,36,0.2), transparent 48%),
+    radial-gradient(circle at 8% 100%, rgba(56,189,248,0.22), transparent 40%),
+    radial-gradient(circle at 100% 80%, rgba(192,132,252,0.2), transparent 42%),
+    linear-gradient(145deg, #27235b, #10172e 62%, #1c1237);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; padding: 10px;
+  gap: 4px; padding: 10px; text-align: center;
 }
-.scratch-prize-icon { font-size: 34px; }
-.scratch-prize-title { font-size: 14.5px; font-weight: 900; color: #fde68a; }
+.scratch-prize-layer::before {
+  content: ''; position: absolute; inset: 9px; border: 1px solid rgba(253,230,138,0.48);
+  border-radius: 8px; pointer-events: none;
+}
+.scratch-prize-layer::after {
+  content: '✦'; position: absolute; top: 13px; right: 18px; color: rgba(254,243,199,0.78);
+  font-size: 14px; text-shadow: 0 0 8px rgba(251,191,36,0.65); pointer-events: none;
+}
+.scratch-prize-icon { font-size: 34px; line-height: 1.1; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+.scratch-prize-title { font-size: 14.5px; font-weight: 900; color: #fde68a; text-shadow: 0 1px 5px rgba(0,0,0,0.7); }
 .scratch-prize-desc { font-size: 11px; font-weight: 800; color: #a7f3d0; }
 #scratch-canvas {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  cursor: crosshair; touch-action: none;
+  position: absolute; inset: 0; z-index: 2;
+  width: 100%; height: 100%; display: block; background: transparent;
+  cursor: crosshair; touch-action: none; user-select: none; -webkit-user-select: none;
 }
+body.low-power-mode .scratch-card-wrapper { box-shadow: none; }
 .scratch-meter-container {
   width: 300px; margin: 4px auto; background: rgba(0,0,0,0.5); border-radius: 6px;
   border: 1px solid #334155; overflow: hidden; height: 12px; position: relative;
@@ -1294,6 +1347,7 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <div class="modal-title" style="color:var(--cyan); text-align:center;">📖 RÉSZLETES SZABÁLYZAT</div>
     <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0; font-size:11px; line-height:1.45; color:#cbd5e1;">
       <div><b>🎲 Mesterfogadás (Tét & Szorzók):</b> Szintindítás előtt választhatsz: Maradsz a 3 normál questnél, vagy felraksz tétet 4-5 questre a 2x-3x pontszorzóért és bónuszokért! Vigyázz: ha elbukod a vállalást, a feltett tét elvész, és büntetőpont-levonás jár érte!</div>
+      <div><b>🔤 Kiegyensúlyozott betűpontok:</b> Minden betűn látszik a saját értéke. A gyakori betűk 2-3, a közepesen ritkák 4-5, a ritka magyar betűk és betűkapcsolatok 6-9 betűpontot érnek. Az arany betű duplázza a saját értékét, a hosszabb szavak hosszúsági bónuszt kapnak. Az aranypálya és a kupon szorzója megmarad, de az összesített szorzó legfeljebb 6× lehet.</div>
       <div><b>🎯 Kiegyensúlyozott Betűeloszlás:</b> A táblán és a hulló csempéknél intelligens arányosító algoritmus működik. Bőségesen érkeznek a leggyakoribb magánhangzók és alaphangok (A, E, T, S, K, L, N), miközben a küldetésbetűkből maximum 2-3 jelenik meg egyensúlyban, elkerülve a túltelítést!</div>
       <div><b>🧊 Réteges akadályok és biztos első lépés:</b> A fagyott csempe teljesen elrejti a betűjét; jégből 1, 2 vagy a későbbi szinteken 3 réteg is lehet. Egy szomszédos robbanás egy réteget tör le. Minden új tábla és feltöltés garantál legalább egy azonnal robbantható, kétcsempés csoportot.</div>
       <div><b>📈 Küldetés-mérők:</b> A számszerű célok alatt élő haladási sáv látható. A pályát kizárólag egyszer jutalmazza a rendszer, így a teljesítési bónusz nem ismétlődhet UI-frissítésektől.</div>
@@ -1321,7 +1375,7 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
 <div class="modal-overlay" id="modal-free-letter-reward">
   <div class="modal-box" style="border-color:var(--emerald); max-width:440px;">
     <div class="modal-title" style="color:var(--emerald);">🎁 MESTERJUTALOM!</div>
-    <p class="modal-desc" id="free-letter-desc">Hosszú szó bónusz! +1 lépés és kérhetsz egy betűt, amelyet a következő szint raktárába mentünk.</p>
+    <p class="modal-desc" id="free-letter-desc">Hosszú szó bónusz! +1 lépés. Játék közben a választott betű azonnal a jelenlegi raktárba kerül; kör teljesítésekor a következő kör induló betűi közé mentjük.</p>
     <div class="current-pool-preview" id="reward-pool-preview"></div>
     <input type="text" class="input-pin" id="input-free-letter" placeholder="KÉRT BETŰ (PL. Y, K, GY)" maxlength="3" autocomplete="off">
     <div class="free-picks-row">
@@ -1520,32 +1574,39 @@ function playTone(freq, duration, type='sine', gainVal=0.2) {
   } catch(e) {}
 }
 
+// A kaparás hangja újrahasznosított zajmintát használ, és legfeljebb 9-10 alkalommal szólal meg másodpercenként.
+// Így nem készítünk minden egér-/ujjmozdulathoz új, nagy AudioBuffert.
+let scratchNoiseBuffer = null;
+let lastScratchSfxAt = 0;
 function sfxRealScratch() {
   try {
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    if (now - lastScratchSfxAt < 110) return;
+    lastScratchSfxAt = now;
     initAudio();
     const t = audioCtx.currentTime;
-    const bufferSize = audioCtx.sampleRate * 0.045;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+    if (!scratchNoiseBuffer) {
+      const bufferSize = Math.max(1, Math.floor(audioCtx.sampleRate * 0.045));
+      scratchNoiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = scratchNoiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+      }
     }
     const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-
+    noise.buffer = scratchNoiseBuffer;
     const filter = audioCtx.createBiquadFilter();
     filter.type = 'bandpass';
     filter.frequency.setValueAtTime(3200 + Math.random() * 1400, t);
     filter.Q.setValueAtTime(2.2, t);
-
     const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.24, t);
+    gain.gain.setValueAtTime(0.17, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
-
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(audioCtx.destination);
     noise.start(t);
+    noise.stop(t + 0.046);
   } catch(e) {}
 }
 
@@ -1635,6 +1696,26 @@ function resizeFx() {
 }
 window.addEventListener('resize', resizeFx);
 resizeFx();
+
+// Nagyméretű, olcsó táblarobbanás CSS-sel; részecske-vászon nélkül is működik gyenge eszközön.
+const MAX_BOARD_BURSTS = 16;
+function spawnBoardBurst(r, c, color, strength = 1) {
+  if (!boardEl || document.hidden || motionPreference.matches) return;
+  const size = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size')) || (boardEl.clientWidth / GRID_SIZE) || 44;
+  const burst = document.createElement('div');
+  burst.className = 'board-burst';
+  burst.setAttribute('aria-hidden', 'true');
+  burst.style.setProperty('--burst-x', `${c * size + size / 2}px`);
+  burst.style.setProperty('--burst-y', `${r * size + size / 2}px`);
+  burst.style.setProperty('--burst-size', `${Math.round(size * (strength >= 1.2 ? 4.1 : 3.5))}px`);
+  burst.style.setProperty('--burst-color', color || '#ffffff');
+  boardEl.appendChild(burst);
+  const activeBursts = boardEl.querySelectorAll('.board-burst');
+  if (activeBursts.length > MAX_BOARD_BURSTS) {
+    for (let i = 0; i < activeBursts.length - MAX_BOARD_BURSTS; i++) activeBursts[i].remove();
+  }
+  setTimeout(() => burst.remove(), document.body.classList.contains('low-power-mode') ? 330 : 460);
+}
 
 function spawnExplosion(x, y, color) {
   if (!visualFxAllowed()) return;
@@ -1770,6 +1851,27 @@ const LETTER_DIST = {
 };
 
 const RARE_LETTERS = new Set(['GY','SZ','ZS','TY','LY','NY','CS','DZ','DZS','Ű','Ő','Í','Ú','Ó','Y','C']);
+
+// Betűérték: a gyakori betűk kevesebbet, a ritkák többet érnek.
+// A ritka többjegyű magyar betűkapcsolatok egyetlen játékcsempének számítanak.
+function getLetterPointValue(char) {
+  const frequency = LETTER_DIST[char] || 0;
+  let value = frequency >= 10 ? 2 : frequency >= 7 ? 3 : frequency >= 4 ? 4 : frequency >= 2 ? 5 : 7;
+  if (RARE_LETTERS.has(char)) value += 2;
+  return Math.min(9, value);
+}
+
+function appendLetterValueBadge(element, item) {
+  if (!element || !item || !item.char || item.char === '🃏' || item.char === '★') return;
+  const tileValue = getLetterPointValue(item.char) * (item.isGold ? 2 : 1);
+  const badge = document.createElement('span');
+  badge.className = 'letter-point-badge';
+  badge.textContent = String(tileValue);
+  badge.setAttribute('aria-label', `${tileValue} pont`);
+  element.title = `${item.char}: ${tileValue} betűpont${item.isGold ? ' (arany betű, duplázott érték)' : ''}`;
+  element.appendChild(badge);
+}
+
 const BAG = [];
 Object.entries(LETTER_DIST).forEach(([char, count]) => {
   for(let i = 0; i < count; i++) BAG.push(char);
@@ -1820,6 +1922,107 @@ function initDailySecretStreak() {
     if (wordEl) wordEl.textContent = mask.trim();
     if (rewardTag) rewardTag.textContent = `${getDailySecretReward().toLocaleString('hu-HU')} P 🔥`;
   }
+}
+
+// A magyar két- és háromjegyű betűk játékcsempének számítanak, ezért a szóhosszt
+// a játék betűkészlete alapján mérjük, nem a Unicode-karakterek számával.
+const HUNGARIAN_MULTI_TILES = ['DZS', 'CS', 'DZ', 'GY', 'LY', 'NY', 'SZ', 'TY', 'ZS'];
+const HUNGARIAN_VOWEL_TILES = new Set(['A','Á','E','É','I','Í','O','Ó','Ö','Ő','U','Ú','Ü','Ű']);
+function tokenizeHungarianTiles(rawWord) {
+  const word = String(rawWord || '').trim().toUpperCase();
+  const tiles = [];
+  for (let i = 0; i < word.length;) {
+    const multi = HUNGARIAN_MULTI_TILES.find(tile => word.startsWith(tile, i));
+    if (multi) {
+      tiles.push(multi);
+      i += multi.length;
+    } else {
+      tiles.push(word[i]);
+      i++;
+    }
+  }
+  return tiles;
+}
+
+function getStoredWordTileCount(data, index, word) {
+  const stored = data && Array.isArray(data.levelWordTileCounts) ? Number(data.levelWordTileCounts[index]) : 0;
+  return Number.isFinite(stored) && stored > 0 ? stored : tokenizeHungarianTiles(word).length;
+}
+
+function getStoredWordStartTile(data, index, word) {
+  const stored = data && Array.isArray(data.levelWordStartTiles) ? data.levelWordStartTiles[index] : '';
+  if (typeof stored === 'string' && stored) return stored;
+  return tokenizeHungarianTiles(word)[0] || String(word || '').charAt(0);
+}
+
+function hasLevelWordStartingWithCategory(data, category, minimumTiles = 3) {
+  const words = Array.isArray(data && data.levelWords) ? data.levelWords : [];
+  return words.some((word, index) => {
+    const count = getStoredWordTileCount(data, index, word);
+    if (count < minimumTiles) return false;
+    const first = getStoredWordStartTile(data, index, word);
+    const isVowel = HUNGARIAN_VOWEL_TILES.has(first);
+    return category === 'vowel' ? isVowel : !isVowel;
+  });
+}
+
+function getStartingLetterMinimumTiles(letter) {
+  const char = String(letter || '').toUpperCase();
+  if (!char) return 3;
+  // A döntés kizárólag a játék saját betűeloszlásától függ, nem az internetes
+  // szótár betöltésétől. A ritkább (legfeljebb 2 darabos) csempék 4-es minimumot kapnak.
+  // Így gyenge gépen/offline is ugyanolyan és kiszámítható a küldetés.
+  return (LETTER_DIST[char] || 0) <= 2 ? 4 : 3;
+}
+
+function configureStartingLetterQuest(quest, forcedMinimum = null) {
+  if (!quest || !quest.id || !quest.id.startsWith('q_st_') || !quest.reqLetter) return quest;
+  const savedMinimum = Number(forcedMinimum || quest.reqMinTiles);
+  const minimum = savedMinimum === 3 || savedMinimum === 4
+    ? savedMinimum
+    : getStartingLetterMinimumTiles(quest.reqLetter);
+  const reqLetter = quest.reqLetter;
+  return {
+    ...quest,
+    reqMinTiles: minimum,
+    text: `Készíts legalább ${minimum} betűcsempés szót "${reqLetter}" betűvel kezdődően`,
+    check: data => {
+      const words = Array.isArray(data && data.levelWords) ? data.levelWords : [];
+      return words.some((word, index) => {
+        const count = getStoredWordTileCount(data, index, word);
+        if (count < minimum) return false;
+        const firstTile = getStoredWordStartTile(data, index, word);
+        // Új mentésben a tényleges első csempét ellenőrizzük; régi mentésnél a szó elejét.
+        return firstTile === reqLetter || (
+          !(data && Array.isArray(data.levelWordStartTiles) && data.levelWordStartTiles[index]) &&
+          String(word || '').startsWith(reqLetter)
+        );
+      });
+    }
+  };
+}
+
+function getUnfinishedStartingLetterRequirement(tray = state.tray) {
+  if (!Array.isArray(tray) || !tray.length) return null;
+  const firstTile = tray[0] && tray[0].char;
+  if (!firstTile) return null;
+  for (let i = 0; i < (state.activeQuests || []).length; i++) {
+    const quest = state.activeQuests[i];
+    if (state.questStatuses[i]) continue;
+    if (quest && quest.id && quest.id.startsWith('q_st_') && quest.reqLetter === firstTile) {
+      return { letter: quest.reqLetter, minimum: quest.reqMinTiles || 3, quest };
+    }
+  }
+  // Az általános magánhangzó-/mássalhangzó-kezdéses feladatoknál is minimum 3 csempe kell.
+  const isVowel = HUNGARIAN_VOWEL_TILES.has(firstTile);
+  for (let i = 0; i < (state.activeQuests || []).length; i++) {
+    const quest = state.activeQuests[i];
+    if (state.questStatuses[i] || !quest || !quest.id || !quest.id.startsWith('q_sp_')) continue;
+    const text = String(quest.text || '');
+    if (text.includes('magánhangzóval kezdődik') && isVowel) return { letter: firstTile, minimum: 3, quest };
+    if (text.includes('mássalhangzóval kezdődik') && !isVowel) return { letter: firstTile, minimum: 3, quest };
+  }
+  return null;
 }
 
 const ALL_QUEST_DATABASE = [];
@@ -1902,13 +2105,13 @@ function build100Quests() {
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 magánhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 2 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 2) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts szót, ami legalább 3 mássalhangzót tartalmaz`, check: s => (s.levelWords || []).some(w => (w.match(/[^AÁEÉIÍOÓÖŐUÚÜŰ]/g) || []).length >= 3) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts egy szót, ami magánhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts egy szót, ami mássalhangzóval kezdődik`, check: s => (s.levelWords || []).some(w => /^[^AÁEÉIÍOÓÖŐUÚÜŰ]/.test(w)) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 100 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 100) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 180 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 180) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts legalább 3 betűcsempés szót, ami magánhangzóval kezdődik`, check: s => hasLevelWordStartingWithCategory(s, 'vowel', 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Készíts legalább 3 betűcsempés szót, ami mássalhangzóval kezdődik`, check: s => hasLevelWordStartingWithCategory(s, 'consonant', 3) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 20 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 20) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 1, text: `Érj el legalább 30 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 30) });
 
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts legalább két darab 4 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 2 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 300 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 300) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Érj el legalább 40 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 40) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, amiben van legalább 2 azonos betű`, check: s => (s.levelWords || []).some(w => /(.).*\1/.test(w)) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Szabadíts fel legalább 1 arany betűt a tábláról`, check: s => (s.pool || []).some(i => i && i.isGold) || (s.stats.lettersFreed >= 1) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Készíts szót, ami "A" vagy "E" betűre végződik`, check: s => (s.levelWords || []).some(w => /[AEÁÉ]$/.test(w)) });
@@ -1918,14 +2121,14 @@ function build100Quests() {
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 2, text: `Robbants fel legalább 5 csempét kétszer a szinten`, check: s => s.stats.biggestMatch >= 5 });
 
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább két darab 5 betűs szót`, check: s => (s.levelWords || []).filter(w => w.length >= 5).length >= 2 });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 450 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 450) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 60 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 60) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább 3 különböző szót a szinten`, check: s => (new Set(s.levelWords || [])).size >= 3 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, ami legalább 2 ritka betűt tartalmaz`, check: s => (s.levelWords || []).some(w => [...w].filter(c => RARE_LETTERS.has(c)).length >= 2) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "SZ" vagy "GY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('SZ') || w.includes('GY')) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts szót, amiben van "CS" vagy "NY" betűkapcsolat`, check: s => (s.levelWords || []).some(w => w.includes('CS') || w.includes('NY')) });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Készíts legalább három darab 4 betűs vagy hosszabb szót`, check: s => (s.levelWords || []).filter(w => w.length >= 4).length >= 3 });
   ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Szabadíts fel legalább 2 arany betűt a tábláról`, check: s => (s.pool || []).filter(i => i && i.isGold).length >= 2 || (s.stats.lettersFreed >= 2) });
-  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 650 pontot egyetlen szóval`, check: s => (s.levelWords || []).some(w => (w.length * w.length * 18) >= 650) });
+  ALL_QUEST_DATABASE.push({ id: `q_sp_${id++}`, tier: 3, text: `Érj el legalább 80 pontot egyetlen szóval`, check: s => (s.levelWordScores || []).some(sc => sc >= 80) });
 }
 build100Quests();
 
@@ -1956,7 +2159,7 @@ function getViableQuestsForBoard(lvl) {
     if (q.id && q.id.startsWith('q_p_') && lvl < 6) return false;
 
     return true;
-  });
+  }).map(q => configureStartingLetterQuest(q));
 }
 
 const state = {
@@ -1972,7 +2175,12 @@ const state = {
   pool: [],
   tray: [],
   nextRoundLetters: [],
+  // A kör elején átvett jutalombetűk: szint-újraindításkor is visszakerülnek.
+  roundStartLetters: [],
   levelWords: [],
+  levelWordScores: [],
+  levelWordTileCounts: [],
+  levelWordStartTiles: [],
   activeQuests: [],
   questStatuses: [],
   inventory: {},
@@ -2025,13 +2233,29 @@ function calcTileMetrics() {
   return size;
 }
 
-function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
-  state.level = lvl;
+function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options = {}) {
+  const previousLevel = Number(state.level) || 1;
+  const targetLevel = Number(lvl) || 1;
+  const sameLevelRestart = targetLevel === previousLevel;
+  const explicitRoundLetters = Array.isArray(options.roundStartLetters)
+    ? options.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
+    : null;
+  const roundLettersToKeep = explicitRoundLetters !== null
+    ? explicitRoundLetters
+    : (sameLevelRestart && Array.isArray(state.roundStartLetters)
+      ? state.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
+      : []);
+
+  state.level = targetLevel;
+  state.roundStartLetters = roundLettersToKeep;
   state.levelCompleted = false;
   state.pendingWinModal = false;
   state.pool = [];
   state.tray = [];
   state.levelWords = [];
+  state.levelWordScores = [];
+  state.levelWordTileCounts = [];
+  state.levelWordStartTiles = [];
   state.activeTripleWord = false;
   state.roundFreeUsed = {};
   isLocked = false;
@@ -2086,7 +2310,7 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
 
   const viable = getViableQuestsForBoard(lvl);
   if (chosenQuests && chosenQuests.length >= 3) {
-    state.activeQuests = chosenQuests;
+    state.activeQuests = chosenQuests.map(q => configureStartingLetterQuest(q, q && q.reqMinTiles));
   } else {
     const shuffled = [...viable].sort(() => Math.random() - 0.5);
     const uniquePicks = [];
@@ -2113,6 +2337,13 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal') {
   updateMovesWatermark();
   updateHeroDisplay();
   initDailySecretStreak();
+
+  // Ugyanazon szint újraindításakor a kör elején kapott ajándékbetűk nem veszhetnek el.
+  // Felhőmentésből indított újrakezdésnél ezt az options.reapplyRoundStartLetters kapcsolja be.
+  if (sameLevelRestart || options.reapplyRoundStartLetters === true) {
+    reapplyRoundStartLettersToPool();
+    applyNextRoundLetters();
+  }
 }
 
 function updateHighStakesBanner() {
@@ -2454,7 +2685,7 @@ async function executeHammerOnTile(tile) {
 
     tile.el.classList.add('clearing');
     const elToRemove = tile.el;
-    setTimeout(() => { if(elToRemove && elToRemove.parentNode) elToRemove.parentNode.removeChild(elToRemove); }, 250);
+    setTimeout(() => { if(elToRemove && elToRemove.parentNode) elToRemove.parentNode.removeChild(elToRemove); }, 350);
     state.board[r][c] = null;
 
     showToast("🔨 Kocka szétzúzva!", "ok");
@@ -2637,13 +2868,17 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
     const specialColor = (tilesPos[0] && state.board[tilesPos[0].r] && state.board[tilesPos[0].r][tilesPos[0].c])
       ? state.board[tilesPos[0].r][tilesPos[0].c].color : 0;
 
-    tilesPos.forEach(({r, c}) => {
+    const burstLimit = matchSize >= 12 ? 12 : Math.min(matchSize, 8);
+    const burstStride = Math.max(1, Math.ceil(matchSize / Math.max(1, burstLimit)));
+    tilesPos.forEach(({r, c}, tileIndex) => {
       const t = state.board[r][c];
       if(!t) return;
 
       const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
       const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-      const colHex = t.isGold ? '#fbbf24' : (['#ef4444', '#2563eb', '#10b981', '#eab308', '#a855f7', '#f97316'][t.color] || '#fff');
+      const colHex = t.isGold ? '#fbbf24' : (['#e11d48', '#2563eb', '#16a34a', '#0891b2', '#9333ea', '#ea580c'][t.color] || '#ffffff');
+      // Legfeljebb 12 nagy CSS-kitörés kluszterenként: látványos, de korlátozott DOM- és GPU-terhelés.
+      if (tileIndex % burstStride === 0) spawnBoardBurst(r, c, colHex, matchSize >= 9 ? 1.2 : 1);
       spawnExplosion(px, py, colHex);
 
       const occupiedPoolSlots = state.pool.filter(item => item && !item.empty).length;
@@ -2744,7 +2979,10 @@ function refreshTileAppearance(t) {
 function animateFreedLetters(letters) {
   const poolRect = poolEl.getBoundingClientRect();
   letters.forEach(item => {
-    if (!addLetterToPool(item.char, { isGold: item.isGold })) return;
+    if (!addLetterToPool(item.char, { isGold: item.isGold })) {
+      queueNextRoundLetter({ char: item.char, isGold: !!item.isGold, isGoldenJoker: false });
+      return;
+    }
     const ghost = document.createElement('div');
     ghost.className = 'flying-ghost';
     ghost.textContent = item.char;
@@ -2864,7 +3102,9 @@ function renderTray() {
       el.className = 'char-tile';
       if(item.char === '🃏' || item.char === '★') el.classList.add('wildcard');
       else if(RARE_LETTERS.has(item.char)) el.classList.add('rare');
+      if (item.isGold) el.classList.add('gold-letter');
       el.textContent = item.char;
+      appendLetterValueBadge(el, item);
 
       el.addEventListener('click', () => {
         const removed = state.tray.splice(index, 1)[0];
@@ -2946,7 +3186,9 @@ function renderPool() {
     el.className = 'char-tile';
     if(item.char === '🃏' || item.char === '★') el.classList.add('wildcard');
     else if(RARE_LETTERS.has(item.char)) el.classList.add('rare');
+    if (item.isGold) el.classList.add('gold-letter');
     el.textContent = item.char;
+    appendLetterValueBadge(el, item);
 
     el.addEventListener('click', () => {
       if(item.char === '🃏' || item.char === '★') {
@@ -2981,25 +3223,44 @@ function addLetterToPool(char, options = {}) {
     id: options.id || Math.random().toString(36).substring(2, 9),
     char,
     isGold: !!options.isGold,
-    isGoldenJoker: !!options.isGoldenJoker
+    isGoldenJoker: !!options.isGoldenJoker,
+    isReward: !!options.isReward
   });
   return true;
 }
 
 function calculateWordScore(word, items = state.tray) {
-  if (word.length < 2 || NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
-    return { valid: false, score: 0, totalScore: 0, dailySecretBonus: 0, multiplier: 0, hasGoldTile: false, rareCount: 0 };
+  const tileItems = Array.isArray(items) ? items.filter(item => item && item.char) : [];
+  if (word.length < 2 || tileItems.length < 2 || NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
+    return { valid: false, score: 0, totalScore: 0, dailySecretBonus: 0, multiplier: 0, hasGoldTile: false, rareCount: 0, letterPoints: 0, lengthBonus: 0, tileCount: tileItems.length };
   }
-  let multiplier = Number(state.levelMultiplier || 1);
+
+  let letterPoints = 0;
   let hasGoldTile = false;
   let rareCount = 0;
-  (items || []).forEach(item => {
-    if (RARE_LETTERS.has(item.char)) { multiplier += 0.4; rareCount++; }
+  tileItems.forEach(item => {
+    const letterValue = getLetterPointValue(item.char);
+    letterPoints += letterValue * (item.isGold ? 2 : 1);
+    if (RARE_LETTERS.has(item.char)) rareCount++;
     if (item.isGold) hasGoldTile = true;
   });
-  if (hasGoldTile || isGoldenLevel(state.level)) multiplier *= 3;
-  if (state.activeTripleWord) multiplier *= 3;
-  const baseScore = Math.floor(Math.pow(word.length, 2) * 18 * multiplier);
+
+  // A betűpontok közvetlenül összeadódnak, ehhez jön egy rövid alap- és hosszúsági bónusz.
+  // Így a 3 csempés „BÁB” normál alappontja 22, nem a korábbi 162; ritkaság és arany csempe valóban számít.
+  const tileCount = tileItems.length;
+  const lengthBonus = tileCount * 2 + Math.max(0, tileCount - 2) * 5;
+  const rawScore = letterPoints + lengthBonus;
+
+  // A külön szorzók megmaradnak, de az összesített szorzó plafonja 6×,
+  // hogy a tét, az aranypálya és a kupon ne szorozza túl a jutalmat.
+  let multiplier = Math.max(1, Number(state.levelMultiplier) || 1);
+  const goldenLevel = isGoldenLevel(state.level);
+  const couponActive = !!state.activeTripleWord;
+  if (goldenLevel) multiplier *= 3;
+  if (couponActive) multiplier *= 3;
+  multiplier = Math.min(6, multiplier);
+
+  const baseScore = Math.floor(rawScore * multiplier);
   const today = getTodayString();
   const dailySecretBonus = word === currentDailySecret && state.secretWordLastSolvedDate !== today
     ? getDailySecretReward() : 0;
@@ -3010,7 +3271,13 @@ function calculateWordScore(word, items = state.tray) {
     dailySecretBonus,
     multiplier,
     hasGoldTile,
-    rareCount
+    rareCount,
+    letterPoints,
+    lengthBonus,
+    rawScore,
+    tileCount,
+    goldenLevel,
+    couponActive
   };
 }
 
@@ -3027,6 +3294,14 @@ function validateCurrentTrayWord() {
     if (points) points.textContent = '— P';
     return;
   }
+  const startRequirement = getUnfinishedStartingLetterRequirement(state.tray);
+  if (startRequirement && state.tray.length < startRequirement.minimum) {
+    if (trayEl) trayEl.classList.add('invalid');
+    if (preview) preview.classList.add('invalid');
+    if (status) status.textContent = `A(z) "${startRequirement.letter}" kezdőbetűs küldetéshez legalább ${startRequirement.minimum} betűcsempe kell (most ${state.tray.length}).`;
+    if (points) points.textContent = '0 P';
+    return;
+  }
   if (w.length < 2) {
     if (trayEl) trayEl.classList.add('invalid');
     if (preview) preview.classList.add('invalid');
@@ -3034,6 +3309,7 @@ function validateCurrentTrayWord() {
     if (points) points.textContent = '0 P';
     return;
   }
+
   if (!dictionaryReady && !DICT.has(w)) {
     if (status) status.textContent = 'A bővített szótár betöltése folyamatban…';
     if (points) points.textContent = '…';
@@ -3045,8 +3321,16 @@ function validateCurrentTrayWord() {
     trayEl.classList.add('valid');
     if (preview) preview.classList.add('valid');
     if (status) {
-      const bonus = [score.hasGoldTile || isGoldenLevel(state.level) ? 'ARANY ×3' : '', state.activeTripleWord ? 'KUPON ×3' : '', score.rareCount ? `RITKA +${(score.rareCount * 0.4).toFixed(1).replace('.', ',')}×` : '', score.dailySecretBonus ? `NAP SZAVA +${score.dailySecretBonus.toLocaleString('hu-HU')} P` : ''].filter(Boolean).join(' · ');
-      status.textContent = bonus ? `✓ ${w} · ${bonus}` : `✓ ${w} · beküldhető`;
+      const bonus = [
+        score.hasGoldTile ? 'ARANY BETŰ ×2 érték' : '',
+        score.goldenLevel ? 'ARANYPÁLYA ×3' : '',
+        score.couponActive ? 'KUPON ×3' : '',
+        score.rareCount ? `RITKA: ${score.rareCount} db (magasabb érték)` : '',
+        score.multiplier > 1 ? `ÖSSZES SZORZÓ ×${score.multiplier}${score.multiplier >= 6 ? ' (plafon)' : ''}` : '',
+        score.dailySecretBonus ? `NAP SZAVA +${score.dailySecretBonus.toLocaleString('hu-HU')} P` : ''
+      ].filter(Boolean).join(' · ');
+      const scoreBreakdown = `betűpont ${score.letterPoints} + hossz ${score.lengthBonus}`;
+      status.textContent = `✓ ${w} · ${scoreBreakdown}${bonus ? ` · ${bonus}` : ' · beküldhető'}`;
     }
     if (points) points.textContent = `${score.totalScore.toLocaleString('hu-HU')} P`;
   } else {
@@ -3057,27 +3341,120 @@ function validateCurrentTrayWord() {
   }
 }
 
+function createLetterRewardId() {
+  return `lr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function normalizeRoundLetter(entry) {
+  if (typeof entry === 'string') {
+    const char = entry.trim().toUpperCase();
+    return char ? { id: createLetterRewardId(), char, isGold: false, isGoldenJoker: false, isReward: true } : null;
+  }
+  if (!entry || typeof entry !== 'object' || typeof entry.char !== 'string') return null;
+  const char = entry.char.trim().toUpperCase();
+  if (!char) return null;
+  return {
+    id: entry.id || createLetterRewardId(),
+    char,
+    isGold: !!entry.isGold,
+    isGoldenJoker: !!entry.isGoldenJoker,
+    isReward: true
+  };
+}
+
+function queueNextRoundLetter(entry) {
+  const reward = normalizeRoundLetter(entry);
+  if (!reward) return false;
+  state.nextRoundLetters = Array.isArray(state.nextRoundLetters) ? state.nextRoundLetters : [];
+  // Az azonos azonosítójú jutalom kétszer ne kerülhessen a sorba.
+  const exists = state.nextRoundLetters.some(item => {
+    if (item && typeof item === 'object' && item.id) return item.id === reward.id;
+    return false;
+  });
+  if (!exists) state.nextRoundLetters.push(reward);
+  return true;
+}
+
+function makeRoomForRewardLetter() {
+  // A jutalom elsőbbséget élvez a normál betűkkel szemben, ha a raktár éppen tele van.
+  // Más jutalmat nem dobunk el; legfeljebb egy normál csempét cserélünk le.
+  const idx = state.pool.findIndex(item => item && !item.empty && !item.isReward);
+  if (idx < 0) return false;
+  state.pool.splice(idx, 1);
+  return true;
+}
+
+function addRewardLetterToPool(reward) {
+  const normalized = normalizeRoundLetter(reward);
+  if (!normalized) return false;
+  if (addLetterToPool(normalized.char, normalized)) return true;
+  if (!makeRoomForRewardLetter()) return false;
+  return addLetterToPool(normalized.char, normalized);
+}
+
+function addRoundStartLetter(reward) {
+  const normalized = normalizeRoundLetter(reward);
+  if (!normalized || !addRewardLetterToPool(normalized)) return false;
+  state.roundStartLetters = Array.isArray(state.roundStartLetters) ? state.roundStartLetters : [];
+  if (!state.roundStartLetters.some(item => item && item.id === normalized.id)) {
+    state.roundStartLetters.push(normalized);
+  }
+  return true;
+}
+
+function reapplyRoundStartLettersToPool() {
+  const previous = Array.isArray(state.roundStartLetters) ? [...state.roundStartLetters] : [];
+  if (!previous.length) return 0;
+  const restored = [];
+  const deferred = [];
+  previous.forEach(entry => {
+    const reward = normalizeRoundLetter(entry);
+    if (!reward) return;
+    if (addRewardLetterToPool(reward)) restored.push(reward);
+    else deferred.push(reward);
+  });
+  state.roundStartLetters = restored;
+  deferred.forEach(queueNextRoundLetter);
+  renderPool();
+  if (deferred.length) showToast('Néhány ajándékbetű helyhiány miatt megőrződött, nem veszett el.', 'err');
+  return restored.length;
+}
+
 function applyNextRoundLetters() {
   const pending = Array.isArray(state.nextRoundLetters) ? [...state.nextRoundLetters] : [];
-  if (!pending.length) return;
+  if (!pending.length) return 0;
   let added = 0;
   const remaining = [];
   pending.forEach(entry => {
-    const isObjectEntry = entry && typeof entry === 'object';
-    const char = isObjectEntry ? entry.char : entry;
-    const options = isObjectEntry ? entry : {};
-    if (addLetterToPool(char, options)) added++;
-    else remaining.push(entry);
+    const reward = normalizeRoundLetter(entry);
+    if (!reward) {
+      // Ismeretlen/hibás régi mentésből származó bejegyzést nem dobunk el csendben.
+      if (entry !== null && entry !== undefined) remaining.push(entry);
+      return;
+    }
+    if (addRoundStartLetter(reward)) added++;
+    else remaining.push(reward);
   });
   state.nextRoundLetters = remaining;
   renderPool();
-  if (added) showToast(`🎁 ${added} jutalombetű megérkezett a következő szint raktárába!`, 'ok');
-  if (remaining.length) showToast('Néhány jutalombetű a raktár megtelése miatt megőrződött a következő szintre.', 'err');
+  if (added) showToast(`🎁 ${added} jutalombetű megérkezett a kör betűraktárába!`, 'ok');
+  if (remaining.length) showToast('Néhány jutalombetű a raktár megtelése miatt megőrződött; később újra megpróbáljuk.', 'err');
+  return added;
 }
 
 safeOn('btn-submit', 'click', async () => {
   const word = getTrayWord();
-  if(word.length < 2) { showToast("Legalább 2 betűs szó szükséges!", "err"); sfxError(); return; }
+  // A magyar többjegyű betűk (GY, SZ, DZS stb.) egyetlen csempének számítanak.
+  const submittedTileCount = state.tray.length;
+  const startRequirement = getUnfinishedStartingLetterRequirement(state.tray);
+  if (startRequirement && submittedTileCount < startRequirement.minimum) {
+    const message = `Ehhez a küldetéshez legalább ${startRequirement.minimum} betűcsempe kell a(z) "${startRequirement.letter}" kezdőbetűvel (most ${submittedTileCount}). Tegyél még hozzá betűt!`;
+    showToast(message, 'err');
+    sfxError();
+    validateCurrentTrayWord();
+    return;
+  }
+  if(submittedTileCount < 2) { showToast("Legalább 2 betűcsempe szükséges!", "err"); sfxError(); return; }
   if (!dictionaryReady && !DICT.has(word)) { showToast('A bővített szótár még töltődik — a betűid megmaradtak, próbáld újra pár pillanat múlva!', 'err'); return; }
   
   if(NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
@@ -3105,6 +3482,9 @@ safeOn('btn-submit', 'click', async () => {
   state.weeklyScore += wordScore;
   state.stats.levelScore += wordScore;
   state.levelWords.push(word);
+  state.levelWordScores.push(wordScore);
+  state.levelWordTileCounts.push(submittedTileCount);
+  state.levelWordStartTiles.push((state.tray[0] && state.tray[0].char) || tokenizeHungarianTiles(word)[0] || word.charAt(0));
 
   showToast(`Sikeres szó: ${word} (+${wordScore}P)!`, 'ok');
 
@@ -3126,21 +3506,24 @@ safeOn('btn-submit', 'click', async () => {
   renderTray();
   renderPool();
 
-  if(word.length >= 5) {
+  if(submittedTileCount >= 5) {
     state.moves += 1;
-    triggerFreeLetterReward(word);
+    triggerFreeLetterReward(word, submittedTileCount);
   }
 
   updateStats();
   updateMovesWatermark();
   checkQuestProgress();
-  await syncCloudState();
+  // Azonnal eldöntjük, teljesült-e a kör, mielőtt az aszinkron mentés átadná
+  // a vezérlést a böngészőnek. Így a jutalombetű soha nem kerül tévedésből
+  // az aktuális körbe akkor, ha ez a hosszú szó egyben a győztes szó is.
   verifyGameState();
+  await syncCloudState();
 });
 
-function triggerFreeLetterReward(word) {
+function triggerFreeLetterReward(word, tileCount = word.length) {
   const desc = document.getElementById('free-letter-desc');
-  if (desc) desc.innerHTML = `🎉 <b>${word.length} betűs szó (${word})</b>! Kaptál <b>+1 lépést</b>. Válassz egy betűt, és <b>elmentjük a következő szint raktárába</b>, hogy ne vesszen el szintváltáskor.`;
+  if (desc) desc.innerHTML = `🎉 <b>${tileCount} csempés szó (${word})</b>! Kaptál <b>+1 lépést</b>. Válassz betűt: ha a kör még tart, <b>azonnal bekerül a jelenlegi betűraktárba</b>; ha ez a szó teljesítette a kört, <b>a következő kör indulásakor kerül be</b>.`;
   
   const previewBox = document.getElementById('reward-pool-preview');
   if (previewBox) {
@@ -3173,12 +3556,30 @@ safeOn('btn-claim-free-letter', 'click', async () => {
     sfxError();
     return;
   }
-  state.nextRoundLetters = Array.isArray(state.nextRoundLetters) ? state.nextRoundLetters : [];
-  state.nextRoundLetters.push(char);
+  const reward = { id: createLetterRewardId(), char, isGold: false, isGoldenJoker: false, isReward: true };
+  let destination = 'current';
+  if (state.levelCompleted || state.pendingWinModal) {
+    // Ha a hosszú szó lezárta a kört, ne az aktuális pályára tegyük,
+    // hanem a következő szint induló betűi közé; a szintváltáskor kerül a raktárba.
+    queueNextRoundLetter(reward);
+    destination = 'next';
+  } else if (addRewardLetterToPool(reward)) {
+    // Kör közben azonnal hozzáadjuk a jelenlegi raktárhoz.
+    renderPool();
+    destination = 'current';
+  } else {
+    // Végső védőháló: telített, csak jutalomból álló raktár esetén sem veszítjük el.
+    queueNextRoundLetter(reward);
+    destination = 'next';
+  }
   const modal = document.getElementById('modal-free-letter-reward');
   if (modal) modal.classList.remove('active');
   await syncCloudState();
-  showToast(`🎁 „${char}” elmentve a következő szint raktárába!`, 'ok');
+  if (destination === 'current') {
+    showToast(`🎁 „${char}” azonnal bekerült a jelenlegi betűraktárba!`, 'ok');
+  } else {
+    showToast(`🎁 „${char}” elmentve; a következő kör raktárába automatikusan bekerül!`, 'ok');
+  }
   if (state.pendingWinModal) {
     state.pendingWinModal = false;
     const winModal = document.getElementById('modal-win');
@@ -3293,7 +3694,7 @@ function getQuestProgress(q) {
   if (q.id && q.id.startsWith('q_m_')) return { value: state.stats.biggestMatch || 0, target };
   if (q.id && q.id.startsWith('q_wl_')) return { value: Math.max(0, ...words.map(w => w.length)), target };
   if (q.id && q.id.startsWith('q_wc_')) return { value: words.length, target };
-  if (q.id && q.id.startsWith('q_st_')) return { value: words.some(w => w.startsWith(q.reqLetter)) ? 1 : 0, target: 1 };
+  if (q.id && q.id.startsWith('q_st_')) return { value: q.check(state) ? 1 : 0, target: 1 };
   if (q.id && q.id.startsWith('q_inc_')) return { value: words.some(w => w.includes(q.reqLetter)) ? 1 : 0, target: 1 };
   if (q.id && q.id.startsWith('q_sc_')) return { value: state.stats.levelScore || 0, target };
   if (q.id && q.id.startsWith('q_fr_')) return { value: state.stats.lettersFreed || 0, target };
@@ -3374,10 +3775,10 @@ function verifyGameState() {
         state.scratchTickets.push(generate50ScratchVariations()[0]);
         showToast("🔥 Bátor kihívás sikeres! 300P visszajárt + 1 Ingyen Sorsjegy!", "ok");
       } else if (state.highStakesMode === 'legend') {
-        const goldenJokerOptions = { isGold: true, isGoldenJoker: true };
-        const jokerAddedNow = addLetterToPool('🃏', goldenJokerOptions);
-        if (!jokerAddedNow) state.nextRoundLetters.push({ char: '🃏', ...goldenJokerOptions });
-        showToast(jokerAddedNow ? "⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker a raktárba (betűválasztáskor sorsjegyet ad)!" : "⚡ Legenda kihívás sikeres! Az Arany Joker a következő szintre mentve.", "ok");
+        const goldenJokerOptions = { id: createLetterRewardId(), char: '🃏', isGold: true, isGoldenJoker: true };
+        // Ez szintvégi jutalom, ezért mindig a következő kör sorába kerül; az aktuális pálya törlődése nem viheti el.
+        queueNextRoundLetter(goldenJokerOptions);
+        showToast("⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker elmentve a következő körre (betűválasztáskor sorsjegyet ad)!", "ok");
       }
     }
 
@@ -3835,7 +4236,7 @@ async function useDynamite(targetR = null, targetC = null) {
     state.weeklyScore += points;
     state.stats.levelScore = (state.stats.levelScore || 0) + points;
     const rect = target.el ? target.el.getBoundingClientRect() : null;
-    if (rect) spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#fb923c');
+    if (rect) { spawnBoardBurst(targetR, targetC, '#ea580c', 1.2); spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#ea580c'); }
     refreshTileAppearance(target);
     shakeScreen();
     sfxRealExplode(1.15);
@@ -4096,70 +4497,202 @@ function loadNextScratchTicketFromInventory() {
   syncCloudState();
 }
 
+// A másodlagos, kisméretű vászon csak a kaparás százalékát méri (60×33 pixel).
+// A fő vászon továbbra is 300×165 pixeles: a játékos sima, részletes kaparási felületet lát,
+// a gyengébb gép pedig nem olvas ki közel 200 000 pixelt minden pointer-eseménynél.
+let scratchProgressCanvas = null;
+let scratchProgressCtx = null;
+let scratchLastPoint = null;
+let scratchProgressTimer = 0;
+let scratchListenersBound = false;
+const SCRATCH_BRUSH_SIZE = 31;
+const SCRATCH_PROGRESS_DELAY = 150;
+
 function initScratchCanvas() {
   scratchCanvas = document.getElementById('scratch-canvas');
   if (!scratchCanvas) return;
-  scratchCtx = scratchCanvas.getContext('2d');
+  // desynchronized csökkentheti a rajzolás és a megjelenítés közötti késést a támogatott böngészőkben.
+  if (!scratchCtx) {
+    try { scratchCtx = scratchCanvas.getContext('2d', { alpha: true, desynchronized: true }); }
+    catch (_) { scratchCtx = scratchCanvas.getContext('2d'); }
+  }
+  if (!scratchProgressCanvas) {
+    scratchProgressCanvas = document.createElement('canvas');
+    scratchProgressCanvas.width = 60;
+    scratchProgressCanvas.height = 33;
+    try { scratchProgressCtx = scratchProgressCanvas.getContext('2d', { alpha: true, willReadFrequently: true }); }
+    catch (_) { scratchProgressCtx = scratchProgressCanvas.getContext('2d'); }
+  }
+  if (!scratchCtx || !scratchProgressCtx) return;
 
   function getPos(e) {
     const rect = scratchCanvas.getBoundingClientRect();
-    const cx = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-    const cy = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
-    return { x: cx - rect.left, y: cy - rect.top };
+    const scaleX = scratchCanvas.width / Math.max(1, rect.width);
+    const scaleY = scratchCanvas.height / Math.max(1, rect.height);
+    return {
+      x: Math.max(0, Math.min(scratchCanvas.width, (e.clientX - rect.left) * scaleX)),
+      y: Math.max(0, Math.min(scratchCanvas.height, (e.clientY - rect.top) * scaleY))
+    };
   }
 
-  function scratch(e) {
+  function drawScratchSegment(pos) {
     if (!isScratching || scratchRevealed || !currentScratchTicket) return;
-    const pos = getPos(e);
+    const prev = scratchLastPoint || pos;
+    // Fő látvány: egyetlen folyamatos, kerek végű vonal, nem sok apró kör.
     scratchCtx.globalCompositeOperation = 'destination-out';
+    scratchCtx.lineCap = 'round';
+    scratchCtx.lineJoin = 'round';
+    scratchCtx.lineWidth = SCRATCH_BRUSH_SIZE;
     scratchCtx.beginPath();
-    scratchCtx.arc(pos.x, pos.y, 11, 0, Math.PI * 2);
-    scratchCtx.fill();
+    scratchCtx.moveTo(prev.x, prev.y);
+    scratchCtx.lineTo(pos.x, pos.y);
+    scratchCtx.stroke();
+    if (!scratchLastPoint) {
+      scratchCtx.beginPath();
+      scratchCtx.arc(pos.x, pos.y, SCRATCH_BRUSH_SIZE / 2, 0, Math.PI * 2);
+      scratchCtx.fill();
+    }
+
+    // Ugyanazt a vonalat arányosan a kicsi mérővászonra is felrajzoljuk.
+    const sx = scratchProgressCanvas.width / scratchCanvas.width;
+    const sy = scratchProgressCanvas.height / scratchCanvas.height;
+    scratchProgressCtx.globalCompositeOperation = 'destination-out';
+    scratchProgressCtx.lineCap = 'round';
+    scratchProgressCtx.lineJoin = 'round';
+    scratchProgressCtx.lineWidth = SCRATCH_BRUSH_SIZE * ((sx + sy) / 2);
+    scratchProgressCtx.beginPath();
+    scratchProgressCtx.moveTo(prev.x * sx, prev.y * sy);
+    scratchProgressCtx.lineTo(pos.x * sx, pos.y * sy);
+    scratchProgressCtx.stroke();
+    if (!scratchLastPoint) {
+      scratchProgressCtx.beginPath();
+      scratchProgressCtx.arc(pos.x * sx, pos.y * sy, SCRATCH_BRUSH_SIZE * ((sx + sy) / 2) / 2, 0, Math.PI * 2);
+      scratchProgressCtx.fill();
+    }
+
+    scratchLastPoint = pos;
+    queueScratchProgress(false);
     sfxRealScratch();
-    checkScratchCompletion();
   }
 
-  scratchCanvas.onpointerdown = (e) => { isScratching = true; scratch(e); };
-  window.addEventListener('pointermove', (e) => { if(isScratching) scratch(e); });
-  window.addEventListener('pointerup', () => { isScratching = false; });
+  // Az eseménykezelők egyszer, a canvasra kerülnek fel. A korábbi verzió minden modalnyitáskor
+  // új window.pointermove handlert adott hozzá, ettől idővel egy mozdulat többször futott le.
+  if (!scratchListenersBound) {
+    scratchCanvas.addEventListener('pointerdown', (e) => {
+      if (scratchRevealed || !currentScratchTicket) return;
+      e.preventDefault();
+      isScratching = true;
+      scratchLastPoint = null;
+      try { scratchCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+      drawScratchSegment(getPos(e));
+    }, { passive: false });
+
+    scratchCanvas.addEventListener('pointermove', (e) => {
+      if (!isScratching || scratchRevealed || !currentScratchTicket) return;
+      e.preventDefault();
+      drawScratchSegment(getPos(e));
+    }, { passive: false });
+
+    const stopScratching = () => {
+      if (!isScratching) return;
+      isScratching = false;
+      scratchLastPoint = null;
+      queueScratchProgress(true);
+    };
+    scratchCanvas.addEventListener('pointerup', stopScratching);
+    scratchCanvas.addEventListener('pointercancel', stopScratching);
+    scratchCanvas.addEventListener('lostpointercapture', stopScratching);
+    scratchListenersBound = true;
+  }
+}
+
+function queueScratchProgress(immediate = false) {
+  if (immediate) {
+    if (scratchProgressTimer) clearTimeout(scratchProgressTimer);
+    scratchProgressTimer = 0;
+    checkScratchCompletion();
+    return;
+  }
+  // Throttle, nem debounce: folyamatos kaparás közben is frissül a mérő kb. 150 ms-onként.
+  if (scratchProgressTimer) return;
+  scratchProgressTimer = setTimeout(() => {
+    scratchProgressTimer = 0;
+    checkScratchCompletion();
+  }, SCRATCH_PROGRESS_DELAY);
 }
 
 function initScratchCover(activeTicket = true) {
-  if (!scratchCanvas || !scratchCtx) return;
+  if (!scratchCanvas || !scratchCtx || !scratchProgressCtx) return;
   scratchRevealed = false;
+  isScratching = false;
+  scratchLastPoint = null;
+  if (scratchProgressTimer) {
+    clearTimeout(scratchProgressTimer);
+    scratchProgressTimer = 0;
+  }
   scratchCtx.globalCompositeOperation = 'source-over';
-  
+  scratchProgressCtx.globalCompositeOperation = 'source-over';
+
   const meterBar = document.getElementById('scratch-meter-bar');
   const pctTxt = document.getElementById('scratch-pct-txt');
   if (meterBar) meterBar.style.width = '0%';
   if (pctTxt) pctTxt.textContent = 'Lekaparva: 0% (Min. 82% szükséges)';
+  scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+  scratchProgressCtx.clearRect(0, 0, scratchProgressCanvas.width, scratchProgressCanvas.height);
+  if (!activeTicket) return;
 
-  if (!activeTicket) {
-    scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-    return;
-  }
-
-  const grad = scratchCtx.createLinearGradient(0, 0, scratchCanvas.width, scratchCanvas.height);
-  grad.addColorStop(0, '#64748b');
-  grad.addColorStop(0.5, '#94a3b8');
-  grad.addColorStop(1, '#475569');
+  // A fémes, kristályos fedőminta csak jegyváltáskor rajzolódik ki, nem animál folyamatosan.
+  const w = scratchCanvas.width;
+  const h = scratchCanvas.height;
+  const grad = scratchCtx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#a8b6c8');
+  grad.addColorStop(0.22, '#64748b');
+  grad.addColorStop(0.48, '#d7e0ec');
+  grad.addColorStop(0.7, '#64748b');
+  grad.addColorStop(1, '#334155');
   scratchCtx.fillStyle = grad;
-  scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+  scratchCtx.fillRect(0, 0, w, h);
 
-  scratchCtx.fillStyle = '#0f172a';
-  scratchCtx.font = 'bold 12px system-ui';
+  scratchCtx.save();
+  scratchCtx.globalAlpha = 0.16;
+  scratchCtx.strokeStyle = '#f8fafc';
+  scratchCtx.lineWidth = 1;
+  for (let x = -h; x < w + h; x += 13) {
+    scratchCtx.beginPath();
+    scratchCtx.moveTo(x, 0);
+    scratchCtx.lineTo(x + h, h);
+    scratchCtx.stroke();
+  }
+  scratchCtx.restore();
+
+  scratchCtx.fillStyle = 'rgba(15,23,42,0.84)';
+  scratchCtx.fillRect(16, h / 2 - 17, w - 32, 34);
+  scratchCtx.strokeStyle = 'rgba(253,230,138,0.92)';
+  scratchCtx.lineWidth = 1;
+  scratchCtx.strokeRect(18, h / 2 - 15, w - 36, 30);
+  scratchCtx.fillStyle = '#fef3c7';
+  scratchCtx.font = '900 12px system-ui, sans-serif';
   scratchCtx.textAlign = 'center';
-  scratchCtx.fillText('★ KAPARD LE AZ EGÉSZET ALAPOSAN! ★', scratchCanvas.width / 2, scratchCanvas.height / 2);
+  scratchCtx.textBaseline = 'middle';
+  scratchCtx.fillText('✦  KAPARD LE A NYEREMÉNYED!  ✦', w / 2, h / 2);
+
+  // A mérővászon csak fedettségi maszk: egyenletesen fedett induló állapotból indul.
+  scratchProgressCtx.fillStyle = '#64748b';
+  scratchProgressCtx.fillRect(0, 0, scratchProgressCanvas.width, scratchProgressCanvas.height);
 }
 
 function checkScratchCompletion() {
-  if (scratchRevealed || !currentScratchTicket) return;
-  const imgData = scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);
+  if (scratchRevealed || !currentScratchTicket || !scratchProgressCtx) return;
+  let imgData;
+  try { imgData = scratchProgressCtx.getImageData(0, 0, scratchProgressCanvas.width, scratchProgressCanvas.height); }
+  catch (_) { return; }
   let clearCount = 0;
+  const total = scratchProgressCanvas.width * scratchProgressCanvas.height;
+  // Csak 1 980 pixelt vizsgálunk a korábbi 49 500 pixel helyett.
   for (let i = 3; i < imgData.data.length; i += 4) {
-    if (imgData.data[i] === 0) clearCount++;
+    if (imgData.data[i] < 48) clearCount++;
   }
-  const pct = Math.round((clearCount / (scratchCanvas.width * scratchCanvas.height)) * 100);
+  const pct = Math.min(100, Math.round((clearCount / total) * 100));
   const meterBar = document.getElementById('scratch-meter-bar');
   const pctTxt = document.getElementById('scratch-pct-txt');
   if (meterBar) meterBar.style.width = `${pct}%`;
@@ -4167,7 +4700,15 @@ function checkScratchCompletion() {
 
   if (pct >= 82) {
     scratchRevealed = true;
+    isScratching = false;
+    scratchLastPoint = null;
+    if (scratchProgressTimer) {
+      clearTimeout(scratchProgressTimer);
+      scratchProgressTimer = 0;
+    }
+    scratchCtx.globalCompositeOperation = 'destination-out';
     scratchCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+    scratchProgressCtx.clearRect(0, 0, scratchProgressCanvas.width, scratchProgressCanvas.height);
     awardScratchPrize(currentScratchTicket);
   }
 }
@@ -4186,19 +4727,20 @@ function awardScratchPrize(ticket) {
     const vowels = ['A','Á','E','É','I','Í','O','Ó','Ö','Ő','U','Ú','Ü','Ű'];
     const consonants = BAG.filter(c => !vowels.includes(c));
     let added = 0;
+    let deferred = 0;
     for (let i = 0; i < ticket.val; i++) {
       const ch = (ticket.type === 'vowels')
         ? vowels[Math.floor(Math.random() * vowels.length)]
         : consonants[Math.floor(Math.random() * consonants.length)];
       if (addLetterToPool(ch)) added++;
-      else break;
+      else { queueNextRoundLetter({ char: ch }); deferred++; }
     }
     renderPool();
     sfxFanfare();
-    showToast(`🎁 ${added} betűnyeremény landolt a raktáradban!`, added ? 'ok' : 'err');
+    showToast(`🎁 ${added} betűnyeremény bekerült a raktárba${deferred ? `, további ${deferred} a következő körre mentve` : ''}!`, (added + deferred) ? 'ok' : 'err');
   } else if (ticket.type === 'wildcard') {
     const added = addLetterToPool('🃏');
-    if (!added) state.nextRoundLetters.push('🃏');
+    if (!added) queueNextRoundLetter({ char: '🃏' });
     renderPool();
     sfxFanfare();
     showToast(added ? `🃏 Kívánság-Joker figura került a betűid közé!` : `🃏 A Joker elmentve a következő szintre!`, 'ok');
@@ -4208,7 +4750,7 @@ function awardScratchPrize(ticket) {
     for (let i = 0; i < ticket.val; i++) {
       const ch = rareLetters[Math.floor(Math.random() * rareLetters.length)];
       if (addLetterToPool(ch)) added++;
-      else state.nextRoundLetters.push(ch);
+      else queueNextRoundLetter({ char: ch });
     }
     renderPool();
     sfxFanfare();
@@ -4938,6 +5480,7 @@ async function syncCloudState() {
     storedMoves: state.storedMoves || 0,
     purchaseCounts: state.purchaseCounts || {},
     activeQuestIds: (state.activeQuests || []).map(q => q.id),
+    activeQuestMinTiles: (state.activeQuests || []).map(q => q && q.id && q.id.startsWith('q_st_') ? (q.reqMinTiles || 3) : null),
     questStatuses: state.questStatuses || [],
     highStakesMode: state.highStakesMode || 'normal',
     activeStakePoints: state.activeStakePoints || 0,
@@ -4949,9 +5492,13 @@ async function syncCloudState() {
     scratchDeck: state.scratchDeck || [],
     scratchDeckVersion: state.scratchDeckVersion || 0,
     levelWords: state.levelWords,
+    levelWordScores: state.levelWordScores || [],
+    levelWordTileCounts: state.levelWordTileCounts || [],
+    levelWordStartTiles: state.levelWordStartTiles || [],
     pool: state.pool,
     tray: state.tray,
     nextRoundLetters: state.nextRoundLetters || [],
+    roundStartLetters: state.roundStartLetters || [],
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
     lastCheckInDate: state.lastCheckInDate || null,
@@ -5002,7 +5549,11 @@ function restoreFromCloudData(data) {
   state.levelMultiplier = data.levelMultiplier || 1;
 
   if (data.activeQuestIds && Array.isArray(data.activeQuestIds)) {
-    state.activeQuests = data.activeQuestIds.map(qid => ALL_QUEST_DATABASE.find(q => q.id === qid) || ALL_QUEST_DATABASE[0]);
+    const savedMinima = Array.isArray(data.activeQuestMinTiles) ? data.activeQuestMinTiles : [];
+    state.activeQuests = data.activeQuestIds.map((qid, index) => {
+      const base = ALL_QUEST_DATABASE.find(q => q.id === qid) || ALL_QUEST_DATABASE[0];
+      return configureStartingLetterQuest(base, savedMinima[index]);
+    });
     state.questStatuses = data.questStatuses || new Array(state.activeQuests.length).fill(false);
   } else {
     const viable = getViableQuestsForBoard(state.level);
@@ -5011,10 +5562,20 @@ function restoreFromCloudData(data) {
   }
 
   state.stats = data.stats || { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false };
-  state.levelWords = data.levelWords || [];
+  state.levelWords = Array.isArray(data.levelWords) ? data.levelWords : [];
+  state.levelWordScores = Array.isArray(data.levelWordScores) ? data.levelWordScores : [];
+  state.levelWordTileCounts = Array.isArray(data.levelWordTileCounts)
+    ? data.levelWordTileCounts.map((count, index) => Number(count) > 0 ? Number(count) : tokenizeHungarianTiles(state.levelWords[index] || '').length)
+    : state.levelWords.map(word => tokenizeHungarianTiles(word).length);
+  state.levelWordStartTiles = Array.isArray(data.levelWordStartTiles)
+    ? data.levelWordStartTiles.map((tile, index) => String(tile || tokenizeHungarianTiles(state.levelWords[index] || '')[0] || ''))
+    : state.levelWords.map(word => tokenizeHungarianTiles(word)[0] || String(word || '').charAt(0));
   state.pool = data.pool || [];
   state.tray = data.tray || [];
   state.nextRoundLetters = Array.isArray(data.nextRoundLetters) ? data.nextRoundLetters : [];
+  state.roundStartLetters = Array.isArray(data.roundStartLetters)
+    ? data.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
+    : [];
   state.checkInStreak = data.checkInStreak || 0;
   state.lastCheckInDate = data.lastCheckInDate || null;
   state.secretWordStreak = data.secretWordStreak || 0;
@@ -5167,12 +5728,18 @@ safeOn('btn-choice-restart-level', 'click', () => {
     state.secretWordStreak = pendingCloudData.secretWordStreak || 0;
     state.secretWordLastSolvedDate = pendingCloudData.secretWordLastSolvedDate || null;
     state.nextRoundLetters = Array.isArray(pendingCloudData.nextRoundLetters) ? pendingCloudData.nextRoundLetters : [];
+    state.roundStartLetters = Array.isArray(pendingCloudData.roundStartLetters)
+      ? pendingCloudData.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
+      : [];
     state.scratchTickets = pendingCloudData.scratchTickets || [];
     state.scratchDeck = pendingCloudData.scratchDeck || [];
     state.scratchDeckVersion = pendingCloudData.scratchDeckVersion || 0;
     
     isLocked = false;
-    initLevelData(pendingCloudData.level || 1, null, 'normal');
+    initLevelData(pendingCloudData.level || 1, null, 'normal', {
+      roundStartLetters: state.roundStartLetters,
+      reapplyRoundStartLetters: true
+    });
     showToast(`A ${state.level}. szint újraindítva!`, "ok");
     syncCloudState();
   } else {
