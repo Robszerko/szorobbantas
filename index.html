@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Balanced Letter Score Edition</title>
+<title>SZÓROBBANTÁS PRO - Balanced Score & Custom Palette Edition</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -23,6 +23,14 @@
   --ice: #38bdf8;
   --slate: #64748b;
   --tile-size: 44px;
+  /* Alapértelmezett, jól elkülönülő csempeszínek. A játékos ezt a belépőképernyőn módosíthatja. */
+  --tile-0-hi: #fb7185; --tile-0-mid: #e11d48; --tile-0-end: #881337;
+  --tile-1-hi: #93c5fd; --tile-1-mid: #1d4ed8; --tile-1-end: #172554;
+  --tile-2-hi: #86efac; --tile-2-mid: #16a34a; --tile-2-end: #14532d;
+  --tile-3-hi: #fdba74; --tile-3-mid: #c2410c; --tile-3-end: #7c2d12;
+  --tile-4-hi: #d8b4fe; --tile-4-mid: #7e22ce; --tile-4-end: #3b0764;
+  --tile-5-hi: #cbd5e1; --tile-5-mid: #475569; --tile-5-end: #0f172a;
+  --tile-3-ink: #ffffff;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -390,12 +398,12 @@ html, body {
   pointer-events: none; z-index: 3;
 }
 /* Hat jól elkülönülő alapszín: a sárga/arany nincs többé összekeverhetően a normál csempékkel. */
-.tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, #ff7b86, #e11d48 55%, #881337); }
-.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, #7dd3fc, #2563eb 55%, #172554); }
-.tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, #86efac, #16a34a 55%, #14532d); }
-.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, #a5f3fc, #0891b2 55%, #164e63); }
-.tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, #d8b4fe, #9333ea 55%, #4c1d95); }
-.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, #fdba74, #ea580c 55%, #7c2d12); }
+.tile.color-0 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-0-hi, #fb7185), var(--tile-0-mid, #e11d48) 55%, var(--tile-0-end, #881337)); }
+.tile.color-1 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-1-hi, #93c5fd), var(--tile-1-mid, #1d4ed8) 55%, var(--tile-1-end, #172554)); }
+.tile.color-2 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-2-hi, #86efac), var(--tile-2-mid, #16a34a) 55%, var(--tile-2-end, #14532d)); }
+.tile.color-3 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-3-hi, #fdba74), var(--tile-3-mid, #c2410c) 55%, var(--tile-3-end, #7c2d12)); }
+.tile.color-4 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-4-hi, #d8b4fe), var(--tile-4-mid, #7e22ce) 55%, var(--tile-4-end, #3b0764)); }
+.tile.color-5 .tile-inner { background: radial-gradient(circle at 35% 25%, var(--tile-5-hi, #5eead4), var(--tile-5-mid, #0f766e) 55%, var(--tile-5-end, #042f2e)); }
 .tile.is-gold .tile-inner {
   background: radial-gradient(circle at 35% 25%, #fffbeb, #f59e0b 55%, #78350f) !important;
   border: 2px solid #fef08a !important; box-shadow: 0 0 15px rgba(251, 191, 36, 0.8) !important;
@@ -467,7 +475,14 @@ html, body {
   font-size: calc(var(--tile-size, 44px) * 0.52); font-weight: 900; z-index: 4;
   text-shadow: 0 2px 4px rgba(0,0,0,0.9); pointer-events: none; position: relative;
 }
-.tile.color-3 .tile-letter { color: #082f49; text-shadow: 0 1px 2px rgba(255,255,255,0.65); }
+/* A kis alakjel a szín mellett második támpontot ad; hat apró elem a teljes táblán is könnyű marad. */
+.tile-color-mark {
+  position: absolute; left: 4px; top: 3px; z-index: 5; pointer-events: none;
+  font-size: 8px; line-height: 1; font-weight: 900; color: rgba(255,255,255,.9);
+  text-shadow: 0 1px 3px rgba(0,0,0,.95);
+}
+.tile.bomb .tile-color-mark, .tile.prism .tile-color-mark { opacity: .3; }
+.tile.color-3 .tile-letter { color: var(--tile-3-ink, #ffffff); text-shadow: 0 2px 4px rgba(0,0,0,0.9); }
 .tile.has-letter .tile-inner { border: 2px solid var(--gold); box-shadow: 0 0 10px rgba(245,158,11,0.65); }
 .tile.highlight .tile-inner { filter: brightness(1.6); transform: scale(0.96); box-shadow: 0 0 14px #fff; }
 @keyframes tileClear {
@@ -656,6 +671,37 @@ body.low-power-mode .board-burst::after { animation-duration: .30s; }
 }
 .input-pin:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(245,158,11,0.4); }
 .modal-buttons { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+/* Belépéskor választható, memóriatakarékos színpaletta-előnézet. */
+.palette-picker {
+  margin: 2px 0 4px; padding: 9px; border-radius: 10px;
+  background: rgba(2,6,23,.68); border: 1px solid rgba(148,163,184,.28);
+  text-align: left;
+}
+.palette-picker-title {
+  color: #e2e8f0; font-size: 10px; font-weight: 900; letter-spacing: .7px;
+  text-align: center; margin-bottom: 7px;
+}
+.palette-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.palette-option {
+  min-width: 0; padding: 7px; border-radius: 8px; border: 1px solid #334155;
+  background: #0f172a; color: #e2e8f0; text-align: left; cursor: pointer;
+  font: inherit; transition: border-color .12s, background-color .12s;
+}
+.palette-option:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+.palette-option.active { border: 2px solid #fbbf24; padding: 6px; background: rgba(245,158,11,.11); }
+.palette-option-name { display: block; font-size: 10px; line-height: 1.25; font-weight: 900; margin-bottom: 6px; }
+.palette-swatches { display: flex; align-items: center; gap: 4px; }
+.palette-swatch {
+  display: block; width: 15px; height: 15px; flex: 0 0 15px; border-radius: 4px;
+  border: 1px solid rgba(255,255,255,.48);
+}
+.palette-picker-note { color: #94a3b8; font-size: 9px; line-height: 1.4; text-align: center; margin: 6px 2px 0; }
+@media (max-width: 360px) {
+  .palette-options { grid-template-columns: 1fr; }
+  .palette-option { padding: 6px; }
+  .palette-option.active { padding: 5px; }
+}
 .btn-modal {
   padding: 11px; border-radius: 8px; border: none; font-weight: 900;
   font-size: 12.5px; cursor: pointer; font-family: inherit;
@@ -1220,6 +1266,11 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <p class="modal-desc">Add meg a neved és 4 számjegyű PIN kódodat! A mentés automatikus.</p>
     <input type="text" class="input-pin" id="auth-name" placeholder="JÁTÉKOSNÉV" maxlength="12" autocomplete="off" spellcheck="false">
     <input type="text" class="input-pin" id="auth-pin" placeholder="PIN (4 SZÁM)" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" data-lpignore="true" style="-webkit-text-security: disc;">
+    <div class="palette-picker" id="palette-picker">
+      <div class="palette-picker-title">🎨 VÁLASZD KI A JÁTÉK SZÍNVILÁGÁT</div>
+      <div class="palette-options" id="palette-options" role="group" aria-label="Játéktábla színpalettái"></div>
+      <p class="palette-picker-note" id="palette-description">A kiválasztás automatikusan megmarad ezen az eszközön. Minden színhez külön alakjel is tartozik.</p>
+    </div>
     <div class="modal-buttons">
       <button class="btn-modal primary" id="btn-auth-confirm">BELÉPÉS / MENTÉS BETÖLTÉSE</button>
     </div>
@@ -1493,6 +1544,168 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
 function safeOn(id, evt, fn) {
   const el = document.getElementById(id);
   if (el) el.addEventListener(evt, fn);
+}
+
+// A hat színindex a játékmenet része; csak a megjelenítés változik, a színazonosság és a mentett pálya nem.
+const TILE_COLOR_MARKS = ['●', '◆', '▲', '■', '✦', '✚'];
+const TILE_PALETTES = {
+  vivid: {
+    name: 'Élénk kontraszt', description: 'Élénk piros, királykék, zöld, narancs, ibolya és grafitszürke – nincs második, könnyen összekeverhető kék vagy sárga.',
+    colors: [
+      { hi:'#fb7185', mid:'#e11d48', end:'#881337', ink:'#ffffff' },
+      { hi:'#93c5fd', mid:'#1d4ed8', end:'#172554', ink:'#ffffff' },
+      { hi:'#86efac', mid:'#16a34a', end:'#14532d', ink:'#ffffff' },
+      { hi:'#fdba74', mid:'#c2410c', end:'#7c2d12', ink:'#ffffff' },
+      { hi:'#d8b4fe', mid:'#7e22ce', end:'#3b0764', ink:'#ffffff' },
+      { hi:'#cbd5e1', mid:'#475569', end:'#0f172a', ink:'#ffffff' }
+    ]
+  },
+  colorblind: {
+    name: 'Színvakbarát jelekkel', description: 'Eltérő fényerejű, színvakoknak is könnyebben követhető színek, hat különböző alakjellel kiegészítve.',
+    colors: [
+      { hi:'#f4a261', mid:'#d55e00', end:'#6f2d00', ink:'#ffffff' },
+      { hi:'#56b4e9', mid:'#0072b2', end:'#003b5c', ink:'#ffffff' },
+      { hi:'#66c2a5', mid:'#009e73', end:'#004b3a', ink:'#ffffff' },
+      { hi:'#e78ac3', mid:'#b24782', end:'#5a163e', ink:'#ffffff' },
+      { hi:'#bcbddc', mid:'#756bb1', end:'#3f007d', ink:'#ffffff' },
+      { hi:'#cbd5e1', mid:'#4b5563', end:'#111827', ink:'#ffffff' }
+    ]
+  },
+  neon: {
+    name: 'Neon energia', description: 'Erős, játéktermi neonárnyalatok sötét, olvasható alapokkal; a paletta nem használ két világoskék mezőt.',
+    colors: [
+      { hi:'#f9a8d4', mid:'#c026d3', end:'#701a75', ink:'#ffffff' },
+      { hi:'#bef264', mid:'#65a30d', end:'#365314', ink:'#ffffff' },
+      { hi:'#fda4af', mid:'#e11d48', end:'#881337', ink:'#ffffff' },
+      { hi:'#fdba74', mid:'#ea580c', end:'#7c2d12', ink:'#ffffff' },
+      { hi:'#c4b5fd', mid:'#7c3aed', end:'#3b0764', ink:'#ffffff' },
+      { hi:'#67e8f9', mid:'#0891b2', end:'#164e63', ink:'#ffffff' }
+    ]
+  },
+  mineral: {
+    name: 'Föld és ásvány', description: 'Mély rubin, petrol, olívazöld, rozsda, ametiszt és grafitszürke – sárga kettőzés nélkül.',
+    colors: [
+      { hi:'#fca5a5', mid:'#b91c1c', end:'#450a0a', ink:'#ffffff' },
+      { hi:'#5eead4', mid:'#0f766e', end:'#042f2e', ink:'#ffffff' },
+      { hi:'#bef264', mid:'#4d7c0f', end:'#1a2e05', ink:'#ffffff' },
+      { hi:'#fdba74', mid:'#9a3412', end:'#431407', ink:'#ffffff' },
+      { hi:'#c4b5fd', mid:'#6d28d9', end:'#2e1065', ink:'#ffffff' },
+      { hi:'#cbd5e1', mid:'#475569', end:'#0f172a', ink:'#ffffff' }
+    ]
+  }
+};
+
+let tilePaletteStorageAvailable = true;
+let tilePalettePreferenceSaved = false;
+function readSavedTilePalette() {
+  try {
+    const saved = localStorage.getItem('szorobbantas.tilePalette.v1');
+    tilePalettePreferenceSaved = !!(saved && TILE_PALETTES[saved]);
+    tilePaletteStorageAvailable = true;
+    return saved && TILE_PALETTES[saved] ? saved : 'vivid';
+  } catch (e) {
+    tilePaletteStorageAvailable = false;
+    tilePalettePreferenceSaved = false;
+    return 'vivid';
+  }
+}
+
+let activeTilePaletteId = readSavedTilePalette();
+function getTilePaletteColor(index, isGold = false) {
+  if (isGold) return '#fbbf24';
+  const palette = TILE_PALETTES[activeTilePaletteId] || TILE_PALETTES.vivid;
+  const color = palette.colors[Math.max(0, Math.min(5, Number(index) || 0))];
+  return color ? color.mid : '#ffffff';
+}
+
+function applyTilePalette(paletteId, persist = true) {
+  const id = TILE_PALETTES[paletteId] ? paletteId : 'vivid';
+  activeTilePaletteId = id;
+  const palette = TILE_PALETTES[id];
+  const root = document.documentElement;
+  palette.colors.forEach((color, index) => {
+    root.style.setProperty(`--tile-${index}-hi`, color.hi);
+    root.style.setProperty(`--tile-${index}-mid`, color.mid);
+    root.style.setProperty(`--tile-${index}-end`, color.end);
+  });
+  root.style.setProperty('--tile-3-ink', palette.colors[3].ink || '#ffffff');
+  if (document.body) document.body.dataset.tilePalette = id;
+  if (persist) {
+    try {
+      localStorage.setItem('szorobbantas.tilePalette.v1', id);
+      tilePaletteStorageAvailable = true;
+      tilePalettePreferenceSaved = true;
+    } catch (e) {
+      tilePaletteStorageAvailable = false;
+      tilePalettePreferenceSaved = false;
+    }
+  } else {
+    try {
+      tilePalettePreferenceSaved = localStorage.getItem('szorobbantas.tilePalette.v1') === id;
+      tilePaletteStorageAvailable = true;
+    } catch (e) {
+      tilePaletteStorageAvailable = false;
+      tilePalettePreferenceSaved = false;
+    }
+  }
+  const options = document.getElementById('palette-options');
+  if (options) {
+    options.querySelectorAll('.palette-option').forEach(button => {
+      const selected = button.dataset.palette === id;
+      button.classList.toggle('active', selected);
+      button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+  }
+  const description = document.getElementById('palette-description');
+  if (description) {
+    const saveNote = !tilePaletteStorageAvailable
+      ? 'A szín az aktuális játékban érvényesül, de a böngésző most nem engedi a tartós beállításmentést.'
+      : (tilePalettePreferenceSaved
+        ? 'A választás mentve ezen az eszközön.'
+        : 'A választás az első kattintás után automatikusan menthető ezen az eszközön.');
+    description.textContent = `${palette.description} ${saveNote} A csempéken külön alakjelek is segítik a megkülönböztetést.`;
+  }
+}
+
+function initPalettePicker() {
+  const container = document.getElementById('palette-options');
+  if (!container) {
+    applyTilePalette(activeTilePaletteId, false);
+    return;
+  }
+  container.innerHTML = '';
+  Object.entries(TILE_PALETTES).forEach(([id, palette]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'palette-option';
+    button.dataset.palette = id;
+    button.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-label', `Színpaletta: ${palette.name}`);
+
+    const name = document.createElement('span');
+    name.className = 'palette-option-name';
+    name.textContent = palette.name;
+    button.appendChild(name);
+
+    const swatches = document.createElement('span');
+    swatches.className = 'palette-swatches';
+    swatches.setAttribute('aria-hidden', 'true');
+    palette.colors.forEach(color => {
+      const swatch = document.createElement('span');
+      swatch.className = 'palette-swatch';
+      swatch.style.background = `radial-gradient(circle at 35% 25%, ${color.hi}, ${color.mid} 58%, ${color.end})`;
+      swatches.appendChild(swatch);
+    });
+    button.appendChild(swatches);
+    container.appendChild(button);
+  });
+
+  container.addEventListener('click', event => {
+    const button = event.target.closest('.palette-option');
+    if (!button || !container.contains(button)) return;
+    applyTilePalette(button.dataset.palette, true);
+  });
+  applyTilePalette(activeTilePaletteId, false);
 }
 
 const firebaseConfig = {
@@ -2544,6 +2757,12 @@ function createTileElement(tile, size) {
   const inner = document.createElement('div');
   inner.className = 'tile-inner';
 
+  const colorMark = document.createElement('span');
+  colorMark.className = 'tile-color-mark';
+  colorMark.setAttribute('aria-hidden', 'true');
+  colorMark.textContent = TILE_COLOR_MARKS[Math.max(0, Math.min(5, Number(tile.color) || 0))];
+  inner.appendChild(colorMark);
+
   if(tile.ice > 0) {
     const badge = document.createElement('span');
     badge.className = 'layer-badge';
@@ -2876,7 +3095,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
 
       const px = boardRect.left + (c + 0.5) * (boardRect.width / GRID_SIZE);
       const py = boardRect.top + (r + 0.5) * (boardRect.height / GRID_SIZE);
-      const colHex = t.isGold ? '#fbbf24' : (['#e11d48', '#2563eb', '#16a34a', '#0891b2', '#9333ea', '#ea580c'][t.color] || '#ffffff');
+      const colHex = getTilePaletteColor(t.color, t.isGold);
       // Legfeljebb 12 nagy CSS-kitörés kluszterenként: látványos, de korlátozott DOM- és GPU-terhelés.
       if (tileIndex % burstStride === 0) spawnBoardBurst(r, c, colHex, matchSize >= 9 ? 1.2 : 1);
       spawnExplosion(px, py, colHex);
@@ -5410,6 +5629,11 @@ function renderSpectatorBoard(d) {
 
       const inner = document.createElement('div');
       inner.className = 'tile-inner';
+      const colorMark = document.createElement('span');
+      colorMark.className = 'tile-color-mark';
+      colorMark.setAttribute('aria-hidden', 'true');
+      colorMark.textContent = TILE_COLOR_MARKS[Math.max(0, Math.min(5, Number(cell.color) || 0))];
+      inner.appendChild(colorMark);
       if(cell.letter) {
         const l = document.createElement('span');
         l.className = 'tile-letter';
@@ -5990,6 +6214,7 @@ function startBgMotes() {
 }
 
 async function main() {
+  initPalettePicker();
   calcTileMetrics();
   initBgMotes();
   startBgMotes();
