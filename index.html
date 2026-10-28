@@ -347,6 +347,19 @@ html, body {
 .btn-dock-slot.special-step .d-badge {
   background: var(--cyan); color: #020617;
 }
+.btn-dock-slot.golden-temp-help {
+  grid-column: span 2;
+  border: 1.5px solid #facc15;
+  color: #fff7cc;
+  background: linear-gradient(135deg, rgba(124, 58, 237, .92), rgba(180, 83, 9, .94));
+  box-shadow: 0 0 13px rgba(250, 204, 21, .28);
+  min-height: 58px;
+}
+.btn-dock-slot.golden-temp-help .d-label { color: #fff7cc; }
+.btn-dock-slot.golden-temp-help .d-badge {
+  background: #fef08a; color: #422006; border-color: #facc15;
+}
+body.low-power-mode .btn-dock-slot.golden-temp-help { box-shadow: none !important; }
 
 .moves-warning-banner {
   background: linear-gradient(135deg, rgba(185, 28, 28, 0.95), rgba(127, 29, 29, 0.95));
@@ -1399,7 +1412,8 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <div style="display:flex; flex-direction:column; gap:8px; margin:8px 0; font-size:11px; line-height:1.45; color:#cbd5e1;">
       <div><b>🎲 Mesterfogadás (Tét & Szorzók):</b> Szintindítás előtt választhatsz: Maradsz a 3 normál questnél, vagy felraksz tétet 4-5 questre a 2x-3x pontszorzóért és bónuszokért! Vigyázz: ha elbukod a vállalást, a feltett tét elvész, és büntetőpont-levonás jár érte!</div>
       <div><b>🔤 Kiegyensúlyozott betűpontok:</b> Minden betűn látszik a saját értéke. A gyakori betűk 2-3, a közepesen ritkák 4-5, a ritka magyar betűk és betűkapcsolatok 6-9 betűpontot érnek. Az arany betű duplázza a saját értékét, a hosszabb szavak hosszúsági bónuszt kapnak. Az aranypálya és a kupon szorzója megmarad, de az összesített szorzó legfeljebb 6× lehet.</div>
-      <div><b>🎯 Kiegyensúlyozott Betűeloszlás:</b> A táblán és a hulló csempéknél intelligens arányosító algoritmus működik. Bőségesen érkeznek a leggyakoribb magánhangzók és alaphangok (A, E, T, S, K, L, N), miközben a küldetésbetűkből maximum 2-3 jelenik meg egyensúlyban, elkerülve a túltelítést!</div>
+      <div><b>🃏 Arany Joker-ajándék:</b> Az Arany Joker betűvé alakításakor sorsjegyet és egy véletlenszerű, meglévő segítséget kapsz a következő körre. Az arany-lila ajándékslot csak abban a körben látszik, és egyszer használva elfogy; a kör végén a fel nem használt ajándék is lejár.</div>
+      <div><b>🔤 Kiegyensúlyozott Betűeloszlás:</b> A táblán és a hulló csempéknél intelligens arányosító algoritmus működik. Bőségesen érkeznek a leggyakoribb magánhangzók és alaphangok (A, E, T, S, K, L, N), miközben a küldetésbetűkből maximum 2-3 jelenik meg egyensúlyban, elkerülve a túltelítést!</div>
       <div><b>🧊 Réteges akadályok és biztos első lépés:</b> A fagyott csempe teljesen elrejti a betűjét; jégből 1, 2 vagy a későbbi szinteken 3 réteg is lehet. Egy szomszédos robbanás egy réteget tör le. Minden új tábla és feltöltés garantál legalább egy azonnal robbantható, kétcsempés csoportot.</div>
       <div><b>📈 Küldetés-mérők:</b> A számszerű célok alatt élő haladási sáv látható. A pályát kizárólag egyszer jutalmazza a rendszer, így a teljesítési bónusz nem ismétlődhet UI-frissítésektől.</div>
       <div><b>✨ Nap Szava Sorozat (Streak):</b> Napi 1 alkalommal fejthető meg. Kezdőérték 30.000 P, ami minden egymást követő nap 5.000 ponttal nő egészen 100.000 pontig! Ha kimarad egy nap, a sorozat visszaesik 30.000-re!</div>
@@ -2388,6 +2402,10 @@ const state = {
   pool: [],
   tray: [],
   nextRoundLetters: [],
+  // Arany Jokerből származó, következő körre félretett egyszeri segítségek.
+  nextRoundHelpers: [],
+  // Az aktuális körben elérhető Arany Joker-segítségek; használatkor elfogynak.
+  roundTemporaryHelpers: [],
   // A kör elején átvett jutalombetűk: szint-újraindításkor is visszakerülnek.
   roundStartLetters: [],
   levelWords: [],
@@ -2458,6 +2476,19 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
     : (sameLevelRestart && Array.isArray(state.roundStartLetters)
       ? state.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
       : []);
+  // A mostani kör újrapróbálásakor az itt még fel nem használt Arany Joker-segítségek megmaradnak.
+  // Új kör indulásakor a függő jutalmak aktiválódnak, a fel nem használtak pedig a kör végével lejárnak.
+  let newlyActivatedGoldenHelpers = [];
+  if (sameLevelRestart) {
+    state.roundTemporaryHelpers = (Array.isArray(state.roundTemporaryHelpers) ? state.roundTemporaryHelpers : [])
+      .map(normalizeRoundTemporaryHelper).filter(Boolean);
+    state.nextRoundHelpers = Array.isArray(state.nextRoundHelpers) ? state.nextRoundHelpers : [];
+  } else {
+    newlyActivatedGoldenHelpers = (Array.isArray(state.nextRoundHelpers) ? state.nextRoundHelpers : [])
+      .map(normalizeRoundTemporaryHelper).filter(Boolean);
+    state.roundTemporaryHelpers = newlyActivatedGoldenHelpers;
+    state.nextRoundHelpers = [];
+  }
 
   state.level = targetLevel;
   state.roundStartLetters = roundLettersToKeep;
@@ -2546,6 +2577,10 @@ function initLevelData(lvl, chosenQuests = null, stakeMode = 'normal', options =
   renderTray();
   renderPool();
   renderQuickInventory();
+  if (newlyActivatedGoldenHelpers.length) {
+    const names = newlyActivatedGoldenHelpers.map(helper => `${helper.icon} ${helper.name}`).join(' · ');
+    showToast(`✨ Arany Joker-ajándék a ${state.level}. körre: ${names}. Segítségenként egyszer használható!`, 'ok');
+  }
   updateStats();
   updateMovesWatermark();
   updateHeroDisplay();
@@ -3365,8 +3400,13 @@ function morphJokerToLetter(chosenChar) {
     state.pool[targetJokerIndex].isGoldenJoker = false;
     sfxFanfare();
     if (wasGoldenJoker) {
+      const goldenHelper = queueRandomGoldenHelperForNextRound();
       grantScratchTicket('Arany Joker');
-      showToast(`🃏 Az Arany Joker "${chosenChar}" betűvé változott, és sorsjegyet adott!`, 'ok');
+      if (goldenHelper) {
+        showToast(`🃏 Arany Joker: ${chosenChar} betű + sorsjegy + következő körös, egyszeri segítség: ${goldenHelper.icon} ${goldenHelper.name}!`, 'ok');
+      } else {
+        showToast(`🃏 Az Arany Joker "${chosenChar}" betűvé változott, és sorsjegyet adott!`, 'ok');
+      }
     } else {
       showToast(`🃏 A Joker átváltozott "${chosenChar}" betűvé!`, 'ok');
     }
@@ -4334,6 +4374,83 @@ function buyShopItem(item) {
   syncCloudState();
 }
 
+function normalizeRoundTemporaryHelper(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const itemId = String(entry.itemId || '');
+  const definition = SHOP_ITEMS.find(item => item.id === itemId);
+  if (!definition) return null;
+  return {
+    id: String(entry.id || createLetterRewardId()),
+    itemId,
+    icon: String(entry.icon || definition.icon),
+    name: String(entry.name || definition.name),
+    desc: String(entry.desc || definition.desc),
+    source: String(entry.source || 'golden-joker')
+  };
+}
+
+function queueNextRoundTemporaryHelper(itemId, source = 'golden-joker') {
+  const definition = SHOP_ITEMS.find(item => item.id === itemId);
+  if (!definition) return null;
+  const helper = {
+    id: createLetterRewardId(),
+    itemId: definition.id,
+    icon: definition.icon,
+    name: definition.name,
+    desc: definition.desc,
+    source
+  };
+  state.nextRoundHelpers = Array.isArray(state.nextRoundHelpers) ? state.nextRoundHelpers : [];
+  state.nextRoundHelpers.push(helper);
+  return helper;
+}
+
+function queueRandomGoldenHelperForNextRound() {
+  // A játékban ténylegesen elérhető segítségek közül sorsolunk; a +5 lépés is lehet jutalom.
+  const candidates = SHOP_ITEMS.filter(item => item && item.id);
+  if (!candidates.length) return null;
+  const selected = candidates[Math.floor(Math.random() * candidates.length)];
+  return queueNextRoundTemporaryHelper(selected.id, 'golden-joker');
+}
+
+async function activateRoundTemporaryHelper(helperId) {
+  if (isLocked) {
+    showToast('Várd meg a jelenlegi művelet végét!', 'err');
+    return;
+  }
+  const helpers = Array.isArray(state.roundTemporaryHelpers) ? state.roundTemporaryHelpers : [];
+  const index = helpers.findIndex(helper => helper && helper.id === helperId);
+  if (index < 0) return;
+  const helper = normalizeRoundTemporaryHelper(helpers[index]);
+  if (!helper) {
+    showToast('Ez az egyszeri segítség már nem érhető el.', 'err');
+    return;
+  }
+  const item = SHOP_ITEMS.find(candidate => candidate.id === helper.itemId);
+  if (!item || typeof item.action !== 'function') {
+    showToast('A segítség nem indítható el.', 'err');
+    return;
+  }
+
+  // Előbb kivesszük a készletből, így dupla kattintással vagy mentési versenyhelyzettel sem használható kétszer.
+  state.roundTemporaryHelpers.splice(index, 1);
+  renderQuickInventory();
+  // A felhasználás tényét a hosszabb effekt (pl. vokális eső) vége előtt is elindítjuk menteni.
+  syncCloudState();
+  showToast(`✨ Egyszeri Arany segítség aktiválva: ${helper.icon} ${helper.name}!`, 'ok');
+  try {
+    await Promise.resolve(item.action());
+  } catch (error) {
+    console.error('Egyszeri Arany segítség hibája:', error);
+    showToast('A segítség aktiválásakor hiba történt; az egyszeri jutalom felhasználtnak számít.', 'err');
+  } finally {
+    renderQuickInventory();
+    renderShop();
+    updateStats();
+    syncCloudState();
+  }
+}
+
 function renderQuickInventory() {
   const row = document.getElementById('quick-inv-row');
   if (!row) return;
@@ -4360,6 +4477,29 @@ function renderQuickInventory() {
     `;
 
     btn.addEventListener('click', () => handleToolActivation(item));
+    row.appendChild(btn);
+  });
+
+  // Az Arany Jokerből érkező segítség külön, arany-lila slotban jelenik meg, és nem kerül a vásárolható készletbe.
+  (Array.isArray(state.roundTemporaryHelpers) ? state.roundTemporaryHelpers : []).forEach(helper => {
+    const normalized = normalizeRoundTemporaryHelper(helper);
+    if (!normalized) return;
+    const btn = document.createElement('div');
+    btn.className = 'btn-dock-slot golden-temp-help';
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('tabindex', '0');
+    btn.setAttribute('title', `Arany Joker ajándéka: ${normalized.name}. Csak ebben a körben egyszer használható. ${normalized.desc}`);
+    btn.setAttribute('aria-label', `Egyszeri Arany segítség: ${normalized.name}`);
+    btn.innerHTML = `
+      <span class="d-icon">${normalized.icon}✨</span>
+      <span class="d-label">${normalized.name}</span>
+      <span class="d-badge">ARANY · 1×</span>
+    `;
+    const activate = () => { void activateRoundTemporaryHelper(normalized.id); };
+    btn.addEventListener('click', activate);
+    btn.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); }
+    });
     row.appendChild(btn);
   });
 }
@@ -5722,6 +5862,8 @@ async function syncCloudState() {
     pool: state.pool,
     tray: state.tray,
     nextRoundLetters: state.nextRoundLetters || [],
+    nextRoundHelpers: state.nextRoundHelpers || [],
+    roundTemporaryHelpers: state.roundTemporaryHelpers || [],
     roundStartLetters: state.roundStartLetters || [],
     boardJson: JSON.stringify(flatBoard),
     checkInStreak: state.checkInStreak || 0,
@@ -5797,6 +5939,8 @@ function restoreFromCloudData(data) {
   state.pool = data.pool || [];
   state.tray = data.tray || [];
   state.nextRoundLetters = Array.isArray(data.nextRoundLetters) ? data.nextRoundLetters : [];
+  state.nextRoundHelpers = Array.isArray(data.nextRoundHelpers) ? data.nextRoundHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
+  state.roundTemporaryHelpers = Array.isArray(data.roundTemporaryHelpers) ? data.roundTemporaryHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
   state.roundStartLetters = Array.isArray(data.roundStartLetters)
     ? data.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
     : [];
@@ -5952,6 +6096,8 @@ safeOn('btn-choice-restart-level', 'click', () => {
     state.secretWordStreak = pendingCloudData.secretWordStreak || 0;
     state.secretWordLastSolvedDate = pendingCloudData.secretWordLastSolvedDate || null;
     state.nextRoundLetters = Array.isArray(pendingCloudData.nextRoundLetters) ? pendingCloudData.nextRoundLetters : [];
+    state.nextRoundHelpers = Array.isArray(pendingCloudData.nextRoundHelpers) ? pendingCloudData.nextRoundHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
+    state.roundTemporaryHelpers = Array.isArray(pendingCloudData.roundTemporaryHelpers) ? pendingCloudData.roundTemporaryHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
     state.roundStartLetters = Array.isArray(pendingCloudData.roundStartLetters)
       ? pendingCloudData.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
       : [];
