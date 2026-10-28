@@ -1978,6 +1978,7 @@ const state = {
   inventory: {},
   scratchTickets: [],
   scratchDeck: [],
+  scratchDeckVersion: 0,
   stats: { wordsMade: 0, biggestMatch: 0, iceBroken: 0, woodBroken: 0, lettersFreed: 0, levelScore: 0, bombsTriggered: 0, prismsActivated: 0, usedRareChar: false },
   checkInStreak: 0,
   lastCheckInDate: null,
@@ -2367,6 +2368,15 @@ function onTileClicked(tile) {
   if(state.activeTargetMode === 'hammer') { executeHammerOnTile(tile); return; }
   if(state.activeTargetMode === 'blaster-row') { executeBlasterRow(startR); return; }
   if(state.activeTargetMode === 'blaster-col') { executeBlasterCol(startC); return; }
+  if(state.activeTargetMode === 'mega-bomb') {
+    stopTargetingMode();
+    triggerBomb(startR, startC);
+    return;
+  }
+  if(state.activeTargetMode === 'dynamite') {
+    useDynamite(startR, startC);
+    return;
+  }
 
   if(tile.wood > 0) { showToast("Fa réteg alatt van! Robbants mellette!", "err"); sfxError(); return; }
   if(tile.ice > 0) { 
@@ -2398,6 +2408,8 @@ function startTileTargeting(mode) {
     if(mode === 'hammer') msg.textContent = '🔨 KATTINTS A SZÉTZÚZANDÓ KOCKÁRA!';
     else if(mode === 'blaster-row') msg.textContent = '↔ KATTINTS A KIVÁLASZTOTT SORRA!';
     else if(mode === 'blaster-col') msg.textContent = '↕ KATTINTS A KIVÁLASZTOTT OSZLOPRA!';
+    else if(mode === 'mega-bomb') msg.textContent = '💣 VÁLASZD KI A 3×3-AS ROBBANTÁS KÖZÉPPONTJÁT!';
+    else if(mode === 'dynamite') msg.textContent = '🧨 VÁLASZD KI, MIT AKARSZ FELROBBANTANI!';
   }
 }
 
@@ -2831,13 +2843,13 @@ function returnLetterToPoolSlot(trayItem) {
   if (!trayItem) return;
   const targetIdx = trayItem.originIndex;
   if (targetIdx !== undefined && targetIdx >= 0 && targetIdx < state.pool.length && state.pool[targetIdx] && state.pool[targetIdx].empty) {
-    state.pool[targetIdx] = { id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold };
+    state.pool[targetIdx] = { id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold, isGoldenJoker: trayItem.isGoldenJoker };
   } else {
     const emptyIdx = state.pool.findIndex(i => i && i.empty);
     if (emptyIdx !== -1) {
-      state.pool[emptyIdx] = { id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold };
+      state.pool[emptyIdx] = { id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold, isGoldenJoker: trayItem.isGoldenJoker };
     } else {
-      state.pool.push({ id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold });
+      state.pool.push({ id: trayItem.id, char: trayItem.char, isGold: trayItem.isGold, isGoldenJoker: trayItem.isGoldenJoker });
     }
   }
 }
@@ -2888,10 +2900,17 @@ function openJokerMorphModal(index) {
 
 function morphJokerToLetter(chosenChar) {
   if (targetJokerIndex !== -1 && state.pool[targetJokerIndex]) {
+    const wasGoldenJoker = !!state.pool[targetJokerIndex].isGoldenJoker;
     state.pool[targetJokerIndex].char = chosenChar;
     state.pool[targetJokerIndex].isGold = true;
+    state.pool[targetJokerIndex].isGoldenJoker = false;
     sfxFanfare();
-    showToast(`🃏 A Joker átváltozott "${chosenChar}" betűvé!`, "ok");
+    if (wasGoldenJoker) {
+      grantScratchTicket('Arany Joker');
+      showToast(`🃏 Az Arany Joker "${chosenChar}" betűvé változott, és sorsjegyet adott!`, 'ok');
+    } else {
+      showToast(`🃏 A Joker átváltozott "${chosenChar}" betűvé!`, 'ok');
+    }
     const modal = document.getElementById('modal-joker-morph');
     if (modal) modal.classList.remove('active');
     targetJokerIndex = -1;
@@ -2935,7 +2954,7 @@ function renderPool() {
         return;
       }
       if(state.tray.length >= 14) return;
-      const trayItem = { id: item.id, char: item.char, isGold: item.isGold, originIndex: index };
+      const trayItem = { id: item.id, char: item.char, isGold: item.isGold, isGoldenJoker: item.isGoldenJoker, originIndex: index };
       state.pool[index] = { empty: true, id: item.id };
       state.tray.push(trayItem);
       sfxSnap();
@@ -2961,7 +2980,8 @@ function addLetterToPool(char, options = {}) {
   state.pool.push({
     id: options.id || Math.random().toString(36).substring(2, 9),
     char,
-    isGold: !!options.isGold
+    isGold: !!options.isGold,
+    isGoldenJoker: !!options.isGoldenJoker
   });
   return true;
 }
@@ -3042,9 +3062,12 @@ function applyNextRoundLetters() {
   if (!pending.length) return;
   let added = 0;
   const remaining = [];
-  pending.forEach(char => {
-    if (addLetterToPool(char)) added++;
-    else remaining.push(char);
+  pending.forEach(entry => {
+    const isObjectEntry = entry && typeof entry === 'object';
+    const char = isObjectEntry ? entry.char : entry;
+    const options = isObjectEntry ? entry : {};
+    if (addLetterToPool(char, options)) added++;
+    else remaining.push(entry);
   });
   state.nextRoundLetters = remaining;
   renderPool();
@@ -3351,9 +3374,10 @@ function verifyGameState() {
         state.scratchTickets.push(generate50ScratchVariations()[0]);
         showToast("🔥 Bátor kihívás sikeres! 300P visszajárt + 1 Ingyen Sorsjegy!", "ok");
       } else if (state.highStakesMode === 'legend') {
-        const jokerAddedNow = addLetterToPool('🃏');
-        if (!jokerAddedNow) state.nextRoundLetters.push('🃏');
-        showToast(jokerAddedNow ? "⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker a raktárba!" : "⚡ Legenda kihívás sikeres! A Joker a következő szint raktárába került.", "ok");
+        const goldenJokerOptions = { isGold: true, isGoldenJoker: true };
+        const jokerAddedNow = addLetterToPool('🃏', goldenJokerOptions);
+        if (!jokerAddedNow) state.nextRoundLetters.push({ char: '🃏', ...goldenJokerOptions });
+        showToast(jokerAddedNow ? "⚡ Legenda kihívás sikeres! 600P visszajárt + 1 Arany Joker a raktárba (betűválasztáskor sorsjegyet ad)!" : "⚡ Legenda kihívás sikeres! Az Arany Joker a következő szintre mentve.", "ok");
       }
     }
 
@@ -3609,10 +3633,10 @@ const SHOP_ITEMS = [
   },
   { id: 'tilehammer', name: 'Kalapács', icon: '🔨', baseCost: 150, desc: 'Egyetlen csempe szétzúzása.', action: () => startTileTargeting('hammer') },
   { id: 'lineblaster', name: 'Sorkilövő', icon: '↔️', baseCost: 240, desc: 'Vízszintes vagy függőleges sor kilövése.', action: () => openLineBlasterChoiceModal() },
-  { id: 'bomb', name: 'Mega Bomba', icon: '💣', baseCost: 190, desc: '3x3-as terület robbantása.', action: () => triggerBomb(3, 3) },
-  { id: 'dynamite', name: 'Dinamit', icon: '🧨', baseCost: 130, desc: 'Egy akadály megsemmisítése.', action: useDynamite },
+  { id: 'bomb', name: 'Mega Bomba', icon: '💣', baseCost: 190, desc: 'Válaszd ki a középpontot: a 3×3-as területet robbantja.', action: () => startTileTargeting('mega-bomb') },
+  { id: 'dynamite', name: 'Dinamit', icon: '🧨', baseCost: 130, desc: 'Te választod ki az akadályt vagy a felrobbantandó kockát.', action: () => startTileTargeting('dynamite') },
   { id: 'superhint', name: 'Szuper Súgó', icon: '💡', baseCost: 170, desc: 'Kirakja a leghosszabb elérhető szót.', action: useSuperHint },
-  { id: 'vowelrain', name: 'Vokális Eső', icon: '🅰️', baseCost: 100, desc: '3 magánhangzót ad a raktárba.', action: useVowelRain },
+  { id: 'vowelrain', name: 'Vokális Eső', icon: '🅰️', baseCost: 100, desc: 'Három kockát kiszed, a betűit a raktárba hullatja; az üres kockából magánhangzó lesz.', action: useVowelRain },
   { id: 'goldencoupon', name: 'Arany Kupon', icon: '🌟', baseCost: 260, desc: 'A következő szó 3x pontot ér.', action: () => { state.activeTripleWord = true; validateCurrentTrayWord(); showToast("Arany Kupon aktív (3x pont)!", "ok"); } }
 ];
 
@@ -3780,53 +3804,48 @@ function handleToolActivation(item) {
   showToast(`Nincs készleted és nincs elég heti pontod (${cost}P)!`, "err");
 }
 
-function useDynamite() {
+async function useDynamite(targetR = null, targetC = null) {
   if (isLocked) { showToast('Várd meg, amíg a jelenlegi robbanás befejeződik!', 'err'); return; }
-  let target = null;
-  let targetLayers = -1;
-  for(let r = 0; r < GRID_SIZE; r++) {
-    for(let c = 0; c < GRID_SIZE; c++) {
-      const t = state.board[r] && state.board[r][c];
-      const layers = t ? (Number(t.ice) + Number(t.wood)) : 0;
-      if (t && layers > targetLayers && layers > 0) { target = t; targetLayers = layers; }
-    }
-  }
-  if (!target) {
-    // Korai szinteken még nincs jég/fa: ilyenkor se vesszen kárba a segítség,
-    // egy biztonságos csempét robbant fel és elindítja a szokásos gravitációt.
-    let fallback = null;
-    for(let r = 0; r < GRID_SIZE && !fallback; r++) {
-      for(let c = 0; c < GRID_SIZE; c++) {
-        const t = state.board[r] && state.board[r][c];
-        if (t && !t.bomb && !t.prism) { fallback = { r, c }; break; }
-      }
-    }
-    if (fallback) {
-      showToast('🧨 Nincs akadály — a dinamit egy csempét robbant fel helyette!', 'ok');
-      sfxRealExplode(1.1);
-      executeClusterExplosion([fallback], true);
-    } else showToast('Most nincs felrobbantható csempe.', 'err');
+  // Eszköz aktiválásakor a játékos választja ki a célpontot; nem keresünk helyette automatikusan.
+  if (targetR === null || targetC === null) {
+    startTileTargeting('dynamite');
     return;
   }
 
+  const target = state.board[targetR] && state.board[targetR][targetC];
+  if (!target) { showToast('Ez a mező már üres. Válassz egy másik kockát!', 'err'); return; }
+  stopTargetingMode();
+
   const iceLayers = Number(target.ice) || 0;
   const woodLayers = Number(target.wood) || 0;
-  target.ice = 0;
-  target.wood = 0;
-  state.stats.iceBroken = (state.stats.iceBroken || 0) + iceLayers;
-  state.stats.woodBroken = (state.stats.woodBroken || 0) + woodLayers;
-  const points = Math.floor((70 + iceLayers * 35 + woodLayers * 45) * (state.levelMultiplier || 1) * (isGoldenLevel(state.level) ? 3 : 1));
-  state.weeklyScore += points;
-  state.stats.levelScore = (state.stats.levelScore || 0) + points;
-  const rect = target.el ? target.el.getBoundingClientRect() : null;
-  if (rect) spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#fb923c');
-  refreshTileAppearance(target);
-  shakeScreen();
-  sfxRealExplode(1.15);
-  showToast(`🧨 Akadály eltávolítva! +${points.toLocaleString('hu-HU')} P`, 'ok');
-  updateStats();
-  checkQuestProgress();
-  syncCloudState();
+  if (iceLayers + woodLayers === 0) {
+    // Akadály nélküli szinten is hasznos: pontosan a kiválasztott csempét robbantja le.
+    sfxRealExplode(1.1);
+    await executeClusterExplosion([{ r: targetR, c: targetC }], true, true);
+    return;
+  }
+
+  isLocked = true;
+  try {
+    target.ice = 0;
+    target.wood = 0;
+    state.stats.iceBroken = (state.stats.iceBroken || 0) + iceLayers;
+    state.stats.woodBroken = (state.stats.woodBroken || 0) + woodLayers;
+    const points = Math.floor((70 + iceLayers * 35 + woodLayers * 45) * (state.levelMultiplier || 1) * (isGoldenLevel(state.level) ? 3 : 1));
+    state.weeklyScore += points;
+    state.stats.levelScore = (state.stats.levelScore || 0) + points;
+    const rect = target.el ? target.el.getBoundingClientRect() : null;
+    if (rect) spawnExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#fb923c');
+    refreshTileAppearance(target);
+    shakeScreen();
+    sfxRealExplode(1.15);
+    showToast(`🧨 A kiválasztott akadály eltávolítva! +${points.toLocaleString('hu-HU')} P`, 'ok');
+    updateStats();
+    checkQuestProgress();
+    await syncCloudState();
+  } finally {
+    isLocked = false;
+  }
   verifyGameState();
 }
 
@@ -3861,57 +3880,145 @@ function useSuperHint() {
   }
 }
 
-function useVowelRain() {
+async function useVowelRain() {
+  if (isLocked) { showToast('Várd meg az aktuális animáció végét!', 'err'); return; }
   const vowels = ['A','Á','E','É','I','Í','O','Ó','Ö','Ő','U','Ú','Ü','Ű'];
-  let added = 0;
-  for(let i = 0; i < 3; i++) {
-    const char = vowels[Math.floor(Math.random() * vowels.length)];
-    if (addLetterToPool(char)) added++;
-    else break;
+  const realCount = state.pool.filter(item => item && !item.empty).length;
+  const heldCount = realCount + (Array.isArray(state.tray) ? state.tray.length : 0);
+  // Ne próbáljunk betűt hozzáadni, ha a raktár tömbje már elérte a méretkorlátot.
+  const capacity = Math.max(0, Math.min(MAX_POOL - heldCount, MAX_POOL - state.pool.length));
+  if (capacity <= 0) {
+    showToast('A betűraktár tele van — előbb használj fel néhány betűt!', 'err');
+    return;
   }
-  renderPool();
-  if (added) {
+
+  const candidates = [];
+  const preferred = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const t = state.board[r] && state.board[r][c];
+      if (!t || t.ice > 0 || t.wood > 0 || t.bomb || t.prism) continue;
+      candidates.push({ r, c, tile: t });
+      if (!t.letter || vowels.includes(t.letter)) preferred.push({ r, c, tile: t });
+    }
+  }
+  // Először betű nélküli vagy magánhangzós kockákat választunk, a sorrend minden használatnál más.
+  const shuffle = list => {
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  };
+  shuffle(preferred);
+  shuffle(candidates);
+  const source = preferred.length >= Math.min(3, capacity) ? preferred : candidates;
+  const selected = source.slice(0, Math.min(3, capacity, source.length));
+  if (!selected.length) {
+    showToast('Most nincs biztonságosan begyűjthető kocka.', 'err');
+    return;
+  }
+
+  isLocked = true;
+  try {
+    const rect = boardEl.getBoundingClientRect();
+    const freed = [];
+    selected.forEach(({ r, c, tile }, i) => {
+      const px = rect.left + (c + 0.5) * (rect.width / GRID_SIZE);
+      const py = rect.top + (r + 0.5) * (rect.height / GRID_SIZE);
+      // A táblán levő meglévő betűt megőrizzük; üres kockából magyar magánhangzó lesz.
+      const char = tile.letter || vowels[Math.floor(Math.random() * vowels.length)];
+      freed.push({ char, x: px, y: py, isGold: false });
+      state.stats.lettersFreed = (state.stats.lettersFreed || 0) + 1;
+      if (tile.el) {
+        tile.el.classList.add('clearing');
+        const removedEl = tile.el;
+        setTimeout(() => { if (removedEl.parentNode) removedEl.parentNode.removeChild(removedEl); }, 250);
+        spawnExplosion(px, py, i % 2 ? '#38bdf8' : '#34d399');
+      }
+      state.board[r][c] = null;
+    });
+
+    animateFreedLetters(freed);
     sfxSnap();
-    showToast(`🅰️ ${added} magánhangzó a raktáradban!`, 'ok');
-    syncCloudState();
-  } else showToast('A betűraktár tele van — előbb használj fel néhány betűt!', 'err');
+    showToast(`🅰️ Vokális eső! ${selected.length} kocka betűje hullik a raktárba.`, 'ok');
+    await delay(220);
+    await applyGravityAndRefill();
+    renderPool();
+    updateStats();
+    updateMovesWatermark();
+    checkQuestProgress();
+    await syncCloudState();
+  } finally {
+    isLocked = false;
+  }
+  verifyGameState();
 }
 
+// Az új pakli pontosan 50 kaparós jegyből áll. A weight a paklin belüli darabszámot jelöli.
 const SCRATCH_MASTER_TEMPLATE = [
-  { icon: '💰', title: '5 000 Heti Pont!', desc: 'Hatalmas Jackpot Nyeremény!', type: 'score', val: 5000 },
-  { icon: '💰', title: '2 500 Heti Pont!', desc: 'Kiváló Nyeremény!', type: 'score', val: 2500 },
-  { icon: '💰', title: '1 000 Heti Pont!', desc: 'Szép Pont Nyeremény!', type: 'score', val: 1000 },
-  { icon: '💰', title: '500 Heti Pont!', desc: 'Pont Bónusz!', type: 'score', val: 500 },
-  { icon: '➕', title: '+10 Tartalék Lépés!', desc: 'Hátizsákba mentve!', type: 'moves', val: 10 },
-  { icon: '➕', title: '+5 Tartalék Lépés!', desc: 'Hátizsákba mentve!', type: 'moves', val: 5 },
-  { icon: '🅰️', title: '5x Magánhangzó Eső!', desc: 'Azonnal a raktáradba vágódott!', type: 'vowels', val: 5 },
-  { icon: '🔤', title: '5x Mássalhangzó Eső!', desc: 'Azonnal a raktáradba vágódott!', type: 'consonants', val: 5 },
-  { icon: '🃏', title: '🃏 Joker Figura!', desc: 'Bármelyik kívánt betűvé átváltoztatható!', type: 'wildcard', val: 1 },
-  { icon: '🔨', title: '3x Kalapács!', desc: 'Hátizsákba mentve!', type: 'item', item: 'tilehammer', val: 3 },
-  { icon: '💣', title: '2x Mega Bomba!', desc: 'Hátizsákba mentve!', type: 'item', item: 'bomb', val: 2 },
-  { icon: '↔️', title: '2x Sorkilövő!', desc: 'Hátizsákba mentve!', type: 'item', item: 'lineblaster', val: 2 },
-  { icon: '💨', title: 'Sajnos most nem nyert!', desc: 'Próbáld újra legközelebb!', type: 'none', val: 0 }
+  { icon: '💎', title: '5 000 Heti Pont!', desc: 'Ritka jackpot nyeremény!', type: 'score', val: 5000, weight: 1 },
+  { icon: '💰', title: '2 500 Heti Pont!', desc: 'Kiemelt pontnyeremény!', type: 'score', val: 2500, weight: 1 },
+  { icon: '💰', title: '1 000 Heti Pont!', desc: 'Szép pontnyeremény!', type: 'score', val: 1000, weight: 2 },
+  { icon: '🪙', title: '500 Heti Pont!', desc: 'Pontbónusz jóváírva!', type: 'score', val: 500, weight: 4 },
+  { icon: '🪙', title: '250 Heti Pont!', desc: 'Kisebb pontbónusz!', type: 'score', val: 250, weight: 5 },
+  { icon: '⚡', title: '+10 Tartalék Lépés!', desc: 'Hátizsákba mentve!', type: 'moves', val: 10, weight: 1 },
+  { icon: '➕', title: '+5 Tartalék Lépés!', desc: 'Hátizsákba mentve!', type: 'moves', val: 5, weight: 2 },
+  { icon: '➕', title: '+2 Tartalék Lépés!', desc: 'Hátizsákba mentve!', type: 'moves', val: 2, weight: 3 },
+  { icon: '🌧️', title: '8x Magánhangzó Eső!', desc: 'Betűk érkeznek a raktáradba!', type: 'vowels', val: 8, weight: 1 },
+  { icon: '🅰️', title: '5x Magánhangzó Eső!', desc: 'Betűk érkeznek a raktáradba!', type: 'vowels', val: 5, weight: 2 },
+  { icon: '🅰️', title: '3x Magánhangzó Eső!', desc: 'Betűk érkeznek a raktáradba!', type: 'vowels', val: 3, weight: 3 },
+  { icon: '🔤', title: '5x Mássalhangzó Eső!', desc: 'Betűk érkeznek a raktáradba!', type: 'consonants', val: 5, weight: 1 },
+  { icon: '🔤', title: '3x Mássalhangzó Eső!', desc: 'Betűk érkeznek a raktáradba!', type: 'consonants', val: 3, weight: 2 },
+  { icon: '🃏', title: 'Joker Figura!', desc: 'A kívánt betűvé alakítható!', type: 'wildcard', val: 1, weight: 2 },
+  { icon: '🔨', title: '2x Kalapács!', desc: 'Hátizsákba mentve!', type: 'item', item: 'tilehammer', val: 2, weight: 2 },
+  { icon: '💣', title: '2x Mega Bomba!', desc: 'Te választhatod ki a robbanás középpontját!', type: 'item', item: 'bomb', val: 2, weight: 2 },
+  { icon: '🧨', title: '2x Dinamit!', desc: 'Te választhatod ki a célpontot!', type: 'item', item: 'dynamite', val: 2, weight: 2 },
+  { icon: '↔️', title: '1x Sorkilövő!', desc: 'Egy teljes sor vagy oszlop eltüntethető!', type: 'item', item: 'lineblaster', val: 1, weight: 1 },
+  { icon: '💡', title: '2x Szuper Súgó!', desc: 'Kirakja a leghosszabb elérhető szót!', type: 'item', item: 'superhint', val: 2, weight: 2 },
+  { icon: '🌦️', title: '2x Vokális Eső!', desc: 'Kockákat robbant, betűket hullat a raktárba!', type: 'item', item: 'vowelrain', val: 2, weight: 2 },
+  { icon: '🌟', title: '2x Arany Kupon!', desc: 'A következő szó háromszoros pontot ér!', type: 'item', item: 'goldencoupon', val: 2, weight: 2 },
+  { icon: '💠', title: 'Ritka Betűbónusz!', desc: 'Két ritka magyar betű érkezik!', type: 'rareletter', val: 2, weight: 2 },
+  { icon: '✨', title: 'Arany Szószorzó!', desc: 'A következő szó 3× pontot ér!', type: 'coupon', val: 1, weight: 1 },
+  { icon: '💨', title: 'Most nem nyertél', desc: 'A következő sorsjegy szerencsésebb lehet!', type: 'none', val: 0, weight: 4 }
 ];
 
 function generate50ScratchVariations() {
   const pool = [];
-  for (let i = 0; i < 50; i++) {
-    let pick;
-    if (i < 3) pick = SCRATCH_MASTER_TEMPLATE[0];
-    else if (i < 8) pick = SCRATCH_MASTER_TEMPLATE[1];
-    else if (i < 16) pick = SCRATCH_MASTER_TEMPLATE[2];
-    else if (i < 24) pick = SCRATCH_MASTER_TEMPLATE[4];
-    else if (i < 32) pick = SCRATCH_MASTER_TEMPLATE[6];
-    else if (i < 38) pick = SCRATCH_MASTER_TEMPLATE[8];
-    else if (i < 44) pick = SCRATCH_MASTER_TEMPLATE[9];
-    else pick = SCRATCH_MASTER_TEMPLATE[12];
-    pool.push(JSON.parse(JSON.stringify(pick)));
-  }
+  SCRATCH_MASTER_TEMPLATE.forEach(prize => {
+    for (let i = 0; i < prize.weight; i++) {
+      const copy = JSON.parse(JSON.stringify(prize));
+      delete copy.weight;
+      pool.push(copy);
+    }
+  });
+  // Védőkorlát, hogy egy későbbi jutalomlistamódosítás se törje el a paklit.
+  while (pool.length < 50) pool.push({ icon: '🪙', title: '250 Heti Pont!', desc: 'Pontbónusz jóváírva!', type: 'score', val: 250 });
+  if (pool.length > 50) pool.length = 50;
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
   return pool;
+}
+
+const SCRATCH_DECK_VERSION = 2;
+function ensureScratchDeck() {
+  if (!Array.isArray(state.scratchDeck) || state.scratchDeckVersion !== SCRATCH_DECK_VERSION || state.scratchDeck.length === 0) {
+    state.scratchDeck = generate50ScratchVariations();
+    state.scratchDeckVersion = SCRATCH_DECK_VERSION;
+  }
+}
+
+function grantScratchTicket(source = 'jutalom') {
+  ensureScratchDeck();
+  const ticket = state.scratchDeck.pop() || generate50ScratchVariations().pop();
+  if (!Array.isArray(state.scratchTickets)) state.scratchTickets = [];
+  state.scratchTickets.push(ticket);
+  const countEl = document.getElementById('scratch-inventory-count');
+  if (countEl) countEl.textContent = `${state.scratchTickets.length} db`;
+  showToast(`🎫 Az Arany Joker sorsjegyet adott! (${source})`, 'ok');
+  return ticket;
 }
 
 let currentScratchTicket = null;
@@ -3930,9 +4037,7 @@ function openScratchModal() {
   const countEl = document.getElementById('scratch-inventory-count');
   if (countEl) countEl.textContent = `${(state.scratchTickets || []).length} db`;
 
-  if (!state.scratchDeck || state.scratchDeck.length === 0) {
-    state.scratchDeck = generate50ScratchVariations();
-  }
+  ensureScratchDeck();
 
   const m = document.getElementById('modal-scratch');
   if (m) m.classList.add('active');
@@ -3950,9 +4055,7 @@ safeOn('btn-buy-scratch-ticket', 'click', () => {
   state.weeklyScore -= TICKET_PRICE;
   sfxCoinJingle();
 
-  if (!state.scratchDeck || state.scratchDeck.length === 0) {
-    state.scratchDeck = generate50ScratchVariations();
-  }
+  ensureScratchDeck();
   const nextTicket = state.scratchDeck.pop();
   if (!state.scratchTickets) state.scratchTickets = [];
   state.scratchTickets.push(nextTicket);
@@ -4099,6 +4202,22 @@ function awardScratchPrize(ticket) {
     renderPool();
     sfxFanfare();
     showToast(added ? `🃏 Kívánság-Joker figura került a betűid közé!` : `🃏 A Joker elmentve a következő szintre!`, 'ok');
+  } else if (ticket.type === 'rareletter') {
+    const rareLetters = [...RARE_LETTERS];
+    let added = 0;
+    for (let i = 0; i < ticket.val; i++) {
+      const ch = rareLetters[Math.floor(Math.random() * rareLetters.length)];
+      if (addLetterToPool(ch)) added++;
+      else state.nextRoundLetters.push(ch);
+    }
+    renderPool();
+    sfxFanfare();
+    showToast(`💠 Ritka betűbónusz: ${added} betű azonnal bekerült${added < ticket.val ? ', a többi a következő szintre mentve' : ''}!`, 'ok');
+  } else if (ticket.type === 'coupon') {
+    state.activeTripleWord = true;
+    validateCurrentTrayWord();
+    sfxFanfare();
+    showToast('🌟 Arany szószorzó aktív: a következő szó 3× pontot ér!', 'ok');
   } else if (ticket.type === 'item') {
     state.inventory[ticket.item] = (state.inventory[ticket.item] || 0) + ticket.val;
     sfxFanfare();
@@ -4828,6 +4947,7 @@ async function syncCloudState() {
     inventory: state.inventory || {},
     scratchTickets: state.scratchTickets || [],
     scratchDeck: state.scratchDeck || [],
+    scratchDeckVersion: state.scratchDeckVersion || 0,
     levelWords: state.levelWords,
     pool: state.pool,
     tray: state.tray,
@@ -4874,6 +4994,7 @@ function restoreFromCloudData(data) {
   state.inventory = data.inventory || {};
   state.scratchTickets = data.scratchTickets || [];
   state.scratchDeck = data.scratchDeck || [];
+  state.scratchDeckVersion = data.scratchDeckVersion || 0;
   state.playTimeSeconds = data.playTimeSeconds || 0;
   state.highStakesMode = data.highStakesMode || 'normal';
   state.activeStakePoints = data.activeStakePoints || 0;
@@ -5048,6 +5169,7 @@ safeOn('btn-choice-restart-level', 'click', () => {
     state.nextRoundLetters = Array.isArray(pendingCloudData.nextRoundLetters) ? pendingCloudData.nextRoundLetters : [];
     state.scratchTickets = pendingCloudData.scratchTickets || [];
     state.scratchDeck = pendingCloudData.scratchDeck || [];
+    state.scratchDeckVersion = pendingCloudData.scratchDeckVersion || 0;
     
     isLocked = false;
     initLevelData(pendingCloudData.level || 1, null, 'normal');
