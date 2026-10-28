@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#030712">
-<title>SZÓROBBANTÁS PRO - Balanced Score & Custom Palette Edition</title>
+<title>SZÓROBBANTÁS PRO - Magyar Szótár és Stabil Játéktábla Edition</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -35,7 +35,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   margin: 0; padding: 0;
-  width: 100%; min-height: 100vh; min-height: 100dvh;
+  width: 100%; min-height: 100vh;
   background-color: #020617;
   /* Hardveresen gyorsított, lágy fényködök: mélykék, lila, türkiz és meleg arany */
   background-image: 
@@ -47,7 +47,9 @@ html, body {
     linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 80px 80px, 80px 80px;
-  background-attachment: fixed;
+  background-attachment: scroll;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
   color: #f8fafc;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden; overflow-y: auto;
@@ -71,13 +73,18 @@ html, body {
   display: flex; flex-direction: column; gap: 6px;
   z-index: 10; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   position: relative;
+  overflow-anchor: none;
 }
-.app-container.shake { animation: appShake .35s cubic-bezier(.36,.07,.19,.97) both; }
-@keyframes appShake {
-  10%, 90% { transform: translate3d(-3px, 0, 0); }
-  20%, 80% { transform: translate3d(4px, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-  40%, 60% { transform: translate3d(3px, 0, 0); }
+/* A robbanás visszajelzése csak a játéktáblát mozdítja meg, az egész oldal nem ugrik. */
+.board-container.shake { animation: boardShake .22s ease-out both; }
+@keyframes boardShake {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-2px, 0, 0); }
+  50% { transform: translate3d(2px, 0, 0); }
+  75% { transform: translate3d(-1px, 0, 0); }
+}
+@media (max-width: 900px) {
+  html, body { background-attachment: scroll; }
 }
 .panic-vignette {
   position: fixed; inset: 0; pointer-events: none; z-index: 9990;
@@ -236,6 +243,7 @@ html, body {
 /* Körsiker utáni bónuszfarm-panel: nem takarja ki a játékteret, és statikus a gyenge gépek kedvéért. */
 .farm-mode-panel {
   display: none; flex-direction: column; gap: 7px; width: 100%;
+  overflow-anchor: none;
   padding: 10px 12px; border-radius: 12px;
   background: linear-gradient(135deg, rgba(6,78,59,.96), rgba(15,23,42,.97));
   border: 1.5px solid rgba(52,211,153,.72);
@@ -258,7 +266,7 @@ html, body {
 .farm-helper-choice:disabled { opacity:.45; cursor:not-allowed; }
 .farm-helper-choice:active { transform:translateY(1px); }
 .btn-dock-slot.timed-helper-locked { opacity:.55; cursor:not-allowed; filter:grayscale(.25); box-shadow:none !important; }
-.farm-final-suggestions { display:none; flex-direction:column; gap:6px; padding:8px; border-radius:9px; border:1px solid rgba(56,189,248,.42); background:rgba(2,6,23,.55); }
+.farm-final-suggestions { display:none; flex-direction:column; overflow-anchor:none; gap:6px; padding:8px; border-radius:9px; border:1px solid rgba(56,189,248,.42); background:rgba(2,6,23,.55); }
 .farm-final-suggestions.active { display:flex; }
 .farm-final-suggestions-title { color:#bae6fd; font-size:10.5px; font-weight:950; }
 .farm-final-word-list { display:flex; flex-wrap:wrap; gap:5px; }
@@ -2060,13 +2068,13 @@ function fxLoop() {
   if (particles.length) fxFrame = requestAnimationFrame(fxLoop);
 }
 
+// Csak magyar helyesírási szótárakból töltünk. Az általános korpusz-/gyakorisági
+// listákat és a játékos szólistákat szándékosan eltávolítottuk: ezek angol és zajos
+// tokeneket is tartalmazhatnak, ezért nem alkalmasak beküldhető szavak hitelesítésére.
+// A második URL tartalék tükör, nem egy másik nyelvi korpusz.
 const DICT_SOURCES = [
   "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/hu_HU/hu_HU.dic",
-  "https://cdn.jsdelivr.net/gh/titoBouzout/Dictionaries@master/hu_HU/hu_HU.dic",
-  "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/hu/index.dic",
-  "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2016/hu/hu_50k.txt",
-  "https://raw.githubusercontent.com/titoBouzout/Dictionaries@master/Hungarian.txt",
-  "https://raw.githubusercontent.com/luczsoma/HungarianDiceware/master/words.txt"
+  "https://raw.githubusercontent.com/wooorm/dictionaries/main/dictionaries/hu/index.dic"
 ];
 
 const DICT = new Set();
@@ -2074,13 +2082,19 @@ let dictionaryReady = false;
 const NON_WORDS_BLACKLIST = new Set([
   'TY', 'SZ', 'CS', 'GY', 'NY', 'LY', 'ZS', 'DZ', 'DZS',
   'SZI', 'SZO', 'SZE', 'CSI', 'GYI', 'TYI', 'NYI', 'ZSI', 'DZI',
-  'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN', 'OO', 'PP', 'RR', 'SS', 'TT', 'UU', 'VV', 'ZZ'
+  'AA', 'BB', 'CC', 'DD', 'EE', 'FF', 'GG', 'HH', 'II', 'JJ', 'KK', 'LL', 'MM', 'NN', 'OO', 'PP', 'RR', 'SS', 'TT', 'UU', 'VV', 'ZZ',
+  // Gyakori angol/zajos tokenek, amelyek nem önálló magyar közszavak.
+  'THE', 'AND', 'YOU', 'YOUR', 'YOURS', 'HELLO', 'WORLD', 'CAT', 'DOG', 'APPLE',
+  'HOUSE', 'LOVE', 'GAME', 'PLAY', 'PLAYER', 'GOOD', 'BAD', 'COOL', 'NICE',
+  'YES', 'NOPE', 'THANKS', 'PLEASE', 'WATER', 'FIRE', 'BOOK', 'OOO', 'LOL', 'OMG', 'BTW',
+  'WOW', 'TEST', 'TESTING', 'START', 'STOP', 'NEXT', 'BYE', 'HELLOTHERE', 'GOODBYE',
+  'MORNING', 'NIGHT', 'SUN', 'MOON', 'STAR', 'MOUSE', 'KEYBOARD', 'BLUE', 'GREEN', 'BLACK', 'WHITE', 'YELLOW', 'ORANGE', 'PURPLE', 'RED'
 ]);
 const VALID_2_LETTER_WORDS = new Set([
-  "FA", "TÓ", "KŐ", "FŰ", "LÓ", "KI", "MI", "TE", "ÉN", "ŐK", 
-  "HA", "DE", "BE", "LE", "RÁ", "ÉG", "ÁG", "ÍR", "ÓV", "ÉP", 
-  "OK", "ÁR", "ŐR", "ÚT", "ÜL", "ÍZ", "ÖV", "JÓ", "HŰ", "NŐ", 
-  "KÉ", "MA", "NO", "SŐ", "TI", "EH", "AH", "OH", "UH", "IK"
+  "FA", "TÓ", "KŐ", "FŰ", "LÓ", "KI", "MI", "TE", "ÉN", "ŐK",
+  "HA", "DE", "BE", "LE", "RÁ", "ÉG", "ÁG", "ÍR", "ÓV", "ÉP", "ÉS", "IS",
+  "OK", "ÁR", "ŐR", "ÚT", "ÜL", "ÍZ", "ÖV", "JÓ", "HŰ", "NŐ", "MA", "TI",
+  "NE", "EL", "SE", "ŐS", "AD", "AZ", "LÉ", "ÓN", "ÚJ", "IG"
 ]);
 const CORE_WORDS = [
   "IDE","ODA","HÁT","ÍGY","ÚGY","OTT","ITT","HÁZ","VÍZ","KÉZ","LÁB","NAP","ÉJ","FÉNY",
@@ -2093,17 +2107,22 @@ CORE_WORDS.forEach(w => DICT.add(w));
 
 function sanitizeWord(raw) {
   if(!raw) return null;
-  let w = raw.split('/')[0].split('\t')[0].split(' ')[0].trim().toUpperCase();
+  // Hunspell .dic sor: szó/affixflag. A metaadat és az esetleges megjegyzés nem szó.
+  let w = String(raw).replace(/^\uFEFF/, '').split('/')[0].split('\t')[0].split(' ')[0].trim().toUpperCase();
   if(w.endsWith('.')) w = w.slice(0, -1);
-  if(w.length >= 2 && w.length <= 16 && /^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(w)) {
-    if(NON_WORDS_BLACKLIST.has(w)) return null;
-    if(w.length === 2 && !VALID_2_LETTER_WORDS.has(w)) return null;
-    return w;
-  }
-  return null;
+  if(w.length < 2 || w.length > 16 || !/^[A-ZÁÉÍÓÖŐÚÜŰ]+$/.test(w)) return null;
+  if(NON_WORDS_BLACKLIST.has(w)) return null;
+  // Q/W/X nem része a szokásos magyar közszavak ábécéjének; idegen szavak kiszűrése.
+  if (/[QWX]/.test(w)) return null;
+  // A magyar digráfokban az Y csak GY/LY/NY/TY részeként szerepelhet.
+  if (w.replace(/(?:GY|LY|NY|TY)/g, '').includes('Y')) return null;
+  // Három azonos betű egymás után nem szabályos magyar közszóalak; ezzel az OOO/AAA
+  // és hasonló zajos bemenetek akkor sem kerülnek a játék szótárába, ha egy forrás tartalmazza.
+  if (/(.)\1\1/.test(w)) return null;
+  return w;
 }
 
-function fetchWithTimeout(url, timeoutMs = 4500) {
+function fetchWithTimeout(url, timeoutMs = 7000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
@@ -2112,30 +2131,47 @@ function fetchWithTimeout(url, timeoutMs = 4500) {
 async function loadAllDictionaries() {
   const statusTxt = document.getElementById('dict-status-txt');
   let loadedSources = 0;
-  if (statusTxt) statusTxt.textContent = `Szótár: alapszótár aktív, bővített szótár betöltése…`;
-  const tasks = DICT_SOURCES.map(url =>
-    fetchWithTimeout(url)
-      .then(r => r.ok ? r.text() : Promise.reject(r.status))
-      .then(text => {
-        const lines = text.split(/\r?\n/);
-        for(let i = 0; i < lines.length; i++) {
-          const clean = sanitizeWord(lines[i]);
-          if(clean) DICT.add(clean);
-        }
-        loadedSources++;
-        if (statusTxt) {
-          statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó betöltve (${loadedSources}/${DICT_SOURCES.length})`;
-        }
-      })
-      .catch(() => {})
-  );
+  if (statusTxt) statusTxt.textContent = 'Magyar helyesírási szótár betöltése…';
 
-  await Promise.allSettled(tasks);
+  // Egy elsődleges szótárt töltünk be. Csak ha ez nem elérhető, jön a tartalék;
+  // ezzel elkerüljük a több nagy lista párhuzamos feldolgozása miatti akadozást.
+  for (const url of DICT_SOURCES) {
+    const before = DICT.size;
+    try {
+      const response = await fetchWithTimeout(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const lines = text.split(/\r?\n/);
+      let index = 0;
+      while (index < lines.length) {
+        const end = Math.min(index + 2200, lines.length);
+        for (; index < end; index++) {
+          const clean = sanitizeWord(lines[index]);
+          if (clean) DICT.add(clean);
+        }
+        // A UI-nak és a gyenge gépeknek hagyjunk futási időt a nagy szótár feldolgozása közben.
+        if (index < lines.length) await new Promise(resolve => setTimeout(resolve, 0));
+        if (statusTxt && index % 22000 < 2200) {
+          statusTxt.textContent = `Magyar szótár feldolgozása… ${DICT.size.toLocaleString('hu-HU')} szó`;
+        }
+      }
+      loadedSources++;
+      // A helyesírási szótár normál esetben bőven meghaladja ezt a határt; ne töltsük le
+      // a második, nagyrészt duplikált példányt is.
+      if (DICT.size - before >= 5000 || DICT.size >= 5000) break;
+    } catch (error) {
+      // Következő, szintén magyar Hunspell-forrás kipróbálása.
+    }
+  }
+
   VALID_2_LETTER_WORDS.forEach(w => DICT.add(w));
   CORE_WORDS.forEach(w => DICT.add(w));
-
   dictionaryReady = true;
-  if (statusTxt) statusTxt.textContent = `Szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`;
+  if (statusTxt) {
+    statusTxt.textContent = loadedSources
+      ? `Magyar szótár: ${DICT.size.toLocaleString('hu-HU')} szó aktív ✔`
+      : `Offline alapszótár aktív (${DICT.size.toLocaleString('hu-HU')} szó); a magyar szótár most nem érhető el.`;
+  }
   initDailySecretStreak();
   renderTray();
   if (state.levelCompleted) updateFarmModeUI({ recount: true });
@@ -4033,7 +4069,7 @@ safeOn('btn-submit', 'click', async () => {
     return;
   }
   if(submittedTileCount < 2) { showToast("Legalább 2 betűcsempe szükséges!", "err"); sfxError(); return; }
-  if (!dictionaryReady && !DICT.has(word)) { showToast('A bővített szótár még töltődik — a betűid megmaradtak, próbáld újra pár pillanat múlva!', 'err'); return; }
+  if (!dictionaryReady && !DICT.has(word)) { showToast('A magyar helyesírási szótár még töltődik — a betűid megmaradtak, próbáld újra pár pillanat múlva!', 'err'); return; }
   
   if(NON_WORDS_BLACKLIST.has(word) || !DICT.has(word)) {
     const errorMsg = NON_WORDS_BLACKLIST.has(word) ? `"${word}" értelmetlen betűkapcsolat!` : `"${word}" nem szerepel a szótárban!`;
@@ -4443,40 +4479,55 @@ function rawWordFitsFarmBag(word, bag) {
   return Object.keys(need).every(ch => need[ch] <= (bag.rawChars[ch] || 0));
 }
 
-function canSpellFarmWord(word, bag) {
-  const counts = Object.assign(Object.create(null), bag.counts);
-  const tokens = bag.tokens.filter(token => word.includes(token) && (counts[token] > 0 || bag.wildcards > 0));
-  const memo = new Set();
-  function walk(pos, usedTiles, wildLeft) {
-    if (pos === word.length) return usedTiles >= 2;
-    // A tálca legfeljebb 14 betűcsempét fogad, ezért a számláló is ezt a korlátot használja.
-    if (usedTiles >= Math.min(14, bag.tiles)) return false;
+const FARM_WORD_TILE_TOKENS = HUNGARIAN_ALPHABET_ALL.slice().sort((a, b) => b.length - a.length || a.localeCompare(b, 'hu'));
+
+function getFarmWordTileCount(word, bag) {
+  const normalized = String(word || '').trim().toUpperCase();
+  if (!normalized || !DICT.has(normalized) || NON_WORDS_BLACKLIST.has(normalized)) return null;
+  if (/[QWX]/.test(normalized) || normalized.replace(/(?:GY|LY|NY|TY)/g, '').includes('Y') || /(.)\1\1/.test(normalized)) return null;
+  if (!rawWordFitsFarmBag(normalized, bag)) return null;
+
+  // Pontosan modellezzük a tényleges csempéket: a teljes szó csak akkor javasolható,
+  // ha a meglévő betűtokenekből/jokerekből karakterveszteség nélkül kirakható.
+  const tokens = FARM_WORD_TILE_TOKENS.filter(token => normalized.includes(token));
+  const counts = Object.create(null);
+  tokens.forEach(token => { counts[token] = Number(bag.counts[token]) || 0; });
+  const maximumTiles = Math.min(14, Math.max(0, Number(bag.tiles) || 0));
+  if (maximumTiles < 2) return null;
+  const initialWildcards = Math.max(0, Number(bag.wildcards) || 0);
+  const failedStates = new Set();
+  let best = Infinity;
+
+  function walk(pos, wildLeft, usedTiles) {
+    if (pos === normalized.length) {
+      if (usedTiles >= 2 && usedTiles < best) best = usedTiles;
+      return;
+    }
+    if (usedTiles >= maximumTiles || usedTiles >= best) return;
     const countKey = tokens.map(token => counts[token] || 0).join(',');
-    const key = `${pos}|${usedTiles >= 2 ? 1 : 0}|${wildLeft}|${countKey}`;
-    if (memo.has(key)) return false;
+    const key = `${pos}|${wildLeft}|${usedTiles}|${countKey}`;
+    if (failedStates.has(key)) return;
+
     for (const token of tokens) {
-      if (!word.startsWith(token, pos)) continue;
+      if (!normalized.startsWith(token, pos)) continue;
       if ((counts[token] || 0) > 0) {
         counts[token]--;
-        const ok = walk(pos + token.length, usedTiles + 1, wildLeft);
+        walk(pos + token.length, wildLeft, usedTiles + 1);
         counts[token]++;
-        if (ok) return true;
       }
-      if (wildLeft > 0) {
-        if (walk(pos + token.length, usedTiles + 1, wildLeft - 1)) return true;
-      }
+      // A joker egyetlen magyar betűcsempét helyettesít, akkor is, ha a készletben
+      // ugyanabból a tokenből normál csempe is volt, de azt már elhasználtuk.
+      if (wildLeft > 0) walk(pos + token.length, wildLeft - 1, usedTiles + 1);
     }
-    // A joker can represent a Hungarian tile that isn't present in the ordinary counts.
-    if (wildLeft > 0) {
-      for (const token of HUNGARIAN_ALPHABET_ALL) {
-        if (!word.startsWith(token, pos) || tokens.includes(token)) continue;
-        if (walk(pos + token.length, usedTiles + 1, wildLeft - 1)) return true;
-      }
-    }
-    memo.add(key);
-    return false;
+    failedStates.add(key);
   }
-  return walk(0, 0, bag.wildcards);
+
+  walk(0, initialWildcards, 0);
+  return Number.isFinite(best) ? best : null;
+}
+
+function canSpellFarmWord(word, bag) {
+  return getFarmWordTileCount(word, bag) !== null;
 }
 
 function requestFarmWordCount() {
@@ -4487,7 +4538,7 @@ function requestFarmWordCount() {
   const runId = ++farmWordCountRunId;
   if (!dictionaryReady) {
     if (countEl) countEl.textContent = '…';
-    if (detailEl) detailEl.textContent = 'A szótár betöltése után kiszámoljuk a pontos szólehetőségeket.';
+    if (detailEl) detailEl.textContent = 'A magyar helyesírási szótár betöltése után kiszámoljuk a pontos szólehetőségeket.';
     return;
   }
   const bag = getFarmTileBagSnapshot();
@@ -4495,7 +4546,7 @@ function requestFarmWordCount() {
   let index = 0;
   let validCount = 0;
   if (countEl) countEl.textContent = 'Számolás…';
-  if (detailEl) detailEl.textContent = 'A játék szótárát ellenőrizzük az összes elérhető betűvel. A számolás a játékot nem állítja meg.';
+  if (detailEl) detailEl.textContent = 'A magyar helyesírási szótárt ellenőrizzük az összes elérhető betűvel. A számolás a játékot nem állítja meg.';
 
   const processChunk = () => {
     if (runId !== farmWordCountRunId || !state.levelCompleted) return;
@@ -4504,9 +4555,8 @@ function requestFarmWordCount() {
     while (index < dictionaryWords.length && checked < 900) {
       const word = dictionaryWords[index++];
       checked++;
-      if (!word || word.length < 2 || NON_WORDS_BLACKLIST.has(word) || word.length > bag.totalChars) continue;
-      if (!rawWordFitsFarmBag(word, bag)) continue;
-      if (canSpellFarmWord(word, bag)) validCount++;
+      if (!word || word.length < 2 || !DICT.has(word) || NON_WORDS_BLACKLIST.has(word) || word.length > bag.totalChars) continue;
+      if (getFarmWordTileCount(word, bag) !== null) validCount++;
       const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       if (now - start >= 5) break;
     }
@@ -4572,10 +4622,9 @@ async function findFarmWordSuggestions(bag, limit = 10) {
     let checked = 0;
     while (index < words.length && checked < 500 && found.length < limit) {
       const word = words[index++]; checked++;
-      if (!word || NON_WORDS_BLACKLIST.has(word)) continue;
-      const tiles = tokenizeHungarianTiles(word).length;
-      if (tiles < 2 || tiles > maxTiles) continue;
-      if (!rawWordFitsFarmBag(word, bag) || !canSpellFarmWord(word, bag)) continue;
+      if (!word || !DICT.has(word) || NON_WORDS_BLACKLIST.has(word)) continue;
+      const tiles = getFarmWordTileCount(word, bag);
+      if (tiles === null || tiles < 2 || tiles > maxTiles) continue;
       found.push({ word, tiles });
       const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
       if (now - start >= 5) break;
@@ -7254,11 +7303,20 @@ function showToast(msg, type='ok') {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+let boardShakeTimer = null;
 function shakeScreen() {
-  const el = document.getElementById('app-wrap');
-  if (!el) return;
-  el.classList.add('shake');
-  setTimeout(() => el.classList.remove('shake'), 350);
+  const el = document.querySelector('.board-container');
+  if (!el || document.body.classList.contains('low-power-mode')) return;
+  // Rázzuk csak a táblát; az app-wrap mozgatása görgetési ugrásnak látszott.
+  if (boardShakeTimer) clearTimeout(boardShakeTimer);
+  el.classList.remove('shake');
+  requestAnimationFrame(() => {
+    el.classList.add('shake');
+    boardShakeTimer = setTimeout(() => {
+      el.classList.remove('shake');
+      boardShakeTimer = null;
+    }, 240);
+  });
 }
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
