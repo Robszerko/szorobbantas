@@ -244,11 +244,27 @@ html, body {
 .farm-mode-panel.active { display: flex; }
 .farm-mode-title { font-size: 12px; font-weight: 950; color: #a7f3d0; letter-spacing: .3px; }
 .farm-mode-desc { margin: 0; color: #d1fae5; font-size: 10.5px; font-weight: 650; line-height: 1.45; }
-.farm-mode-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+.farm-mode-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
 .farm-mode-metric { border-radius: 8px; padding: 7px 4px; background: rgba(2,6,23,.45); border: 1px solid rgba(167,243,208,.15); text-align: center; min-width: 0; }
 .farm-mode-metric strong { display: block; color: #fef08a; font-size: 15px; line-height: 1.2; font-weight: 950; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .farm-mode-metric span { display: block; color: #a7f3d0; font-size: 8px; margin-top: 3px; font-weight: 850; line-height: 1.2; }
 .farm-mode-count-detail { color: #d1d5db; font-size: 9.5px; line-height: 1.35; }
+.farm-clean-sweep-reward { display:none; padding:9px; border:1px solid rgba(250,204,21,.65); border-radius:9px; background:linear-gradient(135deg,rgba(120,53,15,.28),rgba(49,46,129,.22)); gap:7px; }
+.farm-clean-sweep-reward.active { display:flex; flex-direction:column; }
+.farm-clean-sweep-title { color:#fef3c7; font-size:10.5px; font-weight:950; line-height:1.4; }
+.farm-clean-sweep-desc { color:#e5e7eb; font-size:9.5px; line-height:1.4; }
+.farm-helper-choice-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+.farm-helper-choice { display:flex; gap:5px; align-items:center; justify-content:flex-start; min-height:35px; text-align:left; padding:6px; border-radius:7px; border:1px solid rgba(250,204,21,.4); background:rgba(15,23,42,.88); color:#f8fafc; font:inherit; font-size:9.5px; font-weight:850; cursor:pointer; }
+.farm-helper-choice:disabled { opacity:.45; cursor:not-allowed; }
+.farm-helper-choice:active { transform:translateY(1px); }
+.btn-dock-slot.timed-helper-locked { opacity:.55; cursor:not-allowed; filter:grayscale(.25); box-shadow:none !important; }
+.farm-final-suggestions { display:none; flex-direction:column; gap:6px; padding:8px; border-radius:9px; border:1px solid rgba(56,189,248,.42); background:rgba(2,6,23,.55); }
+.farm-final-suggestions.active { display:flex; }
+.farm-final-suggestions-title { color:#bae6fd; font-size:10.5px; font-weight:950; }
+.farm-final-word-list { display:flex; flex-wrap:wrap; gap:5px; }
+.farm-final-word { display:inline-flex; align-items:center; gap:4px; border:1px solid rgba(56,189,248,.3); border-radius:6px; padding:4px 6px; background:rgba(30,41,59,.8); color:#f8fafc; font-size:10px; font-weight:900; }
+.farm-final-word small { color:#7dd3fc; font-size:8px; font-weight:800; }
+body.low-power-mode .farm-clean-sweep-reward, body.low-power-mode .farm-final-suggestions { box-shadow:none !important; }
 .btn-finish-farming { background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; border: 1px solid #fcd34d; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 11px; font-weight: 950; cursor: pointer; }
 .btn-finish-farming:active { transform: translateY(1px); }
 body.low-power-mode .farm-mode-panel { box-shadow: none !important; }
@@ -1154,17 +1170,6 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
     <div class="stat-box glass rank-box"><span class="lbl">Helyezés</span><span class="val" id="stat-rank">—</span></div>
   </div>
 
-  <section class="farm-mode-panel glass" id="farm-mode-panel" aria-live="polite" aria-atomic="true">
-    <div class="farm-mode-title">🏆 MINDEN KÖTELEZŐ KÜLDETÉS TELJESÍTVE!</div>
-    <p class="farm-mode-desc" id="farm-mode-desc">A kör kötelező része kész. Folytathatod a meglévő kockák és betűk kifarmolását extra pontokért. Új kockák és betűk már nem érkeznek a táblára; a további pontgyűjtés opcionális.</p>
-    <div class="farm-mode-metrics">
-      <div class="farm-mode-metric"><strong id="farm-word-count">Számolás…</strong><span>KIRAKHATÓ SZÓLEHETŐSÉG</span></div>
-      <div class="farm-mode-metric"><strong id="farm-board-count">64</strong><span>MEGLÉVŐ TÁBLACSEMPE</span></div>
-      <div class="farm-mode-metric"><strong id="farm-letter-count">—</strong><span>ELÉRHETŐ BETŰCSEMPE</span></div>
-    </div>
-    <div class="farm-mode-count-detail" id="farm-word-count-detail">A számlálás a játék aktuális szótára alapján készül. Minden szólehetőséget egyszer számol; a beküldött szó betűi elfogynak.</div>
-    <button class="btn-finish-farming" id="btn-finish-farming">✅ Befejezem a farmolást – következő kör ➜</button>
-  </section>
 
   <div class="mission-strip glass">
     <div id="active-missions-container" style="display:flex; flex-direction:column; gap:5px; width:100%;"></div>
@@ -1184,6 +1189,24 @@ body.low-power-mode #bg-cubes-canvas, body.low-power-mode #fx-canvas { display: 
       </div>
       <div class="quick-inv-row" id="quick-inv-row"></div>
     </div>
+    <section class="farm-mode-panel glass" id="farm-mode-panel" aria-live="polite" aria-atomic="false">
+      <div class="farm-mode-title">🏆 MINDEN KÖTELEZŐ KÜLDETÉS TELJESÍTVE!</div>
+      <p class="farm-mode-desc" id="farm-mode-desc">A kötelező rész kész. A meglévő kockákat és betűket még kifarmolhatod extra pontokért; új kockák és betűk már nem érkeznek.</p>
+      <div class="farm-mode-metrics">
+        <div class="farm-mode-metric"><strong id="farm-word-count">Számolás…</strong><span>KIRAKHATÓ SZÓLEHETŐSÉG</span></div>
+        <div class="farm-mode-metric"><strong id="farm-explodable-letter-count">—</strong><span>AZONNAL ROBBANTHATÓ BETŰ</span></div>
+        <div class="farm-mode-metric"><strong id="farm-board-letter-count">—</strong><span>BETŰ A TÁBLÁN ÖSSZESEN</span></div>
+        <div class="farm-mode-metric"><strong id="farm-letter-count">—</strong><span>ELÉRHETŐ BETŰ ÖSSZESEN</span></div>
+      </div>
+      <div class="farm-mode-count-detail" id="farm-word-count-detail">A szószám a betöltött játékszótár és a jelenlegi betűcsempék alapján készül; minden szót egyszer számol.</div>
+      <div class="farm-clean-sweep-reward" id="farm-clean-sweep-reward" aria-live="polite"></div>
+      <div class="farm-final-suggestions" id="farm-final-suggestions" aria-live="polite">
+        <div class="farm-final-suggestions-title">Én még ezekre gondoltam:</div>
+        <div class="farm-final-word-list" id="farm-final-word-list"></div>
+        <div class="farm-mode-count-detail" id="farm-final-suggestions-note"></div>
+      </div>
+      <button class="btn-finish-farming" id="btn-finish-farming">✅ Befejezem a farmolást – következő kör ➜</button>
+    </section>
     <div class="moves-warning-banner" id="moves-warning-banner">⚠️ MÁR CSAK 5 LÉPÉSED MARADT!</div>
   </div>
 
@@ -2526,6 +2549,9 @@ const state = {
   nextRoundLetters: [],
   // Körsiker utáni farmolás közben a megtelt betűraktár miatt átmenetileg félretett betűk.
   farmDeferredLetters: [],
+  // A teljes betűkiürítésért választott, játékoshoz kötött, 12 órán belül egyszer használható segítségek.
+  farmTimedHelpers: [],
+  farmCleanSweepRewardClaimedLevel: 0,
   // Arany Jokerből származó, következő körre félretett egyszeri segítségek.
   nextRoundHelpers: [],
   // Az aktuális körben elérhető Arany Joker-segítségek; használatkor elfogynak.
@@ -3406,7 +3432,7 @@ async function executeClusterExplosion(tilesPos, isBomb=false, suppressSpecial=f
       if (tileIndex % burstStride === 0) spawnBoardBurst(r, c, colHex, matchSize >= 9 ? 1.2 : 1);
       spawnExplosion(px, py, colHex);
 
-      if(t.letter && t.ice === 0 && t.wood === 0) {
+      if(t.letter && ((t.ice === 0 && t.wood === 0) || state.levelCompleted)) {
         newlyFreedLetters.push({ char: t.letter, x: px, y: py, isGold: t.isGold });
         state.stats.lettersFreed++;
         if (t.isGold) state.stats.goldLettersFreed = (state.stats.goldLettersFreed || 0) + 1;
@@ -4329,7 +4355,7 @@ function scheduleFarmWordCountRefresh() {
     const panel = document.getElementById('farm-mode-panel');
     // A kézi körlezárás után nem szabad újra megjeleníteni a farmpanelt.
     if (state.levelCompleted && panel && panel.classList.contains('active')) {
-      updateFarmModeUI({ recount: true });
+      requestFarmWordCount();
     }
   }, 180);
 }
@@ -4338,28 +4364,69 @@ function getFarmTileBagSnapshot() {
   const counts = Object.create(null);
   let wildcards = 0;
   let tiles = 0;
-  const add = raw => {
+  let boardLetterTiles = 0;
+  let storageLetterTiles = 0;
+  const add = (raw, source) => {
     if (!raw) return;
     const char = String(raw).trim().toUpperCase();
-    if (char === '🃏' || char === '★') { wildcards++; tiles++; return; }
+    if (char === '🃏' || char === '★') {
+      wildcards++; tiles++;
+      if (source === 'board') boardLetterTiles++; else storageLetterTiles++;
+      return;
+    }
     if (!HUNGARIAN_ALPHABET_ALL.includes(char)) return;
     counts[char] = (counts[char] || 0) + 1;
     tiles++;
+    if (source === 'board') boardLetterTiles++; else storageLetterTiles++;
   };
-  (state.pool || []).forEach(item => { if (item && !item.empty) add(item.char); });
-  (state.tray || []).forEach(item => { if (item) add(item.char); });
-  (state.farmDeferredLetters || []).forEach(item => { if (item) add(item.char); });
-  (state.board || []).forEach(row => (row || []).forEach(tile => { if (tile && tile.letter) add(tile.letter); }));
+  (state.pool || []).forEach(item => { if (item && !item.empty) add(item.char, 'storage'); });
+  (state.tray || []).forEach(item => { if (item) add(item.char, 'storage'); });
+  (state.farmDeferredLetters || []).forEach(item => { if (item) add(item.char, 'storage'); });
+  (state.board || []).forEach(row => (row || []).forEach(tile => { if (tile && tile.letter) add(tile.letter, 'board'); }));
 
-  const tokens = HUNGARIAN_ALPHABET_ALL.filter(token => counts[token] > 0).sort((a,b) => b.length - a.length);
-  // A nyers karaktergyakoriság gyors előszűrő; a végső döntést a magyar csempe-tokenizálás adja.
   const rawChars = Object.create(null);
   let rawCharCount = 0;
   Object.keys(counts).forEach(token => {
     for (const ch of token) { rawChars[ch] = (rawChars[ch] || 0) + counts[token]; rawCharCount += counts[token]; }
   });
-  const totalChars = rawCharCount + wildcards * 3;
-  return { counts, wildcards, tiles, tokens: HUNGARIAN_ALPHABET_ALL.slice().sort((a,b)=>b.length-a.length), rawChars, totalChars };
+  const signature = JSON.stringify({ counts: Object.keys(counts).sort().map(key => [key, counts[key]]), wildcards });
+  return {
+    counts, wildcards, tiles,
+    tokens: HUNGARIAN_ALPHABET_ALL.slice().sort((a,b)=>b.length-a.length),
+    rawChars, totalChars: rawCharCount + wildcards * 3,
+    boardLetterTiles, storageLetterTiles, signature
+  };
+}
+
+function getFarmBoardMetrics() {
+  const board = state.board || [];
+  let boardTiles = 0;
+  let boardLetterTiles = 0;
+  let explodableLetters = 0;
+  const visited = new Set();
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const tile = board[r] && board[r][c];
+      if (!tile) continue;
+      boardTiles++;
+      if (tile.letter) boardLetterTiles++;
+      if (tile.letter && Number(tile.ice || 0) === 0 && Number(tile.wood || 0) === 0 && (tile.bomb || tile.prism)) {
+        explodableLetters++;
+        continue;
+      }
+      if (Number(tile.ice || 0) > 0 || Number(tile.wood || 0) > 0 || tile.bomb || tile.prism) continue;
+      const key = `${r},${c}`;
+      if (visited.has(key)) continue;
+      const cluster = getConnectedCluster(r, c);
+      cluster.forEach(pos => visited.add(`${pos.r},${pos.c}`));
+      if (cluster.length < 2) continue;
+      cluster.forEach(pos => {
+        const candidate = board[pos.r] && board[pos.r][pos.c];
+        if (candidate && candidate.letter && Number(candidate.ice || 0) === 0 && Number(candidate.wood || 0) === 0) explodableLetters++;
+      });
+    }
+  }
+  return { boardTiles, boardLetterTiles, explodableLetters };
 }
 
 function rawWordFitsFarmBag(word, bag) {
@@ -4449,16 +4516,17 @@ function requestFarmWordCount() {
     }
     if (runId !== farmWordCountRunId || !state.levelCompleted) return;
     if (countEl) countEl.textContent = validCount.toLocaleString('hu-HU');
-    const boardTiles = (state.board || []).reduce((sum,row)=>sum+(row || []).filter(Boolean).length,0);
+    const boardMetrics = getFarmBoardMetrics();
+    const boardTiles = boardMetrics.boardTiles;
     const availableLetters = bag.tiles;
     const desc = document.getElementById('farm-mode-desc');
     if (desc) {
-      if (boardTiles === 0 && validCount > 0) desc.textContent = `A tábla már üres, de a betűraktárból még gyűjthetsz pontokat: ${validCount.toLocaleString('hu-HU')} különböző szólehetőség maradt.`;
+      if (boardTiles === 0 && validCount > 0) desc.textContent = `A tábla már üres, de a raktárból/tálcáról még gyűjthetsz pontokat: ${validCount.toLocaleString('hu-HU')} szótári szó állítható össze a megmaradt betűkből.`;
       else if (boardTiles === 0 && validCount === 0) desc.textContent = 'Elfogytak a tábláról a kockák, és nincs több kirakható szótári szó. A következő kör bármikor elindítható.';
       else if (validCount === 0) desc.textContent = 'Most nincs a szótár szerint kirakható szó, de a táblán még vannak kockák. Farmold tovább a meglévő mezőket, gyűjtsd be a betűket — új kockák és betűk már nem érkeznek.';
       else desc.textContent = 'A kötelező rész sikerült. A meglévő táblakockákat és betűket még kifarmolhatod, de új kockák és betűk már nem érkeznek. A további pontgyűjtés opcionális.';
     }
-    if (detailEl) detailEl.textContent = `A betöltött szótár alapján ${validCount.toLocaleString('hu-HU')} különböző szó állítható össze a jelenlegi betűkészletből, külön-külön. Egy szó beküldése felhasználja a hozzá tartozó betűket.`;
+    if (detailEl) detailEl.textContent = `Pontos szótári számlálás: a betöltött játékszótárban ${validCount.toLocaleString('hu-HU')} különböző szó rakható ki külön-külön a jelenlegi betűcsempékből. A táblán ${boardMetrics.boardTiles} csempe van, ezek közül ${boardMetrics.boardLetterTiles} tartalmaz betűt; jelenleg ${boardMetrics.explodableLetters} betű szabadítható fel közvetlen, normál robbantással. A raktárban/tálcán/várólistán még ${bag.storageLetterTiles} betű van. Egy szó beküldése felhasználja a hozzá szükséges betűket.`;
     if (boardTiles === 0 && availableLetters === 0 && validCount === 0 && farmExhaustionToastLevel !== state.level) {
       farmExhaustionToastLevel = state.level;
       showToast('✨ Kiürült a tábla és elfogytak a kirakható szavak. A kötelező küldetések már teljesültek; indulhat a következő kör!', 'ok');
@@ -4467,22 +4535,298 @@ function requestFarmWordCount() {
   setTimeout(processChunk, 0);
 }
 
+let farmFinishPreviewShown = false;
+let farmFinishPreviewReady = false;
+let farmFinishPreviewFingerprint = '';
+let farmSuggestionRunId = 0;
+
+function resetFarmFinishPreview() {
+  farmFinishPreviewShown = false;
+  farmFinishPreviewReady = false;
+  farmFinishPreviewFingerprint = '';
+  farmSuggestionRunId++;
+  const panel = document.getElementById('farm-final-suggestions');
+  const list = document.getElementById('farm-final-word-list');
+  const note = document.getElementById('farm-final-suggestions-note');
+  const button = document.getElementById('btn-finish-farming');
+  if (panel) panel.classList.remove('active');
+  if (list) list.innerHTML = '';
+  if (note) note.textContent = '';
+  if (button) button.textContent = '✅ Befejezem a farmolást – következő kör ➜';
+}
+
+function refreshFarmFinishPreviewIfChanged(signature) {
+  if (farmFinishPreviewShown && farmFinishPreviewFingerprint && signature !== farmFinishPreviewFingerprint) {
+    resetFarmFinishPreview();
+  }
+}
+
+async function findFarmWordSuggestions(bag, limit = 10) {
+  if (!dictionaryReady || !DICT || !DICT.size) return [];
+  const words = Array.from(DICT);
+  const found = [];
+  const maxTiles = Math.min(14, bag.tiles);
+  let index = 0;
+  while (index < words.length && found.length < limit) {
+    const start = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    let checked = 0;
+    while (index < words.length && checked < 500 && found.length < limit) {
+      const word = words[index++]; checked++;
+      if (!word || NON_WORDS_BLACKLIST.has(word)) continue;
+      const tiles = tokenizeHungarianTiles(word).length;
+      if (tiles < 2 || tiles > maxTiles) continue;
+      if (!rawWordFitsFarmBag(word, bag) || !canSpellFarmWord(word, bag)) continue;
+      found.push({ word, tiles });
+      const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+      if (now - start >= 5) break;
+    }
+    if (index < words.length && found.length < limit) await new Promise(resolve => setTimeout(resolve, 0));
+  }
+  return found.slice(0, limit);
+}
+
+async function showFarmFinishSuggestions() {
+  const panel = document.getElementById('farm-final-suggestions');
+  const list = document.getElementById('farm-final-word-list');
+  const note = document.getElementById('farm-final-suggestions-note');
+  const button = document.getElementById('btn-finish-farming');
+  if (!panel || !list || !note || !button) return false;
+  if (!dictionaryReady || !DICT || !DICT.size) {
+    showToast('A játékszótár még töltődik. Várj egy kicsit, majd próbáld újra a kör lezárását!', 'err');
+    return false;
+  }
+  const bag = getFarmTileBagSnapshot();
+  if (!bag.tiles) return false;
+  farmFinishPreviewShown = true;
+  farmFinishPreviewReady = false;
+  farmFinishPreviewFingerprint = bag.signature;
+  const runId = ++farmSuggestionRunId;
+  panel.classList.add('active');
+  list.innerHTML = '<span class="farm-mode-count-detail">Keresem a legfeljebb 10 további szót…</span>';
+  note.textContent = 'Ezek javaslatok a megmaradt betűkből; nem teljesítik helyetted a küldetéseket.';
+  button.textContent = '➡️ Következő kör – küldetések sorsolása';
+  const suggestions = await findFarmWordSuggestions(bag, 10);
+  if (runId !== farmSuggestionRunId) return false;
+  if (getFarmTileBagSnapshot().signature !== farmFinishPreviewFingerprint) {
+    resetFarmFinishPreview();
+    showToast('A betűkészlet közben megváltozott. A záró szóötleteket újraszámolom.', 'ok');
+    return false;
+  }
+  list.innerHTML = '';
+  if (!suggestions.length) {
+    const empty = document.createElement('span');
+    empty.className = 'farm-mode-count-detail';
+    empty.textContent = 'A jelenlegi betűkészletből nem találtam további szót a betöltött játékszótárban.';
+    list.appendChild(empty);
+  } else {
+    suggestions.slice(0, 10).forEach(entry => {
+      const chip = document.createElement('span');
+      chip.className = 'farm-final-word';
+      chip.textContent = entry.word;
+      const meta = document.createElement('small');
+      meta.textContent = `${entry.tiles} csempe`;
+      chip.appendChild(meta);
+      list.appendChild(chip);
+    });
+  }
+  farmFinishPreviewReady = true;
+  return true;
+}
+
+const FARM_TIMED_HELPER_DURATION_MS = 12 * 60 * 60 * 1000;
+
+function formatFarmHelperRemaining(ms) {
+  const totalMinutes = Math.ceil(Math.max(0, Number(ms) || 0) / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return hours ? `${hours} óra ${String(minutes).padStart(2, '0')} perc` : `${minutes} perc`;
+}
+
+function farmTimedHelperStorageKey() {
+  const name = String(state.playerName || '').trim().toUpperCase();
+  // Bejelentkezett játékosnál névhez kötjük; vendégmódban a helyi böngésző külön vendégprofiljához mentjük.
+  const profile = name || 'GUEST_BROWSER_PROFILE';
+  return `szorobbantas_farm_12h_helpers_v1_${encodeURIComponent(profile)}`;
+}
+
+function normalizeFarmTimedHelper(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const itemId = String(entry.itemId || '');
+  const definition = SHOP_ITEMS.find(item => item && item.id === itemId);
+  const expiresAt = Number(entry.expiresAt) || 0;
+  if (!definition || expiresAt <= Date.now()) return null;
+  return {
+    id: String(entry.id || createLetterRewardId()),
+    itemId,
+    icon: String(entry.icon || definition.icon),
+    name: String(entry.name || definition.name),
+    desc: String(entry.desc || definition.desc),
+    expiresAt,
+    availableFromLevel: Math.max(1, Number(entry.availableFromLevel) || ((Number(state.level) || 1) + 1)),
+    source: 'farm-clean-sweep'
+  };
+}
+
+function saveFarmTimedHelpersLocal() {
+  const key = farmTimedHelperStorageKey();
+  if (!key) return;
+  try {
+    localStorage.setItem(key, JSON.stringify({
+      helpers: (state.farmTimedHelpers || []).map(normalizeFarmTimedHelper).filter(Boolean),
+      claimedLevel: Number(state.farmCleanSweepRewardClaimedLevel) || 0
+    }));
+  } catch (error) { /* Tárolótiltás esetén a felhőmentés továbbra is működhet. */ }
+}
+
+function loadFarmTimedHelpersLocal() {
+  const key = farmTimedHelperStorageKey();
+  if (!key) return { helpers: [], claimedLevel: 0 };
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || '{}');
+    return {
+      helpers: Array.isArray(parsed.helpers) ? parsed.helpers.map(normalizeFarmTimedHelper).filter(Boolean) : [],
+      claimedLevel: Number(parsed.claimedLevel) || 0
+    };
+  } catch (error) { return { helpers: [], claimedLevel: 0 }; }
+}
+
+function cleanupFarmTimedHelpers() {
+  const oldLength = (state.farmTimedHelpers || []).length;
+  state.farmTimedHelpers = (Array.isArray(state.farmTimedHelpers) ? state.farmTimedHelpers : []).map(normalizeFarmTimedHelper).filter(Boolean);
+  if (state.farmTimedHelpers.length !== oldLength) saveFarmTimedHelpersLocal();
+  return state.farmTimedHelpers;
+}
+
+function grantFarmTimedHelper(itemId) {
+  if (!state.levelCompleted || getFarmTileBagSnapshot().tiles !== 0) {
+    showToast('Ehhez minden táblán és raktárban maradt betűt fel kell használnod!', 'err');
+    return;
+  }
+  if (Number(state.farmCleanSweepRewardClaimedLevel) === Number(state.level)) {
+    showToast('Ebben a körben már felvetted a teljes betűkiürítés jutalmát.', 'err');
+    return;
+  }
+  const definition = SHOP_ITEMS.find(item => item.id === itemId);
+  if (!definition) return;
+  const now = Date.now();
+  cleanupFarmTimedHelpers();
+  state.farmTimedHelpers.push({
+    id: createLetterRewardId(), itemId: definition.id, icon: definition.icon,
+    name: definition.name, desc: definition.desc, source: 'farm-clean-sweep',
+    availableFromLevel: (Number(state.level) || 1) + 1,
+    expiresAt: now + FARM_TIMED_HELPER_DURATION_MS
+  });
+  state.farmCleanSweepRewardClaimedLevel = Number(state.level) || 0;
+  saveFarmTimedHelpersLocal();
+  renderQuickInventory();
+  renderFarmCleanSweepReward(getFarmTileBagSnapshot());
+  showToast(`🏅 Megkaptad: ${definition.icon} ${definition.name}. Egyszer használható, lejár: ${new Date(now + FARM_TIMED_HELPER_DURATION_MS).toLocaleString('hu-HU')}.${state.playerName ? '' : ' Vendég módban ezen a böngészőn őrződik meg.'}`, 'ok');
+  syncCloudState();
+}
+
+function renderFarmCleanSweepReward(bag = getFarmTileBagSnapshot()) {
+  const area = document.getElementById('farm-clean-sweep-reward');
+  if (!area) return;
+  if (!state.levelCompleted) { area.classList.remove('active'); area.innerHTML = ''; return; }
+  const claimed = Number(state.farmCleanSweepRewardClaimedLevel) === Number(state.level);
+  if (!claimed && bag.tiles > 0) { area.classList.remove('active'); area.innerHTML = ''; return; }
+  area.classList.add('active');
+  area.innerHTML = '';
+  const title = document.createElement('div');
+  title.className = 'farm-clean-sweep-title';
+  area.appendChild(title);
+  const desc = document.createElement('div');
+  desc.className = 'farm-clean-sweep-desc';
+  area.appendChild(desc);
+  if (claimed) {
+    title.textContent = '✅ A teljes betűkiürítés jutalmát már kiválasztottad.';
+    const active = cleanupFarmTimedHelpers();
+    const latest = active.slice().sort((a,b) => a.expiresAt - b.expiresAt)[0];
+    desc.textContent = latest
+      ? `Jutalmad: ${latest.icon} ${latest.name} · a ${latest.availableFromLevel}. körtől egyszer használható · hátralévő idő: ${formatFarmHelperRemaining(latest.expiresAt - Date.now())}. A 12 óra a kiválasztástól számít.`
+      : 'A jutalom ebben a körben már fel lett véve; második választás ugyanebből a körből nem jár.';
+    return;
+  }
+  title.textContent = '🏅 TÖKÉLETES BETŰKIÜRÍTÉS! Válassz 12 órán belül felhasználható segítséget.';
+  desc.textContent = state.playerName
+    ? 'A jutalom egyetlen használatra szól, és a következő kör indulásától aktiválható. A 12 órás időkeret a kiválasztástól számít; lejárat után eltűnik. Körönként csak egyszer választhatsz.'
+    : 'Vendég módban a jutalom ehhez a böngészőhöz mentődik. A következő körben egyszer aktiválható, a kiválasztástól számított 12 órán belül.';
+  const grid = document.createElement('div');
+  grid.className = 'farm-helper-choice-grid';
+  SHOP_ITEMS.forEach(item => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'farm-helper-choice';
+    button.disabled = false;
+    button.title = `${item.name}: ${item.desc}`;
+    const icon = document.createElement('span'); icon.textContent = item.icon;
+    const label = document.createElement('span'); label.textContent = item.name;
+    button.append(icon, label);
+    button.addEventListener('click', () => grantFarmTimedHelper(item.id));
+    grid.appendChild(button);
+  });
+  area.appendChild(grid);
+}
+
+async function activateFarmTimedHelper(helperId) {
+  if (isLocked) { showToast('Várd meg a jelenlegi művelet végét!', 'err'); return; }
+  cleanupFarmTimedHelpers();
+  const index = state.farmTimedHelpers.findIndex(helper => helper && helper.id === helperId);
+  if (index < 0) {
+    renderQuickInventory();
+    showToast('Ez a 12 órás segítség lejárt vagy már felhasználtad.', 'err');
+    return;
+  }
+  const helper = normalizeFarmTimedHelper(state.farmTimedHelpers[index]);
+  if (helper && Number(state.level) < Number(helper.availableFromLevel)) {
+    showToast(`Ezt a segítséget a ${helper.availableFromLevel}. körtől használhatod; a 12 órás lejárat már elindult.`, 'err');
+    return;
+  }
+  const item = helper && SHOP_ITEMS.find(candidate => candidate.id === helper.itemId);
+  if (!helper || !item || typeof item.action !== 'function') return;
+  state.farmTimedHelpers.splice(index, 1);
+  saveFarmTimedHelpersLocal();
+  renderQuickInventory();
+  syncCloudState();
+  showToast(`✨ 12 órás jutalom felhasználva: ${helper.icon} ${helper.name}!`, 'ok');
+  try {
+    await Promise.resolve(item.action());
+  } catch (error) {
+    console.error('12 órás segítség hibája:', error);
+    showToast('A segítség aktiválásakor hiba történt; az egyszeri jutalom felhasználtnak számít.', 'err');
+  } finally {
+    renderQuickInventory(); renderShop(); updateStats(); syncCloudState();
+  }
+}
+
 function updateFarmModeUI(options = {}) {
   const panel = document.getElementById('farm-mode-panel');
   if (!panel) return;
   if (!state.levelCompleted) {
     panel.classList.remove('active');
     farmWordCountRunId++;
+    resetFarmFinishPreview();
+    const rewardArea = document.getElementById('farm-clean-sweep-reward');
+    if (rewardArea) rewardArea.classList.remove('active');
     return;
   }
   panel.classList.add('active');
-  const boardTiles = (state.board || []).reduce((sum,row)=>sum+(row || []).filter(Boolean).length,0);
-  const availableLetters = getFarmTileBagSnapshot().tiles;
-  const boardElCount = document.getElementById('farm-board-count');
+  const bag = getFarmTileBagSnapshot();
+  const board = getFarmBoardMetrics();
+  const boardLetterEl = document.getElementById('farm-board-letter-count');
+  const explodableEl = document.getElementById('farm-explodable-letter-count');
   const letterElCount = document.getElementById('farm-letter-count');
-  if (boardElCount) boardElCount.textContent = `${boardTiles} / ${GRID_SIZE * GRID_SIZE}`;
-  if (letterElCount) letterElCount.textContent = availableLetters.toLocaleString('hu-HU');
-  if (options.recount) requestFarmWordCount();
+  const boardTileCount = board.boardTiles;
+  if (boardLetterEl) boardLetterEl.textContent = board.boardLetterTiles.toLocaleString('hu-HU');
+  if (explodableEl) explodableEl.textContent = board.explodableLetters.toLocaleString('hu-HU');
+  if (letterElCount) letterElCount.textContent = bag.tiles.toLocaleString('hu-HU');
+  const detailEl = document.getElementById('farm-word-count-detail');
+  if (detailEl && document.getElementById('farm-word-count') && document.getElementById('farm-word-count').textContent === 'Számolás…') {
+    detailEl.textContent = `A táblán ${boardTileCount} csempe maradt (${board.boardLetterTiles} betűs mező); közvetlenül robbantható betűk: ${board.explodableLetters}; raktárban/tálcán/várólistán: ${bag.storageLetterTiles}. A szószám a betöltött szótár alapján készül.`;
+  }
+  refreshFarmFinishPreviewIfChanged(bag.signature);
+  renderFarmCleanSweepReward(bag);
+  if (options.recount) scheduleFarmWordCountRefresh();
 }
 
 function drainFarmDeferredLetters() {
@@ -4636,10 +4980,22 @@ safeOn('btn-finish-farming', 'click', async () => {
     showToast('A következő kör előtt minden kötelező küldetést teljesíteni kell!', 'err');
     return;
   }
-  // A lezárt farmkör mentése előbb fejeződjön be, csak ezután induljon a következő kör választója.
+  const bag = getFarmTileBagSnapshot();
+  if (bag.tiles > 0) {
+    if (!farmFinishPreviewShown || farmFinishPreviewFingerprint !== bag.signature) {
+      await showFarmFinishSuggestions();
+      return;
+    }
+    if (!farmFinishPreviewReady) {
+      showToast('A szóötletek még készülnek, egy pillanat múlva próbáld újra!', 'err');
+      return;
+    }
+  }
+  // A lezárt farmkör mentése előbb fejeződjön be, csak ezután induljon a megszokott küldetéssorsolás.
   await syncCloudState();
   const panel = document.getElementById('farm-mode-panel');
   if (panel) panel.classList.remove('active');
+  resetFarmFinishPreview();
   showToast(`Kör lezárva. A pálya összesített pontja: ${Math.max(0, Number(state.stats.levelScore) || 0).toLocaleString('hu-HU')} P.`, 'ok');
   openQuestRouletteModal(state.level + 1);
 });
@@ -5019,7 +5375,36 @@ function renderQuickInventory() {
     });
     row.appendChild(btn);
   });
+
+  cleanupFarmTimedHelpers().forEach(helper => {
+    const lockedUntilNextRound = Number(state.level) < Number(helper.availableFromLevel);
+    const btn = document.createElement('div');
+    btn.className = 'btn-dock-slot golden-temp-help' + (lockedUntilNextRound ? ' timed-helper-locked' : '');
+    btn.setAttribute('role', lockedUntilNextRound ? 'img' : 'button');
+    if (!lockedUntilNextRound) btn.setAttribute('tabindex', '0');
+    btn.setAttribute('title', `Teljes betűkiürítés jutalma: ${helper.name}. ${lockedUntilNextRound ? `A ${helper.availableFromLevel}. körtől használható. ` : 'Most használható. '}Egyszeri segítség, lejár ${new Date(helper.expiresAt).toLocaleString('hu-HU')}. ${helper.desc}`);
+    btn.setAttribute('aria-label', `12 órás, egyszeri segítség: ${helper.name}${lockedUntilNextRound ? `, a ${helper.availableFromLevel}. körtől` : ''}`);
+    btn.innerHTML = `<span class="d-icon">${helper.icon}⏳</span><span class="d-label">${helper.name}</span><span class="d-badge">${lockedUntilNextRound ? 'KÖV. KÖR' : '12 ÓRA · 1×'}</span>`;
+    if (!lockedUntilNextRound) {
+      const activate = () => { void activateFarmTimedHelper(helper.id); };
+      btn.addEventListener('click', activate);
+      btn.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); } });
+    }
+    row.appendChild(btn);
+  });
 }
+
+
+// Alacsony terhelésű, percenkénti ellenőrzés: a 12 órás, egyszeri segítségek lejáratkor eltűnnek.
+setInterval(() => {
+  const before = (state.farmTimedHelpers || []).length;
+  cleanupFarmTimedHelpers();
+  if ((state.farmTimedHelpers || []).length !== before) {
+    renderQuickInventory();
+    renderFarmCleanSweepReward(getFarmTileBagSnapshot());
+    syncCloudState();
+  }
+}, 60 * 1000);
 
 function handleToolActivation(item) {
   if (isLocked) { showToast('Várd meg a jelenlegi animáció végét!', 'err'); return; }
@@ -6364,6 +6749,8 @@ async function syncCloudState() {
     level: state.level,
     levelCompleted: !!state.levelCompleted,
     farmDeferredLetters: state.farmDeferredLetters || [],
+    farmTimedHelpers: cleanupFarmTimedHelpers(),
+    farmCleanSweepRewardClaimedLevel: Number(state.farmCleanSweepRewardClaimedLevel) || 0,
     weeklyScore: isDevTestUser() ? 0 : state.weeklyScore,
     moves: state.moves,
     storedMoves: state.storedMoves || 0,
@@ -6414,6 +6801,16 @@ async function syncCloudState() {
 function restoreFromCloudData(data) {
   state.playerName = data.playerName || state.playerName;
   state.playerPin = data.playerPin || state.playerPin;
+  const localFarmRewards = loadFarmTimedHelpersLocal();
+  const cloudFarmHelpers = Array.isArray(data.farmTimedHelpers) ? data.farmTimedHelpers : [];
+  const helperMap = new Map();
+  [...cloudFarmHelpers, ...localFarmRewards.helpers].forEach(entry => {
+    const normalized = normalizeFarmTimedHelper(entry);
+    if (normalized) helperMap.set(normalized.id, normalized);
+  });
+  state.farmTimedHelpers = Array.from(helperMap.values());
+  state.farmCleanSweepRewardClaimedLevel = Math.max(Number(data.farmCleanSweepRewardClaimedLevel) || 0, localFarmRewards.claimedLevel || 0);
+  saveFarmTimedHelpersLocal();
   hydrateTenQuestMeta(data || {});
   state.level = data.level || 1;
 
@@ -6670,6 +7067,15 @@ safeOn('btn-choice-restart-level', 'click', () => {
     state.nextRoundLetters = Array.isArray(pendingCloudData.nextRoundLetters) ? pendingCloudData.nextRoundLetters : [];
     state.nextRoundHelpers = Array.isArray(pendingCloudData.nextRoundHelpers) ? pendingCloudData.nextRoundHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
     state.roundTemporaryHelpers = Array.isArray(pendingCloudData.roundTemporaryHelpers) ? pendingCloudData.roundTemporaryHelpers.map(normalizeRoundTemporaryHelper).filter(Boolean) : [];
+    const localFarmRewards = loadFarmTimedHelpersLocal();
+    const farmHelperMap = new Map();
+    [...(Array.isArray(pendingCloudData.farmTimedHelpers) ? pendingCloudData.farmTimedHelpers : []), ...localFarmRewards.helpers].forEach(entry => {
+      const normalized = normalizeFarmTimedHelper(entry);
+      if (normalized) farmHelperMap.set(normalized.id, normalized);
+    });
+    state.farmTimedHelpers = Array.from(farmHelperMap.values());
+    state.farmCleanSweepRewardClaimedLevel = Math.max(Number(pendingCloudData.farmCleanSweepRewardClaimedLevel) || 0, localFarmRewards.claimedLevel || 0);
+    saveFarmTimedHelpersLocal();
     state.roundStartLetters = Array.isArray(pendingCloudData.roundStartLetters)
       ? pendingCloudData.roundStartLetters.map(normalizeRoundLetter).filter(Boolean)
       : [];
@@ -6936,6 +7342,10 @@ async function main() {
   calcTileMetrics();
   initBgMotes();
   startBgMotes();
+  // Vendégmódban is megmarad a 12 órás, egyszeri segítség az adott böngészőben.
+  const localFarmRewards = loadFarmTimedHelpersLocal();
+  state.farmTimedHelpers = localFarmRewards.helpers;
+  state.farmCleanSweepRewardClaimedLevel = localFarmRewards.claimedLevel || 0;
   initLevelData(1);
   loadAllDictionaries();
   renderCommunityLists();
